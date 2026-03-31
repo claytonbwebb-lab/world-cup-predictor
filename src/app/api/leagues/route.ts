@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const name = formData.get('name') as string;
-    const is_public = formData.get('is_public') === 'on';
+    const body = await request.json();
+    const name = body.name as string;
+    const is_public = !!body.is_public;
 
     if (!name) {
       return NextResponse.json({ error: 'Missing league name' }, { status: 400 });
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
     });
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data, code: data.code });
   } catch (error) {
     console.error('Create league error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

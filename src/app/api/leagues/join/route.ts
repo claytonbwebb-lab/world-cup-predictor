@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const code = formData.get('code') as string;
+    const body = await request.json();
+    const code = body.code as string;
 
     if (!code) {
       return NextResponse.json({ error: 'Missing league code' }, { status: 400 });
