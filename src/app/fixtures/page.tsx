@@ -100,6 +100,19 @@ export default function FixturesPage() {
     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 
+  function ScoreInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const num = value === '' ? 0 : parseInt(value);
+    return (
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={() => onChange(String(Math.max(0, num - 1)))}
+          className="w-7 h-7 rounded bg-surfaceLight hover:bg-border text-text font-bold text-lg flex items-center justify-center transition-colors">−</button>
+        <span className="w-8 text-center text-lg font-bold">{value === '' ? '0' : value}</span>
+        <button type="button" onClick={() => onChange(String(Math.min(20, num + 1)))}
+          className="w-7 h-7 rounded bg-surfaceLight hover:bg-border text-text font-bold text-lg flex items-center justify-center transition-colors">+</button>
+      </div>
+    );
+  }
+
   function MatchCard({ match }: { match: Match }) {
     const pred = predictions.get(match.id);
     const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
@@ -132,21 +145,9 @@ export default function FixturesPage() {
               </span>
             ) : (
               <>
-                <input
-                  type="number" min="0" max="20"
-                  value={vals.home}
-                  onChange={e => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], home: e.target.value } }))}
-                  className="input w-14 text-center text-lg font-bold"
-                  placeholder="0"
-                />
-                <span className="text-textMuted font-bold">–</span>
-                <input
-                  type="number" min="0" max="20"
-                  value={vals.away}
-                  onChange={e => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], away: e.target.value } }))}
-                  className="input w-14 text-center text-lg font-bold"
-                  placeholder="0"
-                />
+                <ScoreInput value={vals.home} onChange={v => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], home: v } }))} />
+                <span className="text-textMuted font-bold mx-1">–</span>
+                <ScoreInput value={vals.away} onChange={v => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], away: v } }))} />
               </>
             )}
           </div>

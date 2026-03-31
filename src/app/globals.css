@@ -19,6 +19,11 @@
   box-sizing: border-box;
 }
 
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
 body {
   background-color: var(--background);
   color: var(--text);
