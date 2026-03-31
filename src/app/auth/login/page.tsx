@@ -82,12 +82,12 @@ function LoginForm() {
               )}
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                <input type="email" name="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   className="input w-full" placeholder="you@example.com" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                <input type="password" name="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}
                   className="input w-full" placeholder="••••••••" required />
               </div>
               <button type="submit" onClick={handleEmailLogin} disabled={loading} className="btn-primary w-full">
