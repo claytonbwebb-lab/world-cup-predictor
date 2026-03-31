@@ -4,93 +4,145 @@ import { redirect } from 'next/navigation';
 
 export default async function Home() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    redirect('/dashboard');
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect('/dashboard');
 
   return (
-    <div className="flex-1">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, #22c55e 2px, transparent 2px),
-                             radial-gradient(circle at 75% 75%, #22c55e 2px, transparent 2px)`,
-            backgroundSize: '60px 60px'
-          }}></div>
+    <div className="flex-1 flex flex-col">
+
+      {/* ── Hero ── */}
+      <section className="relative flex-1 flex items-center justify-center overflow-hidden min-h-[80vh]">
+        {/* Radial glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)' }} />
         </div>
+        {/* Grid lines */}
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'linear-gradient(#22c55e 1px, transparent 1px), linear-gradient(90deg, #22c55e 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
 
-        <div className="max-w-6xl mx-auto px-4 py-20 relative">
-          <div className="text-center">
-            <div className="text-6xl mb-6">🏆</div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-green-400 bg-clip-text text-transparent">
-              FIFA World Cup 2026
-            </h1>
-            <p className="text-xl md:text-2xl text-textMuted mb-4">
-              Prediction League
-            </p>
-            <p className="text-lg text-textMuted max-w-2xl mx-auto mb-12">
-              Predict match scores, compete with friends on leaderboards, 
-              and prove you&apos;re the ultimate football pundit!
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup" className="btn-primary text-lg px-8 py-3">
-                Get Started
-              </Link>
-              <Link href="/auth/login" className="btn-secondary text-lg px-8 py-3">
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Feature 1 */}
-          <div className="card text-center">
-            <div className="text-4xl mb-4">🎯</div>
-            <h3 className="text-xl font-semibold mb-3">Predict Scores</h3>
-            <p className="text-textMuted">
-              Submit your score predictions for every World Cup match before kickoff.
-            </p>
+        <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-4 py-1.5 text-primary text-sm font-medium mb-8">
+            <span>⚽</span> FIFA World Cup 2026 · USA · Canada · Mexico
           </div>
 
-          {/* Feature 2 */}
-          <div className="card text-center">
-            <div className="text-4xl mb-4">🏅</div>
-            <h3 className="text-xl font-semibold mb-3">Earn Points</h3>
-            <p className="text-textMuted">
-              Get 3 points for exact scores, 1 point for correct results. Climb the leaderboard!
-            </p>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 leading-none">
+            <span className="block text-text">PREDICT.</span>
+            <span className="block" style={{ WebkitTextStroke: '2px #22c55e', color: 'transparent' }}>COMPETE.</span>
+            <span className="block text-primary">WIN.</span>
+          </h1>
+
+          <p className="text-xl text-textMuted max-w-xl mx-auto mb-10 leading-relaxed">
+            Call every scoreline. Climb the leaderboard. Show your mates you know football.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/signup"
+              className="btn-primary text-base px-10 py-4 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">
+              Join the League →
+            </Link>
+            <Link href="/auth/login"
+              className="btn-secondary text-base px-10 py-4 rounded-xl text-lg font-bold">
+              Sign In
+            </Link>
           </div>
 
-          {/* Feature 3 */}
-          <div className="card text-center">
-            <div className="text-4xl mb-4">👥</div>
-            <h3 className="text-xl font-semibold mb-3">Join Leagues</h3>
-            <p className="text-textMuted">
-              Create private leagues and compete with friends, family, or colleagues.
-            </p>
+          {/* Stats row */}
+          <div className="flex flex-wrap justify-center gap-8 mt-16 text-center">
+            {[
+              { val: '48', label: 'Group Matches' },
+              { val: '3pts', label: 'Exact Score' },
+              { val: '1pt', label: 'Correct Result' },
+              { val: '∞', label: 'Bragging Rights' },
+            ].map(s => (
+              <div key={s.label}>
+                <div className="text-3xl font-black text-primary">{s.val}</div>
+                <div className="text-xs text-textMuted uppercase tracking-widest mt-1">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border mt-auto">
-        <div className="max-w-6xl mx-auto px-4 py-8 text-center text-textMuted">
-          <p>2026 FIFA World Cup Prediction League</p>
+      {/* ── How it works ── */}
+      <section className="bg-surface/50 border-t border-border">
+        <div className="max-w-5xl mx-auto px-6 py-20">
+          <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
+          <p className="text-textMuted text-center mb-12">Three steps to prediction glory</p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { icon: '📋', step: '01', title: 'Sign Up', desc: 'Create a free account and join a private league with your mates, or compete in the global leaderboard.' },
+              { icon: '🎯', step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
+              { icon: '🏆', step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
+            ].map(item => (
+              <div key={item.step} className="card relative overflow-hidden group hover:border-primary/50 transition-colors">
+                <div className="absolute top-4 right-4 text-6xl font-black text-primary/5 group-hover:text-primary/10 transition-colors select-none">
+                  {item.step}
+                </div>
+                <div className="text-3xl mb-4">{item.icon}</div>
+                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Scoring ── */}
+      <section className="max-w-5xl mx-auto px-6 py-20 w-full">
+        <h2 className="text-3xl font-bold text-center mb-2">Scoring System</h2>
+        <p className="text-textMuted text-center mb-12">Simple, fair, and rewarding for the bold</p>
+
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="card border-primary/40 text-center">
+            <div className="text-5xl font-black text-primary mb-2">3</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-primary mb-2">Points</div>
+            <div className="text-textMuted text-sm">Exact scoreline — e.g. you say 2-1, it ends 2-1</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-5xl font-black text-green-400 mb-2">1</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-green-400 mb-2">Point</div>
+            <div className="text-textMuted text-sm">Correct result — right winner or draw, wrong score</div>
+          </div>
+          <div className="card text-center">
+            <div className="text-5xl font-black text-textMuted mb-2">0</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-textMuted mb-2">Points</div>
+            <div className="text-textMuted text-sm">Wrong result — back to the drawing board</div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="relative overflow-hidden border-t border-border bg-surface/30">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.06) 0%, transparent 70%)' }} />
+        <div className="relative max-w-3xl mx-auto px-6 py-20 text-center">
+          <div className="text-5xl mb-6">⚽</div>
+          <h2 className="text-4xl font-black mb-4">Ready to Play?</h2>
+          <p className="text-textMuted text-lg mb-8">
+            The 2026 World Cup kicks off on 11 June 2026. Get your predictions in early.
+          </p>
+          <Link href="/auth/signup"
+            className="btn-primary px-12 py-4 rounded-xl text-lg font-bold inline-block shadow-lg shadow-primary/20">
+            Create Free Account
+          </Link>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-border">
+        <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-textMuted">
+          <span>⚽ World Cup 2026 Prediction League</span>
+          <div className="flex gap-6">
+            <Link href="/leaderboard" className="hover:text-text transition-colors">Leaderboard</Link>
+            <Link href="/auth/signup" className="hover:text-text transition-colors">Sign Up</Link>
+            <Link href="/auth/login" className="hover:text-text transition-colors">Login</Link>
+          </div>
         </div>
       </footer>
+
     </div>
   );
 }
