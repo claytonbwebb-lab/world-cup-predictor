@@ -78,17 +78,8 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <div className="rounded-2xl border border-border overflow-hidden shadow-2xl shadow-primary/10 bg-surface aspect-[4/3] flex items-center justify-center relative">
-              <div className="absolute inset-0" style={{background: 'radial-gradient(circle at center, rgba(34,197,94,0.08) 0%, transparent 70%)'}} />
-              <div className="text-center relative z-10">
-                <div className="text-[120px] leading-none mb-4">🏆</div>
-                <div className="text-2xl font-bold text-text">FIFA World Cup 2026</div>
-                <div className="text-textMuted mt-2">11 June – 19 July 2026</div>
-                <div className="flex justify-center gap-3 mt-4 text-3xl">
-                  <span>🇺🇸</span><span>🇨🇦</span><span>🇲🇽</span>
-                </div>
-              </div>
-            </div>
+              <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=800&auto=format&fit=crop" alt="World Cup trophy"
+                className="rounded-2xl shadow-2xl shadow-primary/10 border border-border w-full" />
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-4">Every Match. Every Score.</h2>
