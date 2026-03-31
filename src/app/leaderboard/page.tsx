@@ -1,3 +1,4 @@
+import NavBar from '@/components/NavBar';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -26,22 +27,7 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold flex items-center gap-2">
-            <span>🏆</span>
-            <span>World Cup Predictor</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-textMuted hover:text-text">Dashboard</Link>
-            <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
-            <Link href="/leaderboard" className="text-primary font-medium">Leaderboard</Link>
-            <Link href="/leagues" className="text-textMuted hover:text-text">Leagues</Link>
-            <Link href="/auth/logout" className="text-textMuted hover:text-text">Sign Out</Link>
-          </nav>
-        </div>
-      </header>
+      <NavBar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">

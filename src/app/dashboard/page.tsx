@@ -1,3 +1,4 @@
+import NavBar from '@/components/NavBar';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -61,26 +62,7 @@ export default async function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold flex items-center gap-2">
-            <span>🏆</span>
-            <span>World Cup Predictor</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-primary font-medium">Dashboard</Link>
-            <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
-            <Link href="/leaderboard" className="text-textMuted hover:text-text">Leaderboard</Link>
-            <Link href="/leagues" className="text-textMuted hover:text-text">Leagues</Link>
-            <form action="/auth/logout" method="post">
-              <button type="submit" className="text-textMuted hover:text-text">
-                Sign Out
-              </button>
-            </form>
-          </nav>
-        </div>
-      </header>
+      <NavBar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}

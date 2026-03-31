@@ -1,3 +1,4 @@
+import NavBar from '@/components/NavBar';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -86,19 +87,7 @@ export default function LeaguesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold flex items-center gap-2">
-            <span>🏆</span><span>World Cup Predictor</span>
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/dashboard" className="text-textMuted hover:text-text">Dashboard</Link>
-            <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
-            <Link href="/leaderboard" className="text-textMuted hover:text-text">Leaderboard</Link>
-            <Link href="/leagues" className="text-primary font-medium">Leagues</Link>
-          </nav>
-        </div>
-      </header>
+      <NavBar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
