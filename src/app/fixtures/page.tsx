@@ -31,8 +31,8 @@ interface Prediction {
 export default function FixturesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map());
-  const [saving, setSaving] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -63,16 +63,24 @@ export default function FixturesPage() {
     setLoading(false);
   }
 
-  async function savePrediction(matchId: string) {
-    const vals = inputs[matchId];
-    setSaving(matchId);
-    const res = await fetch('/api/predictions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ match_id: matchId, home_prediction: vals.home, away_prediction: vals.away }),
-    });
-    setSaving(null);
-    if (res.ok) { setSaved(matchId); setTimeout(() => setSaved(null), 2000); load(); }
+  async function saveAllPredictions() {
+    setSaving(true);
+    const toSave = upcoming.map(m => ({
+      match_id: m.id,
+      home_prediction: inputs[m.id]?.home ?? 0,
+      away_prediction: inputs[m.id]?.away ?? 0,
+    }));
+    await Promise.all(toSave.map(p =>
+      fetch('/api/predictions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p),
+      })
+    ));
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    load();
   }
 
   const now = new Date();
@@ -103,8 +111,6 @@ export default function FixturesPage() {
   function MatchCard({ match }: { match: Match }) {
     const pred = predictions.get(match.id);
     const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
-    const isSaving = saving === match.id;
-    const isSaved  = saved  === match.id;
     const vals = inputs[match.id] || { home: 0, away: 0 };
 
     return (
@@ -161,34 +167,23 @@ export default function FixturesPage() {
           </div>
         </div>
 
-        {/* Save / points */}
-        <div className="mt-4">
-          {match.result_entered && pred?.scored_at ? (
-            <div className="text-center text-sm py-2 bg-surfaceLight rounded-lg">
-              <span className="text-textMuted">Your prediction: {pred.home_prediction}–{pred.away_prediction} · </span>
-              <span className={pred.points_awarded > 0 ? 'text-primary font-bold' : 'text-textMuted'}>
-                {pred.points_awarded > 0 ? `+${pred.points_awarded} pts` : '0 pts'}
-              </span>
-            </div>
-          ) : !isLocked ? (
-            <div className="flex items-center justify-center gap-3">
-              {isSaved ? (
-                <span className="text-primary font-semibold text-sm">✓ Saved!</span>
-              ) : (
-                <button onClick={() => savePrediction(match.id)} disabled={isSaving}
-                  className="btn-primary w-full">
-                  {isSaving ? 'Saving...' : pred ? 'Update Prediction' : 'Save Prediction'}
-                </button>
-              )}
-            </div>
-          ) : pred ? (
-            <div className="text-center text-sm text-textMuted py-1">
-              Your prediction: {pred.home_prediction}–{pred.away_prediction}
-            </div>
-          ) : (
-            <div className="text-center text-sm text-textMuted/50 py-1">No prediction made</div>
-          )}
-        </div>
+        {/* Points if scored */}
+        {match.result_entered && pred?.scored_at && (
+          <div className="mt-3 text-center text-sm py-2 bg-surfaceLight rounded-lg">
+            <span className="text-textMuted">Your prediction: {pred.home_prediction}–{pred.away_prediction} · </span>
+            <span className={pred.points_awarded > 0 ? 'text-primary font-bold' : 'text-textMuted'}>
+              {pred.points_awarded > 0 ? `+${pred.points_awarded} pts` : '0 pts'}
+            </span>
+          </div>
+        )}
+        {isLocked && !match.result_entered && pred && (
+          <div className="mt-3 text-center text-sm text-textMuted py-1">
+            Your prediction: {pred.home_prediction}–{pred.away_prediction}
+          </div>
+        )}
+        {isLocked && !match.result_entered && !pred && (
+          <div className="mt-3 text-center text-sm text-textMuted/40 py-1">No prediction made</div>
+        )}
       </div>
     );
   }
@@ -210,6 +205,15 @@ export default function FixturesPage() {
                 </h2>
                 <div className="space-y-3">
                   {upcoming.map(m => <MatchCard key={m.id} match={m} />)}
+                </div>
+                <div className="mt-6 sticky bottom-4">
+                  <button
+                    onClick={saveAllPredictions}
+                    disabled={saving}
+                    className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+                  >
+                    {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+                  </button>
                 </div>
               </section>
             )}
