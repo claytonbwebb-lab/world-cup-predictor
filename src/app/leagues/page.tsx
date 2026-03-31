@@ -18,14 +18,17 @@ interface League {
 export default function LeaguesPage() {
   const [myLeagues, setMyLeagues] = useState<League[]>([]);
   const [publicLeagues, setPublicLeagues] = useState<League[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [editingLeague, setEditingLeague] = useState<League | null>(null);
   const [leagueName, setLeagueName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [copied, setCopied] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -36,6 +39,7 @@ export default function LeaguesPage() {
   async function loadLeagues() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
+    setUserId(user.id);
 
     const { data: members } = await supabase
       .from('league_members')
@@ -67,6 +71,35 @@ export default function LeaguesPage() {
     setShowCreate(false);
     setLeagueName('');
     loadLeagues();
+  }
+
+  async function handleRename(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingLeague) return;
+    setError('');
+    const res = await fetch(`/api/leagues/${editingLeague.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: leagueName }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to update'); return; }
+    setEditingLeague(null);
+    setLeagueName('');
+    loadLeagues();
+  }
+
+  async function handleDelete(league: League) {
+    if (!confirm(`Delete "${league.name}"? This cannot be undone.`)) return;
+    const res = await fetch(`/api/leagues/${league.id}`, { method: 'DELETE' });
+    if (res.ok) { setSuccess('League deleted.'); loadLeagues(); }
+  }
+
+  function copyInviteLink(league: League) {
+    const url = `${window.location.origin}/leagues?join=${league.code}`;
+    navigator.clipboard.writeText(url);
+    setCopied(league.id);
+    setTimeout(() => setCopied(null), 2000);
   }
 
   async function handleJoin(e: React.FormEvent) {
@@ -101,6 +134,27 @@ export default function LeaguesPage() {
         {success && (
           <div className="bg-primary/10 border border-primary/30 text-primary px-4 py-3 rounded-lg mb-6 text-sm">
             {success}
+          </div>
+        )}
+
+        {/* Edit modal */}
+        {editingLeague && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Rename League</h3>
+              <form onSubmit={handleRename} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">League Name</label>
+                  <input type="text" value={leagueName} onChange={e => setLeagueName(e.target.value)}
+                    className="input w-full" required />
+                </div>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Save</button>
+                  <button type="button" onClick={() => setEditingLeague(null)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
@@ -167,7 +221,7 @@ export default function LeaguesPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   {myLeagues.map(league => (
                     <div key={league.id} className="card hover:border-primary/40 transition-colors">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between mb-2">
                         <div>
                           <h3 className="font-bold text-lg">{league.name}</h3>
                           <div className="text-xs text-textMuted mt-1">
@@ -175,8 +229,20 @@ export default function LeaguesPage() {
                           </div>
                         </div>
                         {league.is_public && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Public</span>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0 ml-2">Public</span>
                         )}
+                      </div>
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        <button onClick={() => copyInviteLink(league)}
+                          className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1">
+                          {copied === league.id ? '✓ Copied!' : '🔗 Copy Link'}
+                        </button>
+                        {userId === league.created_by && (<>
+                          <button onClick={() => { setEditingLeague(league); setLeagueName(league.name); setError(''); }}
+                            className="btn-secondary text-xs px-3 py-1.5">✏️ Rename</button>
+                          <button onClick={() => handleDelete(league)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">🗑 Delete</button>
+                        </>)}
                       </div>
                     </div>
                   ))}
