@@ -1,5 +1,5 @@
-import NavBar from '@/components/NavBar';
 'use client';
+import NavBar from '@/components/NavBar';
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
