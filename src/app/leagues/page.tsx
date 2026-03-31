@@ -1,59 +1,97 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { revalidatePath } from 'next/cache';
+import { useRouter } from 'next/navigation';
 
-export default async function LeaguesPage() {
-  const supabase = await createClient();
+interface League {
+  id: string;
+  name: string;
+  code: string;
+  created_by: string;
+  is_public: boolean;
+  created_at: string;
+}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function LeaguesPage() {
+  const [myLeagues, setMyLeagues] = useState<League[]>([]);
+  const [publicLeagues, setPublicLeagues] = useState<League[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
+  const [leagueName, setLeagueName] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const router = useRouter();
+  const supabase = createClient();
 
-  if (!user) {
-    redirect('/auth/login');
+  useEffect(() => {
+    loadLeagues();
+  }, []);
+
+  async function loadLeagues() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/auth/login'); return; }
+
+    const { data: members } = await supabase
+      .from('league_members')
+      .select('league:leagues(*)')
+      .eq('user_id', user.id);
+
+    const { data: pub } = await supabase
+      .from('leagues')
+      .select('*')
+      .eq('is_public', true)
+      .neq('created_by', user.id);
+
+    setMyLeagues((members?.map((m: any) => m.league).filter(Boolean) || []) as League[]);
+    setPublicLeagues((pub || []) as League[]);
+    setLoading(false);
   }
 
-  // Fetch user's leagues
-  const { data: leagueMembers } = await supabase
-    .from('league_members')
-    .select(`
-      *,
-      league:leagues(*)
-    `)
-    .eq('user_id', user.id);
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    const res = await fetch('/api/leagues', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: leagueName, is_public: isPublic }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to create league'); return; }
+    setSuccess(`League created! Invite code: ${data.code}`);
+    setShowCreate(false);
+    setLeagueName('');
+    loadLeagues();
+  }
 
-  const myLeagues = leagueMembers?.map((lm) => lm.league) || [];
-
-  // Fetch user's profile to get created leagues
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  const { data: createdLeagues } = await supabase
-    .from('leagues')
-    .select('*')
-    .eq('created_by', user.id);
-
-  // Fetch public leagues
-  const { data: publicLeagues } = await supabase
-    .from('leagues')
-    .select('*')
-    .eq('is_public', true)
-    .neq('created_by', user.id);
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    const res = await fetch('/api/leagues/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: joinCode }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to join league'); return; }
+    setSuccess('Joined league successfully!');
+    setShowJoin(false);
+    setJoinCode('');
+    loadLeagues();
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold flex items-center gap-2">
-            <span>🏆</span>
-            <span>World Cup Predictor</span>
+            <span>🏆</span><span>World Cup Predictor</span>
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-4 text-sm">
             <Link href="/dashboard" className="text-textMuted hover:text-text">Dashboard</Link>
             <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
             <Link href="/leaderboard" className="text-textMuted hover:text-text">Leaderboard</Link>
@@ -63,145 +101,132 @@ export default async function LeaguesPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span>👥</span> Mini Leagues
-          </h1>
-          <button
-            onClick={() => (window as any).document.getElementById('create-league-modal')?.showModal()}
-            className="btn-primary"
-          >
-            Create League
-          </button>
-        </div>
-
-        {/* Create League Modal */}
-        <dialog id="create-league-modal" className="modal">
-          <div className="card max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Create New League</h3>
-            <form action="/api/leagues" method="POST" className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">League Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  className="input w-full"
-                  placeholder="My League"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="is_public"
-                  id="is_public"
-                  className="rounded"
-                />
-                <label htmlFor="is_public" className="text-sm">Make public (anyone can join)</label>
-              </div>
-              <div className="flex gap-2">
-                <button type="submit" className="btn-primary flex-1">
-                  Create
-                </button>
-                <button
-                  type="button"
-                  onClick={() => (window as any).document.getElementById('create-league-modal')?.close()}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold flex items-center gap-3"><span>👥</span> Mini Leagues</h1>
+          <div className="flex gap-3">
+            <button onClick={() => { setShowJoin(true); setError(''); }} className="btn-secondary">Join League</button>
+            <button onClick={() => { setShowCreate(true); setError(''); }} className="btn-primary">Create League</button>
           </div>
-        </dialog>
-
-        {/* Join League */}
-        <div className="card mb-8">
-          <h2 className="text-xl font-bold mb-4">Join a League</h2>
-          <form action="/api/leagues/join" method="POST" className="flex gap-2">
-            <input
-              type="text"
-              name="code"
-              required
-              className="input flex-1"
-              placeholder="Enter league code"
-            />
-            <button type="submit" className="btn-primary">
-              Join
-            </button>
-          </form>
         </div>
 
-        {/* My Leagues */}
-        <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">My Leagues</h2>
-          {myLeagues.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {myLeagues.map((league: any) => (
-                <LeagueCard key={league.id} league={league} isOwner={league.created_by === user.id} />
-              ))}
-            </div>
-          ) : (
-            <div className="card text-center py-8">
-              <div className="text-4xl mb-4">👥</div>
-              <p className="text-textMuted">You haven&apos;t joined any leagues yet</p>
-            </div>
-          )}
-        </section>
+        {success && (
+          <div className="bg-primary/10 border border-primary/30 text-primary px-4 py-3 rounded-lg mb-6 text-sm">
+            {success}
+          </div>
+        )}
 
-        {/* Public Leagues */}
-        {publicLeagues && publicLeagues.length > 0 && (
-          <section>
-            <h2 className="text-xl font-bold mb-4">Public Leagues</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {publicLeagues.map((league) => (
-                <div key={league.id} className="card">
-                  <h3 className="font-bold mb-2">{league.name}</h3>
-                  <p className="text-textMuted text-sm mb-4">Created by another player</p>
-                  <form action="/api/leagues/join" method="POST">
-                    <input type="hidden" name="league_id" value={league.id} />
-                    <button type="submit" className="btn-secondary w-full">
-                      Request to Join
-                    </button>
-                  </form>
+        {/* Create modal */}
+        {showCreate && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Create New League</h3>
+              <form onSubmit={handleCreate} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">League Name</label>
+                  <input type="text" value={leagueName} onChange={e => setLeagueName(e.target.value)}
+                    className="input w-full" placeholder="The Lads League" required />
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="is_public" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+                  <label htmlFor="is_public" className="text-sm text-textMuted">Make public (anyone can join)</label>
+                </div>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Create</button>
+                  <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
             </div>
-          </section>
+          </div>
+        )}
+
+        {/* Join modal */}
+        {showJoin && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Join a League</h3>
+              <form onSubmit={handleJoin} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Invite Code</label>
+                  <input type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                    className="input w-full font-mono" placeholder="ABC123" required />
+                </div>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Join</button>
+                  <button type="button" onClick={() => setShowJoin(false)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-16 text-textMuted">Loading leagues...</div>
+        ) : (
+          <div className="space-y-8">
+            {/* My Leagues */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">My Leagues</h2>
+              {myLeagues.length === 0 ? (
+                <div className="card text-center py-12">
+                  <div className="text-4xl mb-3">👥</div>
+                  <p className="text-textMuted">You haven't joined any leagues yet.</p>
+                  <p className="text-textMuted text-sm mt-1">Create one or ask a friend for their invite code.</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {myLeagues.map(league => (
+                    <div key={league.id} className="card hover:border-primary/40 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-bold text-lg">{league.name}</h3>
+                          <div className="text-xs text-textMuted mt-1">
+                            Code: <span className="font-mono text-primary">{league.code}</span>
+                          </div>
+                        </div>
+                        {league.is_public && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Public</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Public Leagues */}
+            {publicLeagues.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Public Leagues</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {publicLeagues.map(league => (
+                    <div key={league.id} className="card hover:border-primary/40 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-bold">{league.name}</h3>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Public</span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await fetch('/api/leagues/join', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: league.code }),
+                          });
+                          loadLeagues();
+                        }}
+                        className="btn-secondary text-sm mt-3 w-full"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
-    </div>
-  );
-}
-
-function LeagueCard({ league, isOwner }: { league: any; isOwner: boolean }) {
-  return (
-    <div className="card">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-lg">{league.name}</h3>
-          {isOwner && (
-            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-              Owner
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="mb-4">
-        <p className="text-textMuted text-sm">
-          <span className="font-medium">Code:</span> {league.code}
-        </p>
-      </div>
-      <div className="flex gap-2">
-        <Link href={`/leagues/${league.id}`} className="btn-secondary flex-1 text-center">
-          View
-        </Link>
-        {isOwner && (
-          <button className="btn-secondary">
-            Settings
-          </button>
-        )}
-      </div>
     </div>
   );
 }
