@@ -78,7 +78,7 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80" alt="Football stadium"
+              <img src="https://images.unsplash.com/photo-1517925167684-8a1c5b7e9f76?w=800&q=80" alt="World Cup trophy"
                 className="rounded-2xl shadow-2xl shadow-primary/10 border border-border" />
             </div>
             <div>
