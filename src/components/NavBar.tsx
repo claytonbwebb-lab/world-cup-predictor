@@ -19,7 +19,7 @@ export default function NavBar() {
           <Link href="/fixtures"    className={path === '/fixtures'    ? active : inactive}>Fixtures</Link>
           <Link href="/leaderboard" className={path === '/leaderboard' ? active : inactive}>Leaderboard</Link>
           <Link href="/leagues"     className={path === '/leagues'     ? active : inactive}>Leagues</Link>
-          <Link href="/auth/logout" className={inactive}>Sign Out</Link>
+          <Link href="/auth/logout" className={path === '/auth/logout' ? active : inactive}>Sign Out</Link>
         </nav>
       </div>
     </header>
