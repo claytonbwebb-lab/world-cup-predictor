@@ -1,16 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
-  const cookieStore = await cookies();
-
   await supabase.auth.signOut();
-
-  // Clear auth cookies
-  cookieStore.delete('sb-access-token');
-  cookieStore.delete('sb-refresh-token');
-
-  redirect('/');
+  const origin = new URL(request.url).origin;
+  return NextResponse.redirect(`${origin}/`);
 }
