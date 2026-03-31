@@ -97,7 +97,7 @@ export default async function LeaguesPage() {
                   id="is_public"
                   className="rounded"
                 />
-                <label for="is_public" className="text-sm">Make public (anyone can join)</label>
+                <label htmlFor="is_public" className="text-sm">Make public (anyone can join)</label>
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="btn-primary flex-1">

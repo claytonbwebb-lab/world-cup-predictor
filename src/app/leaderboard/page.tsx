@@ -22,7 +22,7 @@ export default async function LeaderboardPage() {
 
   // Get current user's rank
   const userRank = leaderboard?.findIndex((entry) => entry.user_id === user.id);
-  const userEntry = leaderboard?.[userRank];
+  const userEntry = userRank !== undefined && userRank >= 0 ? leaderboard?.[userRank] : undefined;
 
   return (
     <div className="min-h-screen bg-background">
