@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const match_id = formData.get('match_id') as string;
-    const home_prediction = parseInt(formData.get('home_prediction') as string);
-    const away_prediction = parseInt(formData.get('away_prediction') as string);
+    const body = await request.json();
+    const match_id = body.match_id as string;
+    const home_prediction = parseInt(body.home_prediction);
+    const away_prediction = parseInt(body.away_prediction);
 
     if (!match_id || isNaN(home_prediction) || isNaN(away_prediction)) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 });

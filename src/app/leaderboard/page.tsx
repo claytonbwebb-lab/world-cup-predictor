@@ -38,6 +38,7 @@ export default async function LeaderboardPage() {
             <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
             <Link href="/leaderboard" className="text-primary font-medium">Leaderboard</Link>
             <Link href="/leagues" className="text-textMuted hover:text-text">Leagues</Link>
+            <Link href="/auth/logout" className="text-textMuted hover:text-text">Sign Out</Link>
           </nav>
         </div>
       </header>
