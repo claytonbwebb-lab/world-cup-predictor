@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,10 +22,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(error.message);
@@ -72,10 +69,7 @@ export default function LoginPage() {
               <p className="text-textMuted text-sm">
                 We sent a magic link to <strong>{email}</strong>
               </p>
-              <button
-                onClick={() => setMagicLinkSent(false)}
-                className="btn-secondary mt-6 w-full"
-              >
+              <button onClick={() => setMagicLinkSent(false)} className="btn-secondary mt-6 w-full">
                 Try again with different method
               </button>
             </div>
@@ -86,40 +80,19 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
-
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input w-full"
-                  placeholder="you@example.com"
-                  required
-                />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                  className="input w-full" placeholder="you@example.com" required />
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input w-full"
-                  placeholder="••••••••"
-                  required
-                />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="input w-full" placeholder="••••••••" required />
               </div>
-
-              <button
-                type="submit"
-                onClick={handleEmailLogin}
-                disabled={loading}
-                className="btn-primary w-full"
-              >
+              <button type="submit" onClick={handleEmailLogin} disabled={loading} className="btn-primary w-full">
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
-
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-border"></div>
@@ -128,13 +101,7 @@ export default function LoginPage() {
                   <span className="px-4 bg-surface text-textMuted">or</span>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={handleMagicLink}
-                disabled={loading || !email}
-                className="btn-secondary w-full"
-              >
+              <button type="button" onClick={handleMagicLink} disabled={loading || !email} className="btn-secondary w-full">
                 Send Magic Link
               </button>
             </form>
@@ -149,5 +116,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="text-textMuted">Loading...</div></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

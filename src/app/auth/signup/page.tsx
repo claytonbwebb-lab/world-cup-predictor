@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function SignupPage() {
+function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -23,7 +23,6 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
 
-    // Validate username
     if (username.length < 3) {
       setError('Username must be at least 3 characters');
       setLoading(false);
@@ -40,9 +39,7 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: {
-          username,
-        },
+        data: { username },
         emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     });
@@ -93,52 +90,23 @@ export default function SignupPage() {
                 {error}
               </div>
             )}
-
             <div>
               <label className="block text-sm font-medium mb-2">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input w-full"
-                placeholder="football_fan"
-                required
-                minLength={3}
-              />
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
+                className="input w-full" placeholder="football_fan" required minLength={3} />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input w-full"
-                placeholder="you@example.com"
-                required
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="input w-full" placeholder="you@example.com" required />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input w-full"
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                className="input w-full" placeholder="••••••••" required minLength={6} />
               <p className="text-textMuted text-xs mt-1">Minimum 6 characters</p>
             </div>
-
-            <button
-              type="submit"
-              onClick={handleSignup}
-              disabled={loading}
-              className="btn-primary w-full"
-            >
+            <button type="submit" onClick={handleSignup} disabled={loading} className="btn-primary w-full">
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
@@ -152,5 +120,13 @@ export default function SignupPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="text-textMuted">Loading...</div></div>}>
+      <SignupForm />
+    </Suspense>
   );
 }
