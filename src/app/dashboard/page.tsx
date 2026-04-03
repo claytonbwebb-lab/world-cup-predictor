@@ -114,14 +114,14 @@ export default async function Dashboard() {
                     key={match.id}
                     className="flex items-center justify-between p-3 bg-surfaceLight rounded-lg"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{match.home_flag || '🏳️'}</span>
-                      <span className="font-medium">{match.home_team}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xl shrink-0">{match.home_flag || '🏳️'}</span>
+                      <span className="font-medium truncate">{match.home_team}</span>
                     </div>
-                    <span className="text-textMuted">vs</span>
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium">{match.away_team}</span>
-                      <span className="text-2xl">{match.away_flag || '🏳️'}</span>
+                    <span className="text-textMuted text-sm shrink-0 px-2">vs</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium truncate">{match.away_team}</span>
+                      <span className="text-xl shrink-0">{match.away_flag || '🏳️'}</span>
                     </div>
                   </div>
                 ))}
