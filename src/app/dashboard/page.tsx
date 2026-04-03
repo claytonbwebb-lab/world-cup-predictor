@@ -181,16 +181,16 @@ export default async function Dashboard() {
                 {upcomingMatches.map((match) => (
                   <div
                     key={match.id}
-                    className="flex items-center justify-between p-3 bg-surfaceLight rounded-lg"
+                    className="flex items-center p-3 bg-surfaceLight rounded-lg"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                      <span className="font-medium truncate text-right" title={match.home_team}>{getTeamName(match.home_team, true)}</span>
                       <span className="text-xl shrink-0">{match.home_flag || '🏳️'}</span>
-                      <span className="font-medium truncate" title={match.home_team}>{getTeamName(match.home_team, true)}</span>
                     </div>
-                    <span className="text-textMuted text-sm shrink-0 px-2">vs</span>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-medium truncate" title={match.away_team}>{getTeamName(match.away_team, true)}</span>
+                    <span className="text-textMuted text-sm shrink-0 px-3">vs</span>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <span className="text-xl shrink-0">{match.away_flag || '🏳️'}</span>
+                      <span className="font-medium truncate" title={match.away_team}>{getTeamName(match.away_team, true)}</span>
                     </div>
                   </div>
                 ))}
