@@ -3,6 +3,75 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
+// Official short names for World Cup branding
+const TEAM_SHORT: Record<string, string> = {
+  'South Korea': 'Korea Republic',
+  'Czech Republic': 'Czech Rep.',
+  'Bosnia & Herzegovina': 'Bosnia/Herzeg.',
+  'Côte d\'Ivoire': 'Ivory Coast',
+  'Ivory Coast': 'Ivory Coast',
+  'Curaçao': 'Curaçao',
+  'IR Iran': 'IR Iran',
+  'United States': 'USA',
+  'USA': 'USA',
+  'Canada': 'Canada',
+  'Mexico': 'Mexico',
+  'Brazil': 'Brazil',
+  'Germany': 'Germany',
+  'England': 'England',
+  'France': 'France',
+  'Spain': 'Spain',
+  'Netherlands': 'Netherlands',
+  'Belgium': 'Belgium',
+  'Portugal': 'Portugal',
+  'Argentina': 'Argentina',
+  'Uruguay': 'Uruguay',
+  'Japan': 'Japan',
+  'Australia': 'Australia',
+  'Morocco': 'Morocco',
+  'Switzerland': 'Switzerland',
+  'Scotland': 'Scotland',
+  'Turkey': 'Turkey',
+  'Poland': 'Poland',
+  'Saudi Arabia': 'Saudi Arabia',
+  'Egypt': 'Egypt',
+  'Senegal': 'Senegal',
+  'Ghana': 'Ghana',
+  'Cameroon': 'Cameroon',
+  'Nigeria': 'Nigeria',
+  'Algeria': 'Algeria',
+  'Tunisia': 'Tunisia',
+  'Ecuador': 'Ecuador',
+  'Peru': 'Peru',
+  'Chile': 'Chile',
+  'Colombia': 'Colombia',
+  'Paraguay': 'Paraguay',
+  'Qatar': 'Qatar',
+  'New Zealand': 'New Zealand',
+  'Costa Rica': 'Costa Rica',
+  'Panama': 'Panama',
+  'Haiti': 'Haiti',
+  'Jamaica': 'Jamaica',
+  'Serbia': 'Serbia',
+  'Croatia': 'Croatia',
+  'Denmark': 'Denmark',
+  'Sweden': 'Sweden',
+  'Norway': 'Norway',
+  'Austria': 'Austria',
+  'Ukraine': 'Ukraine',
+  'Romania': 'Romania',
+  'Hungary': 'Hungary',
+  'Slovakia': 'Slovakia',
+  'Slovenia': 'Slovenia',
+  'Ireland': 'Ireland',
+  'Wales': 'Wales',
+  'Italy': 'Italy',
+};
+
+function getTeamName(name: string, useShort = false): string {
+  return useShort && TEAM_SHORT[name] ? TEAM_SHORT[name] : name;
+}
+
 export default async function Dashboard() {
   const supabase = await createClient();
 
@@ -116,11 +185,11 @@ export default async function Dashboard() {
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xl shrink-0">{match.home_flag || '🏳️'}</span>
-                      <span className="font-medium truncate">{match.home_team}</span>
+                      <span className="font-medium truncate" title={match.home_team}>{getTeamName(match.home_team, true)}</span>
                     </div>
                     <span className="text-textMuted text-sm shrink-0 px-2">vs</span>
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-medium truncate">{match.away_team}</span>
+                      <span className="font-medium truncate" title={match.away_team}>{getTeamName(match.away_team, true)}</span>
                       <span className="text-xl shrink-0">{match.away_flag || '🏳️'}</span>
                     </div>
                   </div>
