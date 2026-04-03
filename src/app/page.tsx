@@ -32,7 +32,7 @@ export default async function Home() {
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-4 py-1.5 text-primary text-sm font-medium mb-8">
-            <span>⚽</span> FIFA World Cup 2026 · USA · Canada · Mexico
+            FIFA World Cup 2026 · USA · Canada · Mexico
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 leading-none">
@@ -107,15 +107,15 @@ export default async function Home() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: '📋', step: '01', title: 'Sign Up', desc: 'Create a free account and join a private league with your mates, or compete in the global leaderboard.' },
-              { icon: '🎯', step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
-              { icon: '🏆', step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
+              { step: '01', title: 'Sign Up', desc: 'Create a free account and join a private league with your mates, or compete in the global leaderboard.' },
+              { step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
+              { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
             ].map(item => (
               <div key={item.step} className="card relative overflow-hidden group hover:border-primary/50 transition-colors">
                 <div className="absolute top-4 right-4 text-6xl font-black text-primary/5 group-hover:text-primary/10 transition-colors select-none">
                   {item.step}
                 </div>
-                <div className="text-3xl mb-4">{item.icon}</div>
+                <div className="text-3xl mb-4 text-primary">★</div>
                 <h3 className="text-lg font-bold mb-2">{item.title}</h3>
                 <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
               </div>
@@ -153,7 +153,7 @@ export default async function Home() {
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at center, rgba(34,197,94,0.06) 0%, transparent 70%)' }} />
         <div className="relative max-w-3xl mx-auto px-6 py-20 text-center">
-          <div className="text-5xl mb-6">⚽</div>
+          <div className="text-5xl mb-6 text-primary">★</div>
           <h2 className="text-4xl font-black mb-4">Ready to Play?</h2>
           <p className="text-textMuted text-lg mb-8">
             The 2026 World Cup kicks off on 11 June 2026. Get your predictions in early.
@@ -168,7 +168,7 @@ export default async function Home() {
       {/* ── Footer ── */}
       <footer className="border-t border-border">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-textMuted">
-          <span>⚽ World Cup 2026 Prediction League</span>
+          <span>World Cup 2026 Prediction League</span>
           <div className="flex gap-6">
             <Link href="/leaderboard" className="hover:text-text transition-colors">Leaderboard</Link>
             <Link href="/auth/signup" className="hover:text-text transition-colors">Sign Up</Link>
