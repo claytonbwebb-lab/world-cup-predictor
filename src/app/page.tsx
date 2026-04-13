@@ -93,9 +93,9 @@ export default async function Home() {
       <section className="relative overflow-hidden">
         {/* Football boots/ball background */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1518609878374-e0a3dd5a1ee0?q=80&w=1920&auto=format&fit=crop" alt=""
+          <img src="https://images.unsplash.com/photo-1438656058496-c2643b2c3340?q=80&w=1920&auto=format&fit=crop" alt=""
             className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#0f172a]/85" />
+          <div className="absolute inset-0 bg-[#0f172a]/55" />
         </div>
         <div className="max-w-5xl mx-auto px-6 py-20">
           <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
