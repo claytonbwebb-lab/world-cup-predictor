@@ -90,8 +90,14 @@ export default async function Home() {
       </section>
 
       {/* ── How it works ── */}
-      <section className="bg-surface/50 border-t border-border py-20">
-        <div className="max-w-5xl mx-auto px-6">
+      <section className="relative overflow-hidden py-20">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img src="https://images.unsplash.com/photo-AWdCgDDedH0?q=80&w=1920&auto=format&fit=crop" alt=""
+            className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-[#0f172a]/65" />
+        </div>
+        <div className="relative max-w-5xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
           <p className="text-textMuted text-center mb-12">Three steps to prediction glory</p>
 
