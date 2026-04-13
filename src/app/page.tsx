@@ -93,7 +93,7 @@ export default async function Home() {
       <section className="relative overflow-hidden py-20">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-AWdCgDDedH0?q=80&w=1920&auto=format&fit=crop" alt=""
+          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop" alt=""
             className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#0f172a]/65" />
         </div>
