@@ -29,7 +29,7 @@ function LoginForm() {
       const { data: profile } = await supabase
         .from('profiles')
         .select('email')
-        .eq('username', email.trim().toLowerCase())
+        .ilike('username', email.trim())
         .single();
       
       if (profile?.email) {
