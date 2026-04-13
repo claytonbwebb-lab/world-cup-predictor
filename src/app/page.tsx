@@ -90,14 +90,8 @@ export default async function Home() {
       </section>
 
       {/* ── How it works ── */}
-      <section className="relative overflow-hidden">
-        {/* Football boots/ball background */}
-        <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1438656058496-c2643b2c3340?q=80&w=1920&auto=format&fit=crop" alt=""
-            className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#0f172a]/50" />
-        </div>
-        <div className="max-w-5xl mx-auto px-6 py-20">
+      <section className="bg-surface/50 border-t border-border py-20">
+        <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
           <p className="text-textMuted text-center mb-12">Three steps to prediction glory</p>
 
@@ -107,10 +101,8 @@ export default async function Home() {
               { step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
               { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
             ].map(item => (
-              <div key={item.step} className="card relative overflow-hidden group hover:border-primary/50 transition-colors !bg-surfaceLight">
-                <div className="absolute top-4 right-4 text-6xl font-black text-primary/10 select-none">
-                  {item.step}
-                </div>
+              <div key={item.step} className="card border-primary/40 hover:border-primary/60 transition-colors">
+                <div className="text-6xl font-black text-primary/10 mb-2">{item.step}</div>
                 <div className="text-3xl mb-4 text-primary">★</div>
                 <h3 className="text-lg font-bold mb-2">{item.title}</h3>
                 <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
