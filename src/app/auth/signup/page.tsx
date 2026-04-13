@@ -93,7 +93,7 @@ function SignupForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Username</label>
               <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
-                className="input w-full" placeholder="football_fan" required minLength={3} />
+                className="input w-full" placeholder="football_fan" required minLength={3} autoComplete="username" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
