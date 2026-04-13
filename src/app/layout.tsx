@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'World Cup Predictor 2026',
+  title: 'Play Predict Win | Football Prediction League',
   description: 'Predict World Cup matches and compete with friends',
 };
 

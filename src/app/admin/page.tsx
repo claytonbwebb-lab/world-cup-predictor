@@ -27,7 +27,7 @@ export default async function AdminPage() {
           <div className="flex items-center gap-4">
             <Link href="/" className="text-xl font-bold flex items-center gap-2">
               <span>🏆</span>
-              <span>World Cup Predictor</span>
+              <span>Play Predict Win</span>
             </Link>
             <span className="bg-red-500/20 text-red-500 px-3 py-1 rounded text-sm font-medium">
               Admin Panel
