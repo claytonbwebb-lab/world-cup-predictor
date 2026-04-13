@@ -14,7 +14,7 @@ export default async function Home() {
       <section className="relative flex-1 flex items-center justify-center overflow-hidden min-h-[80vh]">
         {/* Background image with overlay */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1920&q=80" alt=""
+          <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop" alt=""
             className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/95 via-[#0f172a]/80 to-[#0f172a]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/60 via-transparent to-[#0f172a]/60" />
@@ -78,7 +78,7 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=800&auto=format&fit=crop" alt="World Cup trophy"
+              <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop" alt="World Cup trophy"
                 className="rounded-2xl shadow-2xl shadow-primary/10 border border-border w-full" />
             </div>
             <div>
