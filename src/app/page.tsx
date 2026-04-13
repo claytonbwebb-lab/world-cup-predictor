@@ -74,32 +74,29 @@ export default async function Home() {
       </section>
 
       {/* ── Preview ── */}
-      <section className="relative overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop" alt=""
-            className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/70 via-[#0f172a]/80 to-[#0f172a]" />
-        </div>
-        {/* Content */}
-        <div className="relative max-w-4xl mx-auto px-6 py-24 text-center">
-          <h2 className="text-4xl md:text-5xl font-black mb-6">Every Match. Every Score.</h2>
-          <p className="text-textMuted text-lg mb-8 leading-relaxed max-w-xl mx-auto">
-            From the group stages to the final in New Jersey, predict the exact score for every match 
-            and prove you've got what it takes to be a football pundit.
-          </p>
-          <ul className="flex flex-wrap justify-center gap-4 text-sm">
-            {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard'].map(item => (
-              <li key={item} className="flex items-center gap-2 text-textMuted bg-surface/50 px-4 py-2 rounded-full">
-                <span className="text-primary">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <section className="max-w-4xl mx-auto px-6 py-24 text-center">
+        <h2 className="text-4xl md:text-5xl font-black mb-6">Every Match. Every Score.</h2>
+        <p className="text-textMuted text-lg mb-8 leading-relaxed max-w-xl mx-auto">
+          From the group stages to the final in New Jersey, predict the exact score for every match 
+          and prove you've got what it takes to be a football pundit.
+        </p>
+        <ul className="flex flex-wrap justify-center gap-4 text-sm">
+          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard'].map(item => (
+            <li key={item} className="flex items-center gap-2 text-textMuted bg-surface/50 px-4 py-2 rounded-full">
+              <span className="text-primary">✓</span> {item}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* ── How it works ── */}
-      <section className="bg-surface/50 border-t border-border">
+      <section className="relative overflow-hidden">
+        {/* Football boots/ball background */}
+        <div className="absolute inset-0">
+          <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop" alt=""
+            className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-[#0f172a]/75" />
+        </div>
         <div className="max-w-5xl mx-auto px-6 py-20">
           <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
           <p className="text-textMuted text-center mb-12">Three steps to prediction glory</p>
