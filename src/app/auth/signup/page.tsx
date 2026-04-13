@@ -48,6 +48,12 @@ function SignupForm() {
       setError(error.message);
       setLoading(false);
     } else {
+      // Also insert username and email into profiles
+      await supabase.from('profiles').upsert({
+        id: (await supabase.auth.getUser()).data.user?.id,
+        username,
+        email,
+      });
       setSuccess(true);
     }
   };
