@@ -36,9 +36,9 @@ export default async function Home() {
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 leading-none">
-            <span className="block text-text">PREDICT.</span>
-            <span className="block" style={{ WebkitTextStroke: '2px #22c55e', color: 'transparent' }}>COMPETE.</span>
-            <span className="block text-primary">WIN.</span>
+            <span className="block text-primary">PLAY</span>
+            <span className="block text-text">PREDICT</span>
+            <span className="block text-text">WIN.</span>
           </h1>
 
           <p className="text-xl text-textMuted max-w-xl mx-auto mb-10 leading-relaxed">
