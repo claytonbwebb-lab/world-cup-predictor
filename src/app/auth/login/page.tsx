@@ -22,7 +22,26 @@ function LoginForm() {
     setError('');
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let loginEmail = email.trim();
+
+    // If it doesn't look like an email, treat it as a username and look up the email
+    if (!email.includes('@')) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('username', email.trim().toLowerCase())
+        .single();
+      
+      if (profile?.email) {
+        loginEmail = profile.email;
+      } else {
+        setError('Username not found. Try your email address instead.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
 
     if (error) {
       setError(error.message);
@@ -81,7 +100,7 @@ function LoginForm() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
+                <label className="block text-sm font-medium mb-2">Email or Username</label>
                 <input type="email" name="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   className="input w-full" placeholder="you@example.com" required />
               </div>
