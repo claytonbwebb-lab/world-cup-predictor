@@ -2,36 +2,51 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 function CallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading'|'success'|'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const redirectTo = searchParams.get('redirect') || '/dashboard';
-
-    if (!code) {
-      setStatus('error');
-      setTimeout(() => router.replace('/auth/login'), 2000);
-      return;
-    }
-
     const supabase = createClient();
 
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        console.error('Callback error:', error.message);
-        setStatus('error');
-        setTimeout(() => router.replace('/auth/login'), 2000);
-      } else {
+    // With implicit flow, Supabase detects the #access_token in the URL hash automatically.
+    // We just listen for the SIGNED_IN event and redirect.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
         setStatus('success');
-        // Small delay to ensure localStorage is written before navigation
-        setTimeout(() => router.replace(redirectTo), 300);
+        subscription.unsubscribe();
+        setTimeout(() => router.replace('/dashboard'), 500);
       }
     });
+
+    // Also check if already signed in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setStatus('success');
+        subscription.unsubscribe();
+        setTimeout(() => router.replace('/dashboard'), 500);
+      }
+    });
+
+    // Timeout fallback
+    const timeout = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setStatus('success');
+          router.replace('/dashboard');
+        } else {
+          setStatus('error');
+          setTimeout(() => router.replace('/auth/login'), 2000);
+        }
+      });
+    }, 6000);
+
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -45,7 +60,7 @@ function CallbackContent() {
         <p className="text-textMuted">
           {status === 'loading' && 'Signing you in...'}
           {status === 'success' && 'Signed in! Redirecting...'}
-          {status === 'error' && 'Something went wrong. Redirecting...'}
+          {status === 'error' && 'Link may have expired. Redirecting to login...'}
         </p>
       </div>
     </div>

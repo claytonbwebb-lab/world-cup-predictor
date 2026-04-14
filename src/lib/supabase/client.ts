@@ -6,6 +6,7 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
+        flowType: 'implicit',
         storage: {
           getItem: (key: string) => localStorage.getItem(key),
           setItem: (key: string, value: string) => localStorage.setItem(key, value),
