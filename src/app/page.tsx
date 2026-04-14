@@ -112,7 +112,7 @@ export default async function Home() {
               { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
             ].map(item => (
               <div key={item.step} className="card border-primary/40 hover:border-primary/60 transition-colors">
-                <div className="text-6xl font-black text-primary/10 mb-2">{item.step}</div>
+                <div className="text-6xl font-black text-primary mb-2">{item.step}</div>
                 <div className="text-3xl mb-4 text-primary">★</div>
                 <h3 className="text-lg font-bold mb-2">{item.title}</h3>
                 <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
@@ -151,7 +151,7 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-center mb-2">Our Partners</h2>
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
               { name: '3Retro', href: 'https://www.3retro.com', src: '/images/partners/3retro.png', alt: '3Retro' },
               { name: 'Allstar Signings', href: 'https://allstarsignings.com', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
@@ -159,9 +159,9 @@ export default async function Home() {
               { name: 'Retro Football Manager', href: 'https://retro-football-manager.com', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
             ].map(partner => (
               <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center h-16 px-4 hover:opacity-80 transition-opacity">
+                className="flex items-center justify-center h-24 px-4 hover:opacity-80 transition-opacity">
                 <img src={partner.src} alt={partner.alt}
-                  className="max-h-full max-w-[160px] object-contain" />
+                  className="max-h-full max-w-[200px] object-contain" />
               </a>
             ))}
           </div>
