@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+  const params = await searchParams;
+  // If a magic link code lands on the homepage, forward to the callback handler
+  if (params.code) {
+    redirect(`/auth/callback?code=${params.code}`);
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect('/dashboard');
