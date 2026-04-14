@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) console.error('Callback error:', error.message);
   }
 
   return NextResponse.redirect(new URL(redirectTo, requestUrl.origin));
