@@ -146,6 +146,28 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── Partners ── */}
+      <section className="border-t border-border py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-2">Our Partners</h2>
+          <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            {[
+              { name: '3Retro', href: 'https://www.3retro.com', src: '/images/partners/3retro.png', alt: '3Retro' },
+              { name: 'Allstar Signings', href: 'https://allstarsignings.com', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
+              { name: 'Butterworths', href: 'https://butterworths.online', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
+              { name: 'Retro Football Manager', href: 'https://retro-football-manager.com', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
+            ].map(partner => (
+              <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center h-16 px-4 hover:opacity-80 transition-opacity">
+                <img src={partner.src} alt={partner.alt}
+                  className="max-h-full max-w-[160px] object-contain" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="relative overflow-hidden border-t border-border bg-surface/30">
         <div className="absolute inset-0 pointer-events-none"
