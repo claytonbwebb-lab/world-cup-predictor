@@ -31,18 +31,22 @@ export default async function Home() {
 
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-4 py-1.5 text-primary text-sm font-medium mb-8">
-            FIFA World Cup 2026 · USA · Canada · Mexico
+          <div className="inline-flex flex-col items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 text-primary text-sm font-medium mb-8">
+            <span>FIFA World Cup 2026</span>
+            <span className="text-xs opacity-70">USA · Canada · Mexico</span>
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 leading-none">
             <span className="block text-primary">PLAY</span>
             <span className="block text-text">PREDICT</span>
-            <span className="block text-text">WIN.</span>
+            <span className="block text-yellow-400">WIN.</span>
           </h1>
 
-          <p className="text-xl text-textMuted max-w-xl mx-auto mb-10 leading-relaxed">
-            Call every scoreline. Climb the leaderboard. Show your mates you know football.
+          <p className="text-xl text-textMuted max-w-xl mx-auto mb-4 leading-relaxed">
+            Call every scoreline. Climb the leaderboard.
+          </p>
+          <p className="text-lg text-textMuted/70 mb-10">
+            Show your mates you know football.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -81,7 +85,7 @@ export default async function Home() {
           and prove you've got what it takes to be a football pundit.
         </p>
         <ul className="flex flex-wrap justify-center gap-4 text-sm">
-          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard'].map(item => (
+          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard', 'Win prizes'].map(item => (
             <li key={item} className="flex items-center gap-2 text-textMuted bg-surface/50 px-4 py-2 rounded-full">
               <span className="text-primary">✓</span> {item}
             </li>
@@ -98,7 +102,7 @@ export default async function Home() {
           <div className="absolute inset-0 bg-[#0f172a]/65" />
         </div>
         <div className="relative max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-2">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-2">How It Works?</h2>
           <p className="text-textMuted text-center mb-12">Three steps to prediction glory</p>
 
           <div className="grid md:grid-cols-3 gap-6">
