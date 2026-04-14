@@ -124,7 +124,7 @@ function LoginForm() {
                   <span className="px-4 bg-surface text-textMuted">or</span>
                 </div>
               </div>
-              <button type="button" onClick={handleMagicLink} disabled={loading || !email} className="btn-secondary w-full">
+              <button type="button" onClick={handleMagicLink} disabled={loading} className="btn-secondary w-full">
                 Send Magic Link
               </button>
             </form>
