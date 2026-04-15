@@ -159,10 +159,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
-              { name: '3Retro', href: 'https://www.3retro.com', src: '/images/partners/3retro.png', alt: '3Retro' },
-              { name: 'Allstar Signings', href: 'https://allstarsignings.com', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
-              { name: 'Butterworths', href: 'https://butterworths.online', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
-              { name: 'Retro Football Manager', href: 'https://retro-football-manager.com', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
+              { name: '3Retro', href: 'https://bit.ly/4dPhtYE', src: '/images/partners/3retro.png', alt: '3Retro' },
+              { name: 'Allstar Signings', href: 'https://bit.ly/4sw9t2t', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
+              { name: 'Butterworths', href: 'https://bit.ly/4vv6MAT', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
+              { name: 'Retro Football Manager', href: 'https://rfm25.onelink.me/AFls/ppw', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
             ].map(partner => (
               <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center h-24 px-4 hover:opacity-80 transition-opacity">
