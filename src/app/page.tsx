@@ -159,6 +159,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
+              { name: '90s Football', href: 'https://bit.ly/4ceCmeF', src: '/images/partners/90sfootball.png', alt: '90s Football' },
               { name: '3Retro', href: 'https://bit.ly/4dPhtYE', src: '/images/partners/3retro.png', alt: '3Retro' },
               { name: 'Allstar Signings', href: 'https://bit.ly/4sw9t2t', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
               { name: 'Butterworths', href: 'https://bit.ly/4vv6MAT', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
