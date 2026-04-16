@@ -8,6 +8,28 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  openGraph: {
+    title: 'Play Predict Win',
+    description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
+    url: 'https://www.playpredictwin.com',
+    siteName: 'Play Predict Win',
+    locale: 'en_GB',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Play Predict Win — World Cup 2026 Prediction League',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Play Predict Win',
+    description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({
