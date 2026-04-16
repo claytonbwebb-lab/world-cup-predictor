@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -20,8 +21,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="relative flex-1 flex items-center justify-center overflow-hidden min-h-[80vh]">
         {/* Background image with overlay */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop" alt="World Cup stadium at night with floodlights"
-            className="w-full h-full object-cover" />
+          <Image
+            src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop"
+            alt="World Cup stadium at night with floodlights"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/60 via-[#0f172a]/40 to-[#0f172a]/80" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/60 via-transparent to-[#0f172a]/60" />
         </div>
@@ -103,8 +110,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="relative overflow-hidden py-20">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop" alt="Football stadium aerial view"
-            className="w-full h-full object-cover" />
+          <Image
+            src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop"
+            alt="Football stadium aerial view"
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
           <div className="absolute inset-0 bg-[#0f172a]/65" />
         </div>
         <div className="relative max-w-5xl mx-auto px-6">
@@ -167,7 +179,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             ].map(partner => (
               <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center h-24 px-4 hover:opacity-80 transition-opacity">
-                <img src={partner.src} alt={partner.alt}
+                <Image src={partner.src} alt={partner.alt} width={200} height={80}
                   className="max-h-full max-w-[200px] object-contain" />
               </a>
             ))}

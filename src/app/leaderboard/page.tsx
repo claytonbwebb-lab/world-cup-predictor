@@ -3,6 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Leaderboard", "item": "https://www.playpredictwin.com/leaderboard" },
+  ],
+};
+
 export default async function LeaderboardPage() {
   const supabase = await createClient();
 
@@ -28,7 +37,7 @@ export default async function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
           <span>🥇</span> Global Leaderboard

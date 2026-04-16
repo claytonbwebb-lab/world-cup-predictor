@@ -1,10 +1,18 @@
 'use client';
 import NavBar from '@/components/NavBar';
-
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Leagues", "item": "https://www.playpredictwin.com/leagues" },
+  ],
+};
 
 interface League {
   id: string;
@@ -121,7 +129,7 @@ export default function LeaguesPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold flex items-center gap-3"><span>👥</span> Mini Leagues</h1>

@@ -1,10 +1,18 @@
 'use client';
 import NavBar from '@/components/NavBar';
-
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Fixtures", "item": "https://www.playpredictwin.com/fixtures" },
+  ],
+};
 
 interface Match {
   id: string;
@@ -191,6 +199,7 @@ export default function FixturesPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6">Fixtures & Predictions</h1>
 
