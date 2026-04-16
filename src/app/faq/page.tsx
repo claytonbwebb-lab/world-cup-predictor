@@ -13,7 +13,7 @@ export default function FAQPage() {
       { "@type": "Question", "name": "When does the World Cup 2026 start?", "acceptedAnswer": { "@type": "Answer", "text": "The tournament kicks off on 11 June 2026 in the USA, Canada, and Mexico. The final is on 19 July 2026 in New Jersey." } },
       { "@type": "Question", "name": "How do points work?", "acceptedAnswer": { "@type": "Answer", "text": "You earn 3 points for every exact scoreline you predict correctly (e.g. you say 2-1, it ends 2-1). You earn 1 point for predicting the correct result but the wrong score (e.g. you say 2-1, it ends 3-1). Wrong results earn 0 points." } },
       { "@type": "Question", "name": "When can I submit predictions?", "acceptedAnswer": { "@type": "Answer", "text": "You can submit predictions at any time before kickoff of the relevant match. Once the match kicks off, your predictions for that match are locked and cannot be changed." } },
-      { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, creating an account and playing in the public league is free. Private leagues with custom rules may have a small subscription fee depending on the league settings." } },
+      { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes — creating an account and competing in leagues is completely free. Prizes are funded by our partners, who you can find linked on the homepage." } },
       { "@type": "Question", "name": "Can I create a private league for me and my mates?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Head to the Leagues section after signing up to create a private league and invite friends via a unique link." } },
       { "@type": "Question", "name": "What happens if I miss a match?", "acceptedAnswer": { "@type": "Answer", "text": "You can still view the league and submit predictions for upcoming matches. Missed matches simply earn 0 points — no penalty for missing a game." } },
       { "@type": "Question", "name": "How is the leaderboard ranked?", "acceptedAnswer": { "@type": "Answer", "text": "By total points accumulated across all group and knockout matches. If there is a tie on points, the tiebreaker is whoever got the most exact scorelines." } },
@@ -47,7 +47,7 @@ export default function FAQPage() {
           },
           {
             q: 'Is it free to play?',
-            a: 'Yes, creating an account and playing in the public league is free. Private leagues with custom rules may have a small subscription fee depending on the league settings.',
+            a: 'Yes — creating an account and competing in leagues is completely free. Prizes are funded by our partners, who you can find linked on the homepage.',
           },
           {
             q: 'Can I create a private league for me and my mates?',
