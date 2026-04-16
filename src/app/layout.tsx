@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,6 +21,16 @@ export default function RootLayout({
         <div className="min-h-screen flex flex-col">
           {children}
         </div>
+
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-BHKDZ3FQM8" />
+        <Script id="gtag-config">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BHKDZ3FQM8');
+          `}
+        </Script>
       </body>
     </html>
   );
