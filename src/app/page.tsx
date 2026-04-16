@@ -20,7 +20,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="relative flex-1 flex items-center justify-center overflow-hidden min-h-[80vh]">
         {/* Background image with overlay */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop" alt=""
+          <img src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop" alt="World Cup stadium at night with floodlights"
             className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/60 via-[#0f172a]/40 to-[#0f172a]/80" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0f172a]/60 via-transparent to-[#0f172a]/60" />
@@ -103,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="relative overflow-hidden py-20">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop" alt=""
+          <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1920&auto=format&fit=crop" alt="Football stadium aerial view"
             className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[#0f172a]/65" />
         </div>
@@ -198,6 +198,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <span>World Cup 2026 Prediction League</span>
           <div className="flex gap-6">
             <Link href="/leaderboard" className="hover:text-text transition-colors">Leaderboard</Link>
+            <Link href="/privacy" className="hover:text-text transition-colors">Privacy</Link>
             <Link href="/auth/signup" className="hover:text-text transition-colors">Sign Up</Link>
             <Link href="/auth/login" className="hover:text-text transition-colors">Login</Link>
           </div>
