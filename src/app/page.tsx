@@ -199,6 +199,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="flex gap-6">
             <Link href="/leaderboard" className="hover:text-text transition-colors">Leaderboard</Link>
             <Link href="/privacy" className="hover:text-text transition-colors">Privacy</Link>
+            <Link href="/faq" className="hover:text-text transition-colors">FAQ</Link>
             <Link href="/auth/signup" className="hover:text-text transition-colors">Sign Up</Link>
             <Link href="/auth/login" className="hover:text-text transition-colors">Login</Link>
           </div>
