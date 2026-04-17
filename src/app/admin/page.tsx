@@ -13,26 +13,45 @@ export default async function AdminPage() {
   // Check if user is admin from their profile
   let isAdmin = false;
   try {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
       .single();
+    if (error) {
+      console.error('Admin check error:', error);
+    }
     isAdmin = profile?.is_admin === true;
-  } catch {
+  } catch (e) {
+    console.error('Admin check caught error:', e);
     // Column may not exist yet — allow access temporarily
     isAdmin = true;
   }
 
   if (!isAdmin) {
-    redirect('/dashboard');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="card max-w-md w-full text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h1 className="text-xl font-bold mb-2">Access Denied</h1>
+          <p className="text-textMuted text-sm">Your account is not authorized for admin access.</p>
+          <Link href="/dashboard" className="btn-primary mt-4 inline-block">Go to Dashboard</Link>
+        </div>
+      </div>
+    );
   }
 
   // Fetch all matches
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('*')
-    .order('kickoff_at', { ascending: true });
+  let matches: any[] = [];
+  try {
+    const { data } = await supabase
+      .from('matches')
+      .select('*')
+      .order('kickoff_at', { ascending: true });
+    matches = data || [];
+  } catch (e) {
+    console.error('Matches fetch error:', e);
+  }
 
   return (
     <div className="min-h-screen bg-background">
