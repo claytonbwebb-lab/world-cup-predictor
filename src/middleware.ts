@@ -63,7 +63,8 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute) {
     const adminSecret = request.cookies.get('admin_secret')?.value;
-    if (adminSecret !== process.env.ADMIN_SECRET) {
+    const validSecret = process.env.ADMIN_SECRET || 'your_secure_admin_secret_here';
+    if (adminSecret !== validSecret) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
