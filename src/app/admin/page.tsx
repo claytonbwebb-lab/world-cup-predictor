@@ -11,47 +11,21 @@ export default async function AdminPage() {
   }
 
   // Check if user is admin from their profile
-  let isAdmin = false;
-  try {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-    if (error) {
-      console.error('Admin check error:', error);
-    }
-    isAdmin = profile?.is_admin === true;
-  } catch (e) {
-    console.error('Admin check caught error:', e);
-    // Column may not exist yet — allow access temporarily
-    isAdmin = true;
-  }
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="card max-w-md w-full text-center">
-          <div className="text-4xl mb-4">🔒</div>
-          <h1 className="text-xl font-bold mb-2">Access Denied</h1>
-          <p className="text-textMuted text-sm">Your account is not authorized for admin access.</p>
-          <Link href="/dashboard" className="btn-primary mt-4 inline-block">Go to Dashboard</Link>
-        </div>
-      </div>
-    );
+  if (!profile?.is_admin) {
+    redirect('/dashboard');
   }
 
   // Fetch all matches
-  let matches: any[] = [];
-  try {
-    const { data } = await supabase
-      .from('matches')
-      .select('*')
-      .order('kickoff_at', { ascending: true });
-    matches = data || [];
-  } catch (e) {
-    console.error('Matches fetch error:', e);
-  }
+  const { data: matches } = await supabase
+    .from('matches')
+    .select('*')
+    .order('kickoff_at', { ascending: true });
 
   return (
     <div className="min-h-screen bg-background">
@@ -88,68 +62,34 @@ export default async function AdminPage() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Home Team</label>
-                <input
-                  type="text"
-                  name="home_team"
-                  required
-                  className="input w-full"
-                  placeholder="Argentina"
-                />
+                <input type="text" name="home_team" required className="input w-full" placeholder="Argentina" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Away Team</label>
-                <input
-                  type="text"
-                  name="away_team"
-                  required
-                  className="input w-full"
-                  placeholder="Brazil"
-                />
+                <input type="text" name="away_team" required className="input w-full" placeholder="Brazil" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Home Flag (emoji)</label>
-                <input
-                  type="text"
-                  name="home_flag"
-                  className="input w-full"
-                  placeholder="🇦🇷"
-                />
+                <input type="text" name="home_flag" className="input w-full" placeholder="🇦🇷" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Away Flag (emoji)</label>
-                <input
-                  type="text"
-                  name="away_flag"
-                  className="input w-full"
-                  placeholder="🇧🇷"
-                />
+                <input type="text" name="away_flag" className="input w-full" placeholder="🇧🇷" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Group/Stage</label>
-                <input
-                  type="text"
-                  name="group_stage"
-                  className="input w-full"
-                  placeholder="Group A, Quarter-final, etc."
-                />
+                <input type="text" name="group_stage" className="input w-full" placeholder="Group A, Quarter-final, etc." />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Kickoff</label>
-                <input
-                  type="datetime-local"
-                  name="kickoff_at"
-                  required
-                  className="input w-full"
-                />
+                <input type="datetime-local" name="kickoff_at" required className="input w-full" />
               </div>
             </div>
-            <button type="submit" className="btn-primary">
-              Add Match
-            </button>
+            <button type="submit" className="btn-primary">Add Match</button>
           </form>
         </div>
 
@@ -182,36 +122,21 @@ export default async function AdminPage() {
                           <span>{match.away_flag || '🏳️'}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-textMuted">
-                        {match.group_stage || '-'}
-                      </td>
+                      <td className="py-3 px-4 text-textMuted">{match.group_stage || '-'}</td>
                       <td className="py-3 px-4 text-textMuted">
                         {new Date(match.kickoff_at).toLocaleString('en-GB', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
+                          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                         })}
                       </td>
                       <td className="py-3 px-4">
-                        {match.result_entered ? (
-                          <span className="font-bold text-primary">
-                            {match.home_score} - {match.away_score}
-                          </span>
-                        ) : (
-                          <span className="text-textMuted">Not entered</span>
-                        )}
+                        {match.result_entered
+                          ? <span className="font-bold text-primary">{match.home_score} - {match.away_score}</span>
+                          : <span className="text-textMuted">Not entered</span>}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        {match.is_locked ? (
-                          <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded">
-                            Locked
-                          </span>
-                        ) : (
-                          <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">
-                            Open
-                          </span>
-                        )}
+                        {match.is_locked
+                          ? <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded">Locked</span>
+                          : <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">Open</span>}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2 justify-center">
@@ -221,7 +146,7 @@ export default async function AdminPage() {
                                 const homeScore = prompt('Home score:');
                                 const awayScore = prompt('Away score:');
                                 if (homeScore !== null && awayScore !== null) {
-                                  fetch(`/api/scoring`, {
+                                  fetch('/api/scoring', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
