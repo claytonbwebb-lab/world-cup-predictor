@@ -7,25 +7,10 @@ const PROTECTED_ROUTES = ['/dashboard', '/fixtures', '/leaderboard', '/leagues']
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check public routes FIRST — before any auth
+  // Public routes
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'));
-
-  // Admin routes
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isAdminLoginRoute = pathname === '/admin/login';
-  const isAdminApiRoute = pathname.startsWith('/api/admin');
-
-  // Admin session check (only for non-login admin routes)
-  if (isAdminRoute && !isAdminLoginRoute && !isAdminApiRoute) {
-    const adminSession = request.cookies.get('admin_session')?.value;
-    if (adminSession !== '1') {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-  }
-
-  // Skip remaining auth for public routes
-  if (isPublicRoute || isAdminLoginRoute || isAdminApiRoute) {
-    return NextResponse.next();
+  if (isPublicRoute) {
+    return NextResponse.next({ request: { headers: request.headers } });
   }
 
   // Protected routes need auth

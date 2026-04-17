@@ -1,17 +1,25 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const adminSecret = cookieStore.get('admin_secret')?.value;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (adminSecret !== '1') {
-    redirect('/admin/login');
+  if (!user) {
+    redirect('/auth/login?redirect=/admin');
   }
 
-  const supabase = await createClient();
+  // Check if user is admin from their profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile?.is_admin) {
+    redirect('/dashboard');
+  }
 
   // Fetch all matches
   const { data: matches } = await supabase
@@ -122,7 +130,7 @@ export default async function AdminPage() {
         {/* Matches Management */}
         <div className="card">
           <h2 className="text-xl font-bold mb-4">Manage Matches</h2>
-          
+
           {matches && matches.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -187,7 +195,7 @@ export default async function AdminPage() {
                                 const homeScore = prompt('Home score:');
                                 const awayScore = prompt('Away score:');
                                 if (homeScore !== null && awayScore !== null) {
-                                  fetch(`/api/admin/scoring`, {
+                                  fetch(`/api/scoring`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
