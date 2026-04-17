@@ -7,8 +7,8 @@ export default async function AdminPage() {
   const cookieStore = await cookies();
   const adminSecret = cookieStore.get('admin_secret')?.value;
 
-  if (adminSecret !== (process.env.ADMIN_SECRET || 'your_secure_admin_secret_here')) {
-    redirect('/admin/access');
+  if (adminSecret !== '1') {
+    redirect('/admin/login');
   }
 
   const supabase = await createClient();

@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require auth
-  const publicRoutes = ['/', '/auth/login', '/auth/signup', '/admin/access'];
+  const publicRoutes = ['/', '/auth/login', '/auth/signup', '/admin/login'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   // Protected routes
@@ -62,10 +62,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAdminRoute) {
-    const adminSecret = request.cookies.get('admin_secret')?.value;
-    const validSecret = process.env.ADMIN_SECRET || 'your_secure_admin_secret_here';
-    if (adminSecret !== validSecret) {
-      return NextResponse.redirect(new URL('/', request.url));
+    const adminSession = request.cookies.get('admin_session')?.value;
+    if (adminSession !== '1') {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
 
