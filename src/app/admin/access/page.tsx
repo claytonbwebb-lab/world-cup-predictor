@@ -27,24 +27,20 @@ export default async function AdminAccessPage() {
     );
   }
 
-  const adminSecret = process.env.ADMIN_SECRET || 'your_secure_admin_secret_here';
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="card max-w-md w-full text-center">
         <div className="text-4xl mb-4">⚙️</div>
-        <h1 className="text-xl font-bold mb-2">Setting up admin access...</h1>
-        <p className="text-textMuted text-sm mb-4">Logging you in as admin.</p>
-        <p className="text-xs text-textMuted">Redirecting to admin panel...</p>
+        <h1 className="text-xl font-bold mb-2">Admin Access</h1>
+        <p className="text-textMuted text-sm mb-6">
+          Logged in as <span className="text-primary">{user.email}</span>
+        </p>
+        <form action="/api/admin/access" method="POST">
+          <button type="submit" className="btn-primary px-8 py-4 text-base font-bold">
+            Enter Admin Panel →
+          </button>
+        </form>
       </div>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            document.cookie = 'admin_secret=' + encodeURIComponent('${adminSecret}') + '; path=/; max-age=${60*60*24*7}; SameSite=Lax; secure';
-            window.location.href = '/admin';
-          `,
-        }}
-      />
     </div>
   );
 }
