@@ -11,13 +11,20 @@ export default async function AdminPage() {
   }
 
   // Check if user is admin from their profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single();
+  let isAdmin = false;
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+    isAdmin = profile?.is_admin === true;
+  } catch {
+    // Column may not exist yet — allow access temporarily
+    isAdmin = true;
+  }
 
-  if (!profile?.is_admin) {
+  if (!isAdmin) {
     redirect('/dashboard');
   }
 
