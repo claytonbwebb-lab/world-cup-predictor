@@ -4,7 +4,6 @@ import { requireAdmin } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check admin auth
     const isAdmin = await requireAdmin();
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,6 +23,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // datetime-local sends YYYY-MM-DDTHH:mm in local time.
+    // Supabase stores as UTC. We parse as local, then convert to UTC ISO string.
+    // In BST (UTC+1), a user enters 14:50 → Date parses as 14:50 BST = 13:50 UTC.
+    const localDate = new Date(kickoff_at);
+    const utcMs = localDate.getTime() - localDate.getTimezoneOffset() * 60000;
+    const kickoffUtc = new Date(utcMs).toISOString();
+
     const { data, error } = await supabase
       .from('matches')
       .insert({
@@ -32,7 +38,7 @@ export async function POST(request: NextRequest) {
         home_flag: home_flag || null,
         away_flag: away_flag || null,
         group_stage: group_stage || null,
-        kickoff_at: new Date(kickoff_at).toISOString(),
+        kickoff_at: kickoffUtc,
       })
       .select();
 
