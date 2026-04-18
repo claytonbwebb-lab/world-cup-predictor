@@ -41,6 +41,7 @@ export default function FixturesPage() {
   const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map());
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savedMatch, setSavedMatch] = useState<string | null>(null);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -102,6 +103,8 @@ export default function FixturesPage() {
       }),
     });
     if (res.ok) {
+      setSavedMatch(matchId);
+      setTimeout(() => setSavedMatch(null), 3000);
       await load();
     } else {
       const err = await res.json();
@@ -134,7 +137,7 @@ export default function FixturesPage() {
     );
   }
 
-  function MatchCard({ match, onSave }: { match: Match; onSave?: (id: string) => Promise<void> }) {
+  function MatchCard({ match, onSave, justSaved }: { match: Match; onSave?: (id: string) => Promise<void>; justSaved?: boolean }) {
     const pred = predictions.get(match.id);
     const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
     const vals = inputs[match.id] || { home: 0, away: 0 };
@@ -211,7 +214,10 @@ export default function FixturesPage() {
           <div className="mt-3 text-center text-sm text-textMuted/40 py-1">No prediction made</div>
         )}
         {!isLocked && !match.result_entered && onSave && (
-          <div className="mt-3 flex justify-end">
+          <div className="mt-3 flex items-center justify-end gap-3">
+            {justSaved && (
+              <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
+            )}
             <button
               onClick={() => onSave(match.id)}
               className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
@@ -241,7 +247,7 @@ export default function FixturesPage() {
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
                 <div className="space-y-3">
-                  {upcoming.map(m => <MatchCard key={m.id} match={m} onSave={saveMatch} />)}
+                  {upcoming.map(m => <MatchCard key={m.id} match={m} onSave={saveMatch} justSaved={savedMatch === m.id} />)}
                 </div>
                 <div className="mt-6 sticky bottom-4">
                   <button
