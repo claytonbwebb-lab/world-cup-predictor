@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 
+// Convert a datetime-local string (YYYY-MM-DDTHH:mm) to a UTC ISO string.
+// The browser knows the user's timezone, so new Date() here = correct local time.
+function localToUtcIso(localDt: string): string {
+  return new Date(localDt).toISOString();
+}
+
 export default function AddMatchForm() {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -15,6 +21,10 @@ export default function AddMatchForm() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
+    // Convert kickoff_at to UTC ISO before sending — server runs in UTC and must receive UTC
+    const kickoffLocal = formData.get('kickoff_at') as string;
+    formData.set('kickoff_at', localToUtcIso(kickoffLocal));
+
     try {
       const res = await fetch('/api/admin/matches', {
         method: 'POST',
@@ -22,10 +32,6 @@ export default function AddMatchForm() {
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        setStatus('success');
-        setMessage('Match added successfully!');
-
-        // Show success then reload to reflect correct local time
         setStatus('success');
         setMessage('Match added — reloading...');
         setTimeout(() => window.location.reload(), 1200);
@@ -69,7 +75,7 @@ export default function AddMatchForm() {
           <input type="text" name="group_stage" className="input w-full" placeholder="Group A, Quarter-final, etc." />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Kickoff</label>
+          <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
           <input type="datetime-local" name="kickoff_at" required className="input w-full" />
         </div>
       </div>

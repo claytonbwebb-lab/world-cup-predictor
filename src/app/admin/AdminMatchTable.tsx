@@ -22,7 +22,13 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     home_flag: match.home_flag || '',
     away_flag: match.away_flag || '',
     group_stage: match.group_stage || '',
-    kickoff_at: match.kickoff_at.slice(0, 16),
+    // Convert stored UTC ISO to local datetime-local string for the input
+    kickoff_at: (() => {
+      const d = new Date(match.kickoff_at);
+      const off = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - off * 60000);
+      return local.toISOString().slice(0, 16);
+    })(),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +43,8 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     fd.set('home_flag', form.home_flag);
     fd.set('away_flag', form.away_flag);
     fd.set('group_stage', form.group_stage);
-    fd.set('kickoff_at', form.kickoff_at);
+    // Convert local datetime to UTC ISO in browser (server runs in UTC)
+    fd.set('kickoff_at', new Date(form.kickoff_at).toISOString());
     const res = await fetch(`/api/admin/matches/${match.id}`, {
       method: 'PUT',
       body: fd,
