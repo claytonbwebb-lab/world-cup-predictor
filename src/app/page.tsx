@@ -55,11 +55,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <span className="block text-yellow-400">WIN.</span>
           </h1>
 
-          <p className="text-xl text-textMuted max-w-xl mx-auto mb-4 leading-relaxed">
-            Call every scoreline. Climb the leaderboard.
-          </p>
-          <p className="text-lg text-textMuted/70 mb-10">
-            Show your mates you know football.
+          <p className="text-xl text-textMuted max-w-xl mx-auto mb-10 leading-relaxed">
+            Call every scoreline. Climb the leaderboard. Show your mates you know football.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
