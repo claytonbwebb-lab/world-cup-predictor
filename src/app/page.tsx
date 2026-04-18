@@ -123,7 +123,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { step: '01', title: 'Sign Up', desc: 'Create a free account and join a private league with your mates, or compete in the global leaderboard.' },
+              { step: '01', title: 'Sign Up', desc: 'Create a free account and setup a private league with your mates, or select a public leaderboard to join.' },
               { step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
               { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
             ].map(item => (
