@@ -92,7 +92,7 @@ export default function FixturesPage() {
   }
 
   async function saveMatch(matchId: string) {
-    await fetch('/api/predictions', {
+    const res = await fetch('/api/predictions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -101,7 +101,12 @@ export default function FixturesPage() {
         away_prediction: inputs[matchId]?.away ?? 0,
       }),
     });
-    load();
+    if (res.ok) {
+      await load();
+    } else {
+      const err = await res.json();
+      alert('Failed: ' + (err.error || 'Unknown error'));
+    }
   }
 
   const now = new Date();
@@ -209,9 +214,10 @@ export default function FixturesPage() {
           <div className="mt-3 flex justify-end">
             <button
               onClick={() => saveMatch(match.id)}
-              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              disabled={saving}
             >
-              Save prediction
+              💾 Save prediction
             </button>
           </div>
         )}
