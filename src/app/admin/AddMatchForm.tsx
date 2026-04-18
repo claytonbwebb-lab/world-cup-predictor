@@ -24,7 +24,11 @@ export default function AddMatchForm() {
       if (res.ok && json.success) {
         setStatus('success');
         setMessage('Match added successfully!');
-        form.reset();
+
+        // Show success then reload to reflect correct local time
+        setStatus('success');
+        setMessage('Match added — reloading...');
+        setTimeout(() => window.location.reload(), 1200);
       } else {
         setStatus('error');
         setMessage(json.error || 'Something went wrong');
