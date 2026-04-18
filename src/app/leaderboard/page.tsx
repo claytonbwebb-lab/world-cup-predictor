@@ -39,9 +39,23 @@ export default async function LeaderboardPage() {
       <NavBar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
           <span>🥇</span> Global Leaderboard
         </h1>
+
+        {/* Prizes banner */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          {[
+            { pos: '🥇 1st', prize: '£250', bg: 'from-yellow-500/20 to-yellow-600/5 border-yellow-500/40 text-yellow-400' },
+            { pos: '🥈 2nd', prize: '£100', bg: 'from-gray-400/10 to-gray-500/5 border-gray-400/30 text-gray-300' },
+            { pos: '🥉 3rd', prize: '£50', bg: 'from-orange-600/10 to-orange-700/5 border-orange-600/30 text-orange-400' },
+          ].map(p => (
+            <div key={p.pos} className={`flex items-center gap-2 border rounded-xl px-5 py-2 bg-gradient-to-r ${p.bg}`}>
+              <span className="font-bold text-sm">{p.pos}</span>
+              <span className="font-black text-lg">{p.prize}</span>
+            </div>
+          ))}
+        </div>
 
         {/* User's Rank Summary */}
         {userEntry && (
