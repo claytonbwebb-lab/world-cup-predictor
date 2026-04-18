@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import AdminMatchTable from './AdminMatchTable';
+import AddMatchForm from './AddMatchForm';
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -59,39 +60,7 @@ export default async function AdminPage() {
         {/* Add Match Form */}
         <div className="card mb-8">
           <h2 className="text-xl font-bold mb-4">Add New Match</h2>
-          <form action="/api/admin/matches" method="POST" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Home Team</label>
-                <input type="text" name="home_team" required className="input w-full" placeholder="Argentina" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Away Team</label>
-                <input type="text" name="away_team" required className="input w-full" placeholder="Brazil" />
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Home Flag (emoji)</label>
-                <input type="text" name="home_flag" className="input w-full" placeholder="🇦🇷" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Away Flag (emoji)</label>
-                <input type="text" name="away_flag" className="input w-full" placeholder="🇧🇷" />
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Group/Stage</label>
-                <input type="text" name="group_stage" className="input w-full" placeholder="Group A, Quarter-final, etc." />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Kickoff</label>
-                <input type="datetime-local" name="kickoff_at" required className="input w-full" />
-              </div>
-            </div>
-            <button type="submit" className="btn-primary">Add Match</button>
-          </form>
+          <AddMatchForm />
         </div>
 
         {/* Matches Management */}
