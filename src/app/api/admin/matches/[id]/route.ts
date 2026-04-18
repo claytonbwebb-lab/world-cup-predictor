@@ -26,7 +26,10 @@ export async function PUT(req: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const localDate = new Date(kickoff_at);
+    const [datePart, timePart] = kickoff_at.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute] = timePart.split(':').map(Number);
+    const localDate = new Date(`${String(year)}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`);
     const utcMs = localDate.getTime() - localDate.getTimezoneOffset() * 60000;
     const kickoffUtc = new Date(utcMs).toISOString();
 

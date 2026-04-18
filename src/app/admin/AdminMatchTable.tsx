@@ -22,7 +22,7 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     home_flag: match.home_flag || '',
     away_flag: match.away_flag || '',
     group_stage: match.group_stage || '',
-    kickoff_at: new Date(new Date(match.kickoff_at).getTime() + 60 * 60 * 1000).toISOString().slice(0, 16),
+    kickoff_at: match.kickoff_at.slice(0, 16),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
