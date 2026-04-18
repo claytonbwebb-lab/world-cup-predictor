@@ -134,7 +134,7 @@ export default function FixturesPage() {
     );
   }
 
-  function MatchCard({ match }: { match: Match }) {
+  function MatchCard({ match, onSave }: { match: Match; onSave?: (id: string) => Promise<void> }) {
     const pred = predictions.get(match.id);
     const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
     const vals = inputs[match.id] || { home: 0, away: 0 };
@@ -210,12 +210,11 @@ export default function FixturesPage() {
         {isLocked && !match.result_entered && !pred && (
           <div className="mt-3 text-center text-sm text-textMuted/40 py-1">No prediction made</div>
         )}
-        {!isLocked && !match.result_entered && (
+        {!isLocked && !match.result_entered && onSave && (
           <div className="mt-3 flex justify-end">
             <button
-              onClick={() => saveMatch(match.id)}
-              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-              disabled={saving}
+              onClick={() => onSave(match.id)}
+              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
             >
               💾 Save prediction
             </button>
@@ -242,7 +241,7 @@ export default function FixturesPage() {
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
                 <div className="space-y-3">
-                  {upcoming.map(m => <MatchCard key={m.id} match={m} />)}
+                  {upcoming.map(m => <MatchCard key={m.id} match={m} onSave={saveMatch} />)}
                 </div>
                 <div className="mt-6 sticky bottom-4">
                   <button
