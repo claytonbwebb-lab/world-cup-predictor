@@ -22,13 +22,7 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     home_flag: match.home_flag || '',
     away_flag: match.away_flag || '',
     group_stage: match.group_stage || '',
-    // Convert stored UTC ISO to local datetime-local string for the input
-    kickoff_at: (() => {
-      const d = new Date(match.kickoff_at);
-      const off = d.getTimezoneOffset();
-      const local = new Date(d.getTime() - off * 60000);
-      return local.toISOString().slice(0, 16);
-    })(),
+    kickoff_at: match.kickoff_at.slice(0, 16),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -37,14 +31,16 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     e.preventDefault();
     setSaving(true);
     setError('');
+
+    // Convert local datetime to UTC ISO in browser
     const fd = new FormData();
     fd.set('home_team', form.home_team);
     fd.set('away_team', form.away_team);
     fd.set('home_flag', form.home_flag);
     fd.set('away_flag', form.away_flag);
     fd.set('group_stage', form.group_stage);
-    // Convert local datetime to UTC ISO in browser (server runs in UTC)
     fd.set('kickoff_at', new Date(form.kickoff_at).toISOString());
+
     const res = await fetch(`/api/admin/matches/${match.id}`, {
       method: 'PUT',
       body: fd,
@@ -104,7 +100,12 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
   );
 }
 
-export default function AdminMatchTable({ matches }: { matches: Match[] }) {
+interface AdminMatchTableProps {
+  matches: Match[];
+}
+
+export default function AdminMatchTable({ matches }: AdminMatchTableProps) {
+  const now = new Date();
   const [entering, setEntering] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, { home: string; away: string }>>({});
   const [editing, setEditing] = useState<Match | null>(null);
@@ -158,7 +159,10 @@ export default function AdminMatchTable({ matches }: { matches: Match[] }) {
             </tr>
           </thead>
           <tbody>
-            {matches.map((match) => (
+            {matches.map((match) => {
+              const past = new Date(match.kickoff_at) <= now;
+              const isLocked = match.is_locked || past;
+              return (
               <tr key={match.id} className="border-b border-border/50">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
@@ -181,22 +185,21 @@ export default function AdminMatchTable({ matches }: { matches: Match[] }) {
                     : <span className="text-textMuted text-sm">Not entered</span>}
                 </td>
                 <td className="py-3 px-4 text-center">
-                  {match.is_locked
+                  {isLocked
                     ? <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded">Locked</span>
                     : <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">Open</span>}
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex gap-2 justify-end flex-wrap">
-                    {/* Edit button */}
+                    {/* Edit */}
                     <button
                       onClick={() => setEditing(match)}
                       className="text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 px-3 py-1.5 rounded transition-colors"
-                      title="Edit match"
                     >
                       ✏️ Edit
                     </button>
 
-                    {/* Delete button */}
+                    {/* Delete */}
                     {deleting === match.id ? (
                       <div className="flex items-center gap-1">
                         <button
@@ -217,13 +220,12 @@ export default function AdminMatchTable({ matches }: { matches: Match[] }) {
                       <button
                         onClick={() => setDeleting(match.id)}
                         className="text-xs bg-red-500/10 text-red-400/70 hover:bg-red-500/20 hover:text-red-400 px-3 py-1.5 rounded transition-colors"
-                        title="Delete match"
                       >
                         🗑️ Delete
                       </button>
                     )}
 
-                    {/* Enter result */}
+                    {/* Enter Result */}
                     {!match.result_entered && (
                       entering === match.id ? (
                         <div className="flex items-center gap-1">
@@ -252,7 +254,7 @@ export default function AdminMatchTable({ matches }: { matches: Match[] }) {
                       )
                     )}
 
-                    {/* Lock/unlock */}
+                    {/* Lock/Unlock */}
                     <form action="/api/admin/toggle-lock" method="POST">
                       <input type="hidden" name="match_id" value={match.id} />
                       <input type="hidden" name="locked" value={(!match.is_locked).toString()} />
@@ -263,7 +265,8 @@ export default function AdminMatchTable({ matches }: { matches: Match[] }) {
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
