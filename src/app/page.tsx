@@ -50,6 +50,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <span className="text-xs opacity-70">USA · Canada · Mexico</span>
           </div>
 
+          {/* Brand name */}
+          <p className="text-sm md:text-base font-bold tracking-widest uppercase text-yellow-400 mb-4">
+            The Football Predictor League
+          </p>
+
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-6 leading-none">
             <span className="block text-primary">PLAY</span>
             <span className="block text-text">PREDICT</span>
