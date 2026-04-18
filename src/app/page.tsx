@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Countdown from '@/components/Countdown';
+import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -205,6 +206,49 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             className="btn-primary px-12 py-4 rounded-xl text-lg font-bold inline-block shadow-lg shadow-primary/20">
             Create Free Account
           </Link>
+        </div>
+      </section>
+
+      {/* ── Blog ── */}
+      <section className="border-t border-border py-20">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-black">From the Blog</h2>
+              <p className="text-textMuted text-sm mt-1">Prediction tips & World Cup guides</p>
+            </div>
+            <Link href="/blog" className="text-primary text-sm font-medium hover:underline">
+              View all →
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {blogPosts.slice(0, 3).map((post) => (
+              <article key={post.slug} className="card group overflow-hidden flex flex-col">
+                <Link href={`/blog/${post.slug}`} className="block">
+                  <div className="relative h-40 overflow-hidden">
+                    <Image
+                      src={post.image}
+                      alt={post.imageAlt}
+                      fill
+                      sizes="400px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                </Link>
+                <div className="p-5 flex flex-col flex-1">
+                  <Link href={`/blog/${post.slug}`} className="block flex-1">
+                    <span className="text-xs text-primary font-medium mb-1 block">{post.category}</span>
+                    <h3 className="font-bold text-sm leading-tight mb-2 group-hover:text-primary transition-colors">{post.title}</h3>
+                    <p className="text-textMuted text-xs line-clamp-2">{post.excerpt}</p>
+                  </Link>
+                  <div className="flex items-center justify-between text-xs text-textMuted pt-3 mt-3 border-t border-border">
+                    <span>{post.date}</span>
+                    <Link href={`/blog/${post.slug}`} className="text-primary hover:underline font-medium">Read more →</Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

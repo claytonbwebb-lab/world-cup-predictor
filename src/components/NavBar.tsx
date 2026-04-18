@@ -9,6 +9,7 @@ const links = [
   { href: '/fixtures',    label: 'Fixtures' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/leagues',     label: 'Leagues' },
+  { href: '/blog',        label: 'Blog' },
   { href: '/auth/logout', label: 'Sign Out' },
 ];
 
