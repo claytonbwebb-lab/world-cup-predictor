@@ -26,8 +26,7 @@ export async function PUT(req: NextRequest, { params }: Props) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    kickoff_at: new Date(kickoff_at).toISOString(),
-
+    // kickoff_at arrives as UTC ISO string (converted in browser before sending)
     const { error } = await supabase
       .from('matches')
       .update({
@@ -36,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: Props) {
         home_flag: home_flag || null,
         away_flag: away_flag || null,
         group_stage: group_stage || null,
-        kickoff_at: kickoffUtc,
+        kickoff_at,
       })
       .eq('id', id);
 

@@ -23,10 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Parse YYYY-MM-DDTHH:mm as local time without going through Date's ISO parser
-    // This avoids the datetime-local string being misinterpreted as UTC
-    kickoff_at: new Date(kickoff_at).toISOString(),
-
+    // kickoff_at arrives as UTC ISO string (converted in browser before sending)
     const { data, error } = await supabase
       .from('matches')
       .insert({
@@ -35,7 +32,7 @@ export async function POST(request: NextRequest) {
         home_flag: home_flag || null,
         away_flag: away_flag || null,
         group_stage: group_stage || null,
-        kickoff_at: kickoffUtc,
+        kickoff_at,
       })
       .select();
 
