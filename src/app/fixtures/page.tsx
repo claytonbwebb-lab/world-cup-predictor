@@ -91,6 +91,19 @@ export default function FixturesPage() {
     load();
   }
 
+  async function saveMatch(matchId: string) {
+    await fetch('/api/predictions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        match_id: matchId,
+        home_prediction: inputs[matchId]?.home ?? 0,
+        away_prediction: inputs[matchId]?.away ?? 0,
+      }),
+    });
+    load();
+  }
+
   const now = new Date();
   const upcoming  = matches.filter(m => !m.result_entered && !m.is_locked && new Date(m.kickoff_at) > now);
   const locked    = matches.filter(m => !m.result_entered && (m.is_locked || new Date(m.kickoff_at) <= now));
@@ -191,6 +204,16 @@ export default function FixturesPage() {
         )}
         {isLocked && !match.result_entered && !pred && (
           <div className="mt-3 text-center text-sm text-textMuted/40 py-1">No prediction made</div>
+        )}
+        {!isLocked && !match.result_entered && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => saveMatch(match.id)}
+              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              Save prediction
+            </button>
+          </div>
         )}
       </div>
     );
