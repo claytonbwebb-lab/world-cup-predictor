@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import AdminMatchTable from './AdminMatchTable';
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -96,92 +97,7 @@ export default async function AdminPage() {
         {/* Matches Management */}
         <div className="card">
           <h2 className="text-xl font-bold mb-4">Manage Matches</h2>
-
-          {matches && matches.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 text-textMuted font-medium">Match</th>
-                    <th className="text-left py-3 px-4 text-textMuted font-medium">Stage</th>
-                    <th className="text-left py-3 px-4 text-textMuted font-medium">Kickoff</th>
-                    <th className="text-left py-3 px-4 text-textMuted font-medium">Result</th>
-                    <th className="text-center py-3 px-4 text-textMuted font-medium">Status</th>
-                    <th className="text-center py-3 px-4 text-textMuted font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {matches.map((match) => (
-                    <tr key={match.id} className="border-b border-border/50">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span>{match.home_flag || '🏳️'}</span>
-                          <span className="font-medium">{match.home_team}</span>
-                          <span className="text-textMuted">vs</span>
-                          <span className="font-medium">{match.away_team}</span>
-                          <span>{match.away_flag || '🏳️'}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-textMuted">{match.group_stage || '-'}</td>
-                      <td className="py-3 px-4 text-textMuted">
-                        {new Date(match.kickoff_at).toLocaleString('en-GB', {
-                          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                        })}
-                      </td>
-                      <td className="py-3 px-4">
-                        {match.result_entered
-                          ? <span className="font-bold text-primary">{match.home_score} - {match.away_score}</span>
-                          : <span className="text-textMuted">Not entered</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {match.is_locked
-                          ? <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded">Locked</span>
-                          : <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">Open</span>}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-2 justify-center">
-                          {!match.result_entered && (
-                            <button
-                              onClick={() => {
-                                const homeScore = prompt('Home score:');
-                                const awayScore = prompt('Away score:');
-                                if (homeScore !== null && awayScore !== null) {
-                                  fetch('/api/scoring', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      match_id: match.id,
-                                      home_score: parseInt(homeScore),
-                                      away_score: parseInt(awayScore),
-                                    }),
-                                  }).then(() => window.location.reload());
-                                }
-                              }}
-                              className="btn-secondary text-sm py-1 px-3"
-                            >
-                              Enter Result
-                            </button>
-                          )}
-                          <form action="/api/admin/toggle-lock" method="POST">
-                            <input type="hidden" name="match_id" value={match.id} />
-                            <input type="hidden" name="locked" value={(!match.is_locked).toString()} />
-                            <button type="submit" className="btn-secondary text-sm py-1 px-3">
-                              {match.is_locked ? 'Unlock' : 'Lock'}
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">📅</div>
-              <p className="text-textMuted">No matches added yet</p>
-            </div>
-          )}
+          <AdminMatchTable matches={matches || []} />
         </div>
       </main>
     </div>
