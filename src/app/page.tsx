@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Countdown from '@/components/Countdown';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -200,6 +201,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             Create Free Account
           </Link>
         </div>
+      </section>
+
+      {/* ── Countdown ── */}
+      <section className="border-t border-border py-16 text-center">
+        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
+        <Countdown />
       </section>
 
       {/* ── Footer ── */}
