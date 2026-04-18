@@ -5,9 +5,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Play Predict Win | Football Prediction League',
   description: 'Predict World Cup matches and compete with friends',
-  icons: {
-    icon: '/favicon.ico',
-  },
+  icons: [
+    { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
+    { rel: 'icon', url: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
+    { rel: 'apple-touch-icon', url: '/favicon-180.png', sizes: '180x180', type: 'image/png' },
+  ],
   openGraph: {
     title: 'Play Predict Win',
     description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
