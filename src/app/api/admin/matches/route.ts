@@ -25,13 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Parse YYYY-MM-DDTHH:mm as local time without going through Date's ISO parser
     // This avoids the datetime-local string being misinterpreted as UTC
-    const [datePart, timePart] = kickoff_at.split('T');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute] = timePart.split(':').map(Number);
-    // Create date treating it as local by using YYYY-MM-DDTHH:mm:ss local string
-    const localDate = new Date(`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`);
-    const utcMs = localDate.getTime() - localDate.getTimezoneOffset() * 60000;
-    const kickoffUtc = new Date(utcMs).toISOString();
+    kickoff_at: new Date(kickoff_at).toISOString(),
 
     const { data, error } = await supabase
       .from('matches')
