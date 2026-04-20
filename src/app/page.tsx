@@ -51,6 +51,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <span className="text-xs opacity-70">USA · Canada · Mexico</span>
           </div>
 
+          {/* Logo option 1 — temp for review } */}
+          <div className="mb-8">
+            <Image src="/images/logos/logo1.jpg" alt="Logo option 1" width={300} height={150}
+              className="mx-auto object-contain" style={{ maxHeight: '120px' }} />
+          </div>
+
           {/* Brand name */}
           <p className="text-sm md:text-base font-bold tracking-widest uppercase text-yellow-400 mb-4">
             The Football Predictor League
