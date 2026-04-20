@@ -1,6 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
+
+// Service role client bypasses RLS for admin scoring operations
+function getServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +33,9 @@ export async function POST(request: NextRequest) {
     if (fetchError) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
+
+    // Use service role client to bypass RLS so admin can score other users' predictions
+    const adminClient = getServiceClient();
 
     const updates = (predictions || []).map((prediction) => {
       const isExactScore =
@@ -56,7 +68,7 @@ export async function POST(request: NextRequest) {
     });
 
     for (const update of updates) {
-      await supabase.from('predictions').update({
+      await adminClient.from('predictions').update({
         points_awarded: update.points_awarded,
         is_exact_score: update.is_exact_score,
         is_correct_result: update.is_correct_result,
