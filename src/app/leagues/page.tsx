@@ -241,6 +241,10 @@ export default function LeaguesPage() {
                         )}
                       </div>
                       <div className="flex gap-2 mt-3 flex-wrap">
+                        <Link href={`/leagues/${league.id}`}
+                          className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1">
+                          🏆 Leaderboard
+                        </Link>
                         <button onClick={() => copyInviteLink(league)}
                           className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1">
                           {copied === league.id ? '✓ Copied!' : '🔗 Copy Link'}
