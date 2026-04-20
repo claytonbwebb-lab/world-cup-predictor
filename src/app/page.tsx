@@ -52,7 +52,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           </div>
 
           <div className="mb-8">
-            <Image src="/images/logos/logo2.jpg" alt="Logo option 2" width={300} height={150}
+            <Image src="/images/logos/logo3.jpg" alt="Logo option 3" width={300} height={150}
               className="mx-auto object-contain" style={{ maxHeight: '120px' }} />
           </div>
 
