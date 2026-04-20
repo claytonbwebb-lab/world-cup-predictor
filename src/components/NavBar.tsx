@@ -22,25 +22,9 @@ export default function NavBar() {
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/" className="text-sm font-bold flex items-center gap-1.5 shrink-0">
-          <span className="text-yellow-400">The Football Predictor League</span>
-          <span className="text-text/50">|</span>
-          <span className="text-primary">Play Predict Win</span>
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="hidden sm:flex items-center gap-4 text-sm">
-          {links.map(l => (
-            <Link key={l.href} href={l.href} className={path === l.href ? active : inactive}>
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Mobile burger */}
+        {/* Mobile burger — left on mobile, order-1 */}
         <button
-          className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
+          className="sm:hidden p-2 text-textMuted hover:text-text transition-colors order-1"
           onClick={() => setOpen(o => !o)}
           aria-label="Toggle menu"
         >
@@ -54,6 +38,22 @@ export default function NavBar() {
             </svg>
           )}
         </button>
+
+        {/* Logo */}
+        <Link href="/" className="text-sm font-bold flex items-center gap-1.5 shrink-0 order-2">
+          <span className="text-yellow-400">The Football Predictor League</span>
+          <span className="text-text/50 hidden sm:inline">|</span>
+          <span className="text-primary">Play Predict Win</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden sm:flex items-center gap-4 text-sm order-3">
+          {links.map(l => (
+            <Link key={l.href} href={l.href} className={path === l.href ? active : inactive}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
       </div>
 
       {/* Mobile dropdown */}
