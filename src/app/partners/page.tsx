@@ -56,6 +56,7 @@ const partners = [
     tagline: 'Step back into football\'s greatest managerial era',
     description: 'Retro Football Manager is a subscription-based magazine and community dedicated to the managers and tactics that shaped modern football. Packed with nostalgia, tactical analysis and exclusive features from football\'s greatest era — a must-read for students of the game.',
     stats: 'Quarterly print magazine + digital access',
+    bgImage: '/images/partners/rfm-bg.jpg',
   },
 ];
 
@@ -78,39 +79,49 @@ export default function PartnersPage() {
 
         {/* Partner cards */}
         <div className="grid md:grid-cols-2 gap-8">
-          {partners.map(partner => (
+          {partners.map(partner => partner.bgImage ? (
+            <div key={partner.name} className="card relative overflow-hidden border-border hover:border-primary/40 transition-all group">
+              {/* Background image */}
+              <div className="absolute inset-0">
+                <Image src={partner.bgImage} alt="" fill className="object-cover" unoptimized />
+                <div className="absolute inset-0 bg-background/80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              </div>
+              {/* Content */}
+              <div className="relative z-10">
+                <div className="flex items-center justify-center h-32 mb-6 px-6">
+                  <Image src={partner.logo} alt={partner.alt} width={220} height={90} className="object-contain max-h-full" />
+                </div>
+                <p className="text-primary text-sm font-semibold mb-1">{partner.tagline}</p>
+                <h2 className="text-2xl font-black mb-3">{partner.name}</h2>
+                <p className="text-textMuted leading-relaxed mb-4">{partner.description}</p>
+                <div className="flex items-center gap-2 text-sm mb-6">
+                  <span className="text-yellow-400">★</span>
+                  <span className="text-textMuted">{partner.stats}</span>
+                </div>
+                <a href={partner.url} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center block">
+                  Visit {partner.name} →
+                </a>
+              </div>
+            </div>
+          ) : (
             <div key={partner.name} className="card border-border hover:border-primary/40 transition-all group">
               {/* Logo */}
               <div className="flex items-center justify-center h-32 bg-surface/50 rounded-xl mb-6 px-6">
-                <Image 
-                  src={partner.logo} 
-                  alt={partner.alt} 
-                  width={220} 
-                  height={90}
-                  className="object-contain max-h-full"
-                />
+                <Image src={partner.logo} alt={partner.alt} width={220} height={90} className="object-contain max-h-full" />
               </div>
-
               {/* Content */}
               <div className="space-y-4">
                 <div>
                   <p className="text-primary text-sm font-semibold mb-1">{partner.tagline}</p>
                   <h2 className="text-2xl font-black">{partner.name}</h2>
                 </div>
-
                 <p className="text-textMuted leading-relaxed">{partner.description}</p>
-
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-yellow-400">★</span>
                   <span className="text-textMuted">{partner.stats}</span>
                 </div>
-
-                <a 
-                  href={partner.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary w-full text-center block mt-2"
-                >
+                <a href={partner.url} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center block mt-2">
                   Visit {partner.name} →
                 </a>
               </div>
