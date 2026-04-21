@@ -84,7 +84,7 @@ export default function PartnersPage() {
               {/* Background image */}
               <div className="absolute inset-0">
                 <Image src={partner.bgImage} alt="" fill className="object-cover" unoptimized />
-                <div className="absolute inset-0 bg-background/80" />
+                <div className="absolute inset-0 bg-background/70" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               </div>
               {/* Content */}
