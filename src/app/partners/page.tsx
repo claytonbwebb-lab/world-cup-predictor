@@ -11,7 +11,8 @@ const partners = [
     tagline: 'Relive the golden era of football',
     description: '90s Football is the ultimate destination for fans of the beautiful game\'s greatest decade. From Premier League legends to World Cup heroes, they celebrate the players, moments and kits that defined an era. Follow them for nostalgia, stats, and unrivalled football content.',
     stats: '100K+ followers across social platforms',
-    bgImage: '/images/partners/90sfootball-bg.png',
+    bgImage: '/images/partners/90s-football-partner-bg.png',
+    bgAlt: '90s Football — vintage football shirts and memorabilia display',
   },
   {
     name: 'Telescore',
@@ -21,7 +22,9 @@ const partners = [
     tagline: 'The beautiful game, covered beautifully',
     description: 'Telescore delivers comprehensive coverage of the sport we all love — from grassroots to the biggest stages on earth. Whether it\'s transfer news, match analysis, or exclusive interviews, they bring the depth and passion every football fan deserves.',
     stats: 'Trusted by 50K+ readers monthly',
-    bgImage: '/images/partners/telescore-bg.jpg',
+    bgImage: '/images/partners/telescore-partner-bg.jpg',
+    bgAlt: 'Telescore — mobile football scores app on smartphone screens',
+    bgPosition: 'top center',
   },
   {
     name: '3Retro',
@@ -31,7 +34,8 @@ const partners = [
     tagline: 'Vintage footballwear for modern fans',
     description: '3Retro is a curated marketplace for authentic vintage football shirts and apparel. Each piece is hand-picked for quality and authenticity, helping fans wear their football history with pride. From rare classics to iconic match-worn items.',
     stats: '500+ authentic vintage pieces',
-    bgImage: '/images/partners/3retro-bg.jpg',
+    bgImage: '/images/partners/3retro-partner-bg.jpg',
+    bgAlt: '3Retro — collection of vintage football shirts and retro jerseys',
   },
   {
     name: 'Allstar Signings',
@@ -41,7 +45,9 @@ const partners = [
     tagline: 'Authentic memorabilia from football\'s biggest names',
     description: 'Allstar Signings is the go-to source for authenticated football memorabilia — from signed shirts to exclusive event appearances. They work directly with players and clubs to bring fans genuine pieces of football history.',
     stats: 'Official licensed memorabilia partner',
-    bgImage: '/images/partners/allstars-bg.jpg',
+    bgImage: '/images/partners/allstar-signings-partner-bg.jpg',
+    bgAlt: 'Allstar Signings — signed football shirts and memorabilia display',
+    bgPosition: 'top center',
   },
   {
     name: "Butterworths",
@@ -51,7 +57,8 @@ const partners = [
     tagline: 'Print and design with football at its heart',
     description: "Butterworth's is a creative design and print studio with deep roots in football culture. They produce high-quality artwork, prints and merchandise that celebrate the game — from iconic moments to minimalist tributes. Perfect for fans who want to display their passion.",
     stats: 'Handcrafted football artwork & prints',
-    bgImage: '/images/partners/butterworths-bg.jpg',
+    bgImage: '/images/partners/butterworths-partner-bg.jpg',
+    bgAlt: "Butterworth's — football themed artwork and prints",
   },
   {
     name: 'Retro Football Manager',
@@ -61,7 +68,9 @@ const partners = [
     tagline: 'Step back into football\'s greatest managerial era',
     description: 'Retro Football Manager is a subscription-based magazine and community dedicated to the managers and tactics that shaped modern football. Packed with nostalgia, tactical analysis and exclusive features from football\'s greatest era — a must-read for students of the game.',
     stats: 'Quarterly print magazine + digital access',
-    bgImage: '/images/partners/rfm-bg.jpg',
+    bgImage: '/images/partners/retro-football-manager-partner-bg.jpg',
+    bgAlt: 'Retro Football Manager — football management magazine and retro tactics',
+    bgPosition: 'center 80%',
   },
 ];
 
@@ -85,22 +94,23 @@ export default function PartnersPage() {
         {/* Partner cards */}
         <div className="grid md:grid-cols-2 gap-8">
           {partners.map(partner => partner.bgImage ? (
-            <div key={partner.name} className="card relative overflow-hidden border-border hover:border-primary/40 transition-all group">
-              {/* Background image */}
-              <div className="absolute inset-0">
-                <Image src={partner.bgImage} alt="" fill className="object-cover" unoptimized />
+            <div key={partner.name} className="card overflow-hidden border-border hover:border-primary/40 transition-all group">
+              {/* Logo section with background image */}
+              <div className="relative h-40 overflow-hidden">
+                <Image src={partner.bgImage} alt={partner.bgAlt} fill style={{ objectFit: 'cover', objectPosition: partner.bgPosition || 'center' }} unoptimized />
                 <div className="absolute inset-0 bg-background/30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               </div>
-              {/* Content */}
-              <div className="relative z-10">
-                <div className="flex items-center justify-center h-32 mb-6 px-6">
-                  <Image src={partner.logo} alt={partner.alt} width={220} height={90} className="object-contain max-h-full" />
+              {/* Content section */}
+              <div className="p-6">
+                <div className="flex items-center justify-center -mt-20 mb-4 relative z-10">
+                  <div className="bg-background/80 rounded-xl p-4">
+                    <Image src={partner.logo} alt={partner.alt} width={180} height={72} className="object-contain max-h-[72px]" />
+                  </div>
                 </div>
                 <p className="text-primary text-sm font-semibold mb-1">{partner.tagline}</p>
                 <h2 className="text-2xl font-black mb-3">{partner.name}</h2>
                 <p className="text-textMuted leading-relaxed mb-4">{partner.description}</p>
-                <div className="flex items-center gap-2 text-sm mb-6">
+                <div className="flex items-center gap-2 text-sm mb-4">
                   <span className="text-yellow-400">★</span>
                   <span className="text-textMuted">{partner.stats}</span>
                 </div>
