@@ -11,15 +11,17 @@ const partners = [
     tagline: 'Relive the golden era of football',
     description: '90s Football is the ultimate destination for fans of the beautiful game\'s greatest decade. From Premier League legends to World Cup heroes, they celebrate the players, moments and kits that defined an era. Follow them for nostalgia, stats, and unrivalled football content.',
     stats: '100K+ followers across social platforms',
+    bgImage: '/images/partners/90sfootball-bg.png',
   },
   {
-    name: 'FOOTBALL',
+    name: 'Telescore',
     logo: '/images/partners/footbal12.png',
     url: 'https://bit.ly/4tRRJ2o',
-    alt: 'FOOTBALL',
+    alt: 'Telescore',
     tagline: 'The beautiful game, covered beautifully',
-    description: 'FOOTBALL delivers comprehensive coverage of the sport we all love — from grassroots to the biggest stages on earth. Whether it\'s transfer news, match analysis, or exclusive interviews, they bring the depth and passion every football fan deserves.',
+    description: 'Telescore delivers comprehensive coverage of the sport we all love — from grassroots to the biggest stages on earth. Whether it\'s transfer news, match analysis, or exclusive interviews, they bring the depth and passion every football fan deserves.',
     stats: 'Trusted by 50K+ readers monthly',
+    bgImage: '/images/partners/telescore-bg.jpg',
   },
   {
     name: '3Retro',
@@ -29,6 +31,7 @@ const partners = [
     tagline: 'Vintage footballwear for modern fans',
     description: '3Retro is a curated marketplace for authentic vintage football shirts and apparel. Each piece is hand-picked for quality and authenticity, helping fans wear their football history with pride. From rare classics to iconic match-worn items.',
     stats: '500+ authentic vintage pieces',
+    bgImage: '/images/partners/3retro-bg.jpg',
   },
   {
     name: 'Allstar Signings',
@@ -38,6 +41,7 @@ const partners = [
     tagline: 'Authentic memorabilia from football\'s biggest names',
     description: 'Allstar Signings is the go-to source for authenticated football memorabilia — from signed shirts to exclusive event appearances. They work directly with players and clubs to bring fans genuine pieces of football history.',
     stats: 'Official licensed memorabilia partner',
+    bgImage: '/images/partners/allstars-bg.jpg',
   },
   {
     name: "Butterworths",
@@ -47,6 +51,7 @@ const partners = [
     tagline: 'Print and design with football at its heart',
     description: "Butterworth's is a creative design and print studio with deep roots in football culture. They produce high-quality artwork, prints and merchandise that celebrate the game — from iconic moments to minimalist tributes. Perfect for fans who want to display their passion.",
     stats: 'Handcrafted football artwork & prints',
+    bgImage: '/images/partners/butterworths-bg.jpg',
   },
   {
     name: 'Retro Football Manager',

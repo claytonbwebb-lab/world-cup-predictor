@@ -41,7 +41,24 @@ export default function LeaguesPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    loadLeagues();
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const joinCode = params.get('join');
+      if (joinCode) {
+        const res = await fetch('/api/leagues/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: joinCode }),
+        });
+        const data = await res.json();
+        if (data.error) setError(data.error);
+        else setSuccess('Joined league successfully!');
+        window.history.replaceState({}, '', '/leagues');
+        loadLeagues();
+      } else {
+        loadLeagues();
+      }
+    })();
   }, []);
 
   async function loadLeagues() {
