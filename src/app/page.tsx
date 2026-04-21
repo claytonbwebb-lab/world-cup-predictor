@@ -194,6 +194,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
               </a>
             ))}
           </div>
+          <div className="text-center mt-8">
+            <Link href="/partners" className="text-primary text-sm font-medium hover:underline">
+              Meet our partners →
+            </Link>
+          </div>
         </div>
       </section>
 
