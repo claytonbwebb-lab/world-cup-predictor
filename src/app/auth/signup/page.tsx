@@ -9,6 +9,7 @@ function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [over18, setOver18] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,6 +32,12 @@ function SignupForm() {
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       setError('Username can only contain letters, numbers, and underscores');
+      setLoading(false);
+      return;
+    }
+
+    if (!over18) {
+      setError('You must be aged 18 or over to participate');
       setLoading(false);
       return;
     }
@@ -112,7 +119,24 @@ function SignupForm() {
                 className="input w-full" placeholder="••••••••" required minLength={6} />
               <p className="text-textMuted text-xs mt-1">Minimum 6 characters</p>
             </div>
-            <button type="submit" onClick={handleSignup} disabled={loading} className="btn-primary w-full">
+
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="over18"
+                checked={over18}
+                onChange={(e) => setOver18(e.target.checked)}
+                className="mt-1 accent-primary"
+              />
+              <label htmlFor="over18" className="text-sm text-textMuted leading-snug">
+                I am aged 18 or over and agree to the{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  Terms & Conditions
+                </a>
+              </label>
+            </div>
+
+            <button type="submit" onClick={handleSignup} disabled={loading || !over18} className="btn-primary w-full">
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
