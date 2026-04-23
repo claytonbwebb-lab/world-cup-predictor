@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         source: '/3retro',
-        destination: 'https://bit.ly/4dPhtYE',
+        destination: 'https://www.3retro.com/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
         permanent: false,
       },
       {
