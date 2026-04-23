@@ -55,10 +55,6 @@ function SignupForm() {
       setError(error.message);
       setLoading(false);
     } else if (authData.user) {
-      await supabase.from('profiles').upsert({
-        id: authData.user.id,
-        username,
-      });
       setSuccess(true);
     }
   };
