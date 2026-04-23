@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: '/90sfootball',
-        destination: 'https://bit.ly/4ceCmeF',
+        destination: 'https://www.90sfootball.com/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
         permanent: false,
       },
       {
@@ -19,7 +19,7 @@ const nextConfig = {
       },
       {
         source: '/allstarsignings',
-        destination: 'https://bit.ly/4sw9t2t',
+        destination: 'https://allstarsignings.com/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
         permanent: false,
       },
       {
