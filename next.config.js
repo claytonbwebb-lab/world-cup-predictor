@@ -9,7 +9,7 @@ const nextConfig = {
       },
       {
         source: '/telescore',
-        destination: 'https://bit.ly/4tRRJ2o',
+        destination: 'https://www.telescore.app/home?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
         permanent: false,
       },
       {
