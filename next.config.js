@@ -1,5 +1,39 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/90sfootball',
+        destination: 'https://bit.ly/4ceCmeF',
+        permanent: false,
+      },
+      {
+        source: '/telescore',
+        destination: 'https://bit.ly/4tRRJ2o',
+        permanent: false,
+      },
+      {
+        source: '/3retro',
+        destination: 'https://bit.ly/4dPhtYE',
+        permanent: false,
+      },
+      {
+        source: '/allstarsignings',
+        destination: 'https://bit.ly/4sw9t2t',
+        permanent: false,
+      },
+      {
+        source: '/butterworths',
+        destination: 'https://bit.ly/4vv6MAT',
+        permanent: false,
+      },
+      {
+        source: '/retrofm',
+        destination: 'https://rfm25.onelink.me/AFls/ppw',
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
