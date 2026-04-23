@@ -180,12 +180,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
-              { name: '90s Football', href: 'https://bit.ly/4ceCmeF', src: '/images/partners/90sfootball.png', alt: '90s Football' },
-              { name: 'FOOTBALL', href: 'https://bit.ly/4tRRJ2o', src: '/images/partners/footbal12.png', alt: 'FOOTBALL' },
-              { name: '3Retro', href: 'https://bit.ly/4dPhtYE', src: '/images/partners/3retro.png', alt: '3Retro' },
-              { name: 'Allstar Signings', href: 'https://bit.ly/4sw9t2t', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
-              { name: 'Butterworths', href: 'https://bit.ly/4vv6MAT', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
-              { name: 'Retro Football Manager', href: 'https://rfm25.onelink.me/AFls/ppw', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
+              { name: '90s Football', href: '/90sfootball', src: '/images/partners/90sfootball.png', alt: '90s Football' },
+              { name: 'FOOTBALL', href: '/telescore', src: '/images/partners/footbal12.png', alt: 'FOOTBALL' },
+              { name: '3Retro', href: '/3retro', src: '/images/partners/3retro.png', alt: '3Retro' },
+              { name: 'Allstar Signings', href: '/allstarsignings', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
+              { name: 'Butterworths', href: '/butterworths', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
+              { name: 'Retro Football Manager', href: '/retrofm', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
             ].map(partner => (
               <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center h-24 px-4 hover:opacity-80 transition-opacity">

@@ -6,7 +6,7 @@ const partners = [
   {
     name: '90s Football',
     logo: '/images/partners/90sfootball.png',
-    url: 'https://bit.ly/4ceCmeF',
+    url: '/90sfootball',
     alt: '90s Football',
     tagline: 'Relive the golden era of football',
     description: '90s Football is the ultimate destination for fans of the beautiful game\'s greatest decade. From Premier League legends to World Cup heroes, they celebrate the players, moments and kits that defined an era. Follow them for nostalgia, stats, and unrivalled football content.',
@@ -17,7 +17,7 @@ const partners = [
   {
     name: 'Telescore',
     logo: '/images/partners/footbal12.png',
-    url: 'https://bit.ly/4tRRJ2o',
+    url: '/telescore',
     alt: 'Telescore',
     tagline: 'The beautiful game, covered beautifully',
     description: 'Telescore delivers comprehensive coverage of the sport we all love — from grassroots to the biggest stages on earth. Whether it\'s transfer news, match analysis, or exclusive interviews, they bring the depth and passion every football fan deserves.',
@@ -29,7 +29,7 @@ const partners = [
   {
     name: '3Retro',
     logo: '/images/partners/3retro.png',
-    url: 'https://bit.ly/4dPhtYE',
+    url: '/3retro',
     alt: '3Retro',
     tagline: 'Vintage footballwear for modern fans',
     description: '3Retro is a curated marketplace for authentic vintage football shirts and apparel. Each piece is hand-picked for quality and authenticity, helping fans wear their football history with pride. From rare classics to iconic match-worn items.',
@@ -40,7 +40,7 @@ const partners = [
   {
     name: 'Allstar Signings',
     logo: '/images/partners/allstarsignings.png',
-    url: 'https://bit.ly/4sw9t2t',
+    url: '/allstarsignings',
     alt: 'Allstar Signings',
     tagline: 'Authentic memorabilia from football\'s biggest names',
     description: 'Allstar Signings is the go-to source for authenticated football memorabilia — from signed shirts to exclusive event appearances. They work directly with players and clubs to bring fans genuine pieces of football history.',
@@ -52,7 +52,7 @@ const partners = [
   {
     name: "Butterworths",
     logo: '/images/partners/butterworths.png',
-    url: 'https://bit.ly/4vv6MAT',
+    url: '/butterworths',
     alt: "Butterworth's",
     tagline: 'Print and design with football at its heart',
     description: "Butterworth's is a creative design and print studio with deep roots in football culture. They produce high-quality artwork, prints and merchandise that celebrate the game — from iconic moments to minimalist tributes. Perfect for fans who want to display their passion.",
@@ -63,7 +63,7 @@ const partners = [
   {
     name: 'Retro Football Manager',
     logo: '/images/partners/rfm.png',
-    url: 'https://rfm25.onelink.me/AFls/ppw',
+    url: '/retrofm',
     alt: 'Retro Football Manager',
     tagline: 'Step back into football\'s greatest managerial era',
     description: 'Retro Football Manager is a subscription-based magazine and community dedicated to the managers and tactics that shaped modern football. Packed with nostalgia, tactical analysis and exclusive features from football\'s greatest era — a must-read for students of the game.',
