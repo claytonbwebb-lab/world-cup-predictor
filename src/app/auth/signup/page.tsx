@@ -42,7 +42,7 @@ function SignupForm() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -54,10 +54,9 @@ function SignupForm() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      // Also insert username and email into profiles
+    } else if (authData.user) {
       await supabase.from('profiles').upsert({
-        id: (await supabase.auth.getUser()).data.user?.id,
+        id: authData.user.id,
         username,
         email,
       });
