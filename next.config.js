@@ -24,7 +24,7 @@ const nextConfig = {
       },
       {
         source: '/butterworths',
-        destination: 'https://bit.ly/4vv6MAT',
+        destination: 'https://butterworths.online/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
         permanent: false,
       },
       {
