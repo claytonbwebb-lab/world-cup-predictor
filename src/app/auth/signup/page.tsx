@@ -58,7 +58,6 @@ function SignupForm() {
       await supabase.from('profiles').upsert({
         id: authData.user.id,
         username,
-        email,
       });
       setSuccess(true);
     }
