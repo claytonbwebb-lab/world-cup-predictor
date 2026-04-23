@@ -15,6 +15,73 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'golden-boot-2026-top-10-scoring-predictions',
+    title: 'Top 10 Potential Golden Boot Winners at World Cup 2026',
+    excerpt: 'Who will finish as the tournament\'s top scorer in the USA, Canada & Mexico? We rank the ten players most likely to lift the Golden Boot.',
+    content: `
+The Golden Boot. The individual prize that turns a great tournament into a life-changing one. Win it, and your name sits alongside legends like Maradona, Ronaldo, Klose, and Miroslav Klose's record six tournament goals.
+
+With the 2026 World Cup just weeks away, we break down the ten players best placed to finish as top scorer — and what gives them the edge.
+
+## 1. Kylian Mbappé (France)
+**Why he leads the pack:** At 27, Mbappé will be in his physical prime for this tournament. He scored 8 goals across two World Cups before turning 25 — a rate that borders on absurd. France's squad is generational, meaning they'll go deep into the tournament. More matches = more goals. More goals = more points on the leaderboard. The only question is whether he starts wide or through the middle. France go as Mbappé goes.
+
+## 2. Harry Kane (England)
+**The sentimental favourite:** England haven't won a major tournament since 1966, but they have Harry Kane — a striker who's now broken the 100-goal barrier for his country. Kane has finished runner-up in two major finals and will be playing his fifth World Cup tournament. He's clinical from open play, devastating from set pieces, and has a supporting cast that can get him chances in any scenario. If England go deep, Kane has a genuine case.
+
+## 3. Harry Kane (England)
+**The sentimental favourite:** England haven't won a major tournament since 1966, but they have Harry Kane — a striker who's now broken the 100-goal barrier for his country. Kane has finished runner-up in two major finals and will be playing his fifth World Cup tournament. He's clinical from open play, devastating from set pieces, and has a supporting cast that can get him chances in any scenario. If England go deep, Kane has a genuine case.
+
+## 4. Vinícius Júnior (Brazil)
+**Brazil's new number 7:** Neymar may steal headlines, but Vinícius is now Brazil's most dangerous attacker. His direct running, pace, and finishing make him a constant threat — and at 25, he arrives at this World Cup as the complete package. Brazil will play an aggressive style that should create chances throughout the tournament. If they go deep, Vinícius will be scoring throughout.
+
+## 5. Lautaro Martínez (Argentina)
+**The defending champions' hidden weapon:** While the world watches Messi, Lautaro Martínez has quietly become one of the most reliable strikers in international football. He scored in the 2022 Final. He's Argentina's all-time top scorer. He plays every match like it matters. With Argentina primed for another deep run, Lautaro could rack up goals across group stage, knockout rounds, and potentially the Final itself.
+
+## 6. Cristiano Ronaldo (Portugal)
+**Last chance at the greatest record:** Ronaldo is 41 by June 2026. He may not start every match — but when he does, he's still capable of the extraordinary. He's the all-time leading goalscorer in international football and has unfinished business after Portugal's 2022 exit. He knows exactly where the Golden Boot pressure sits. If Portugal reach the semi-finals, Ronaldo will be in the conversation.
+
+## 7. Lionel Messi (Argentina)
+**The last dance:** Messi has nothing left to prove — except perhaps to himself. He won the World Cup in 2022, ended the greatest individual debate in football history, and has nothing left to chase. But Argentina at a World Cup is different, and Messi in a World Cup is different again. He doesn't need to score to change games. But when he does, it counts. This feels like a farewell tour — and legendary farewells deserve to end with the Golden Boot.
+
+## 8. Robert Lewandowski (Poland)
+**The cold-blooded finisher:** Lewandowski is 37 by the time the 2026 World Cup arrives, but his finishing hasn't diminished. Poland qualified — their first appearance since 2006 — and have their best-ever chance to progress deep into a tournament. They need to get through a difficult group first, but if they do, Lewandowski can score against anyone. His movement in the box is still elite.
+
+## 9. Victor Osimhen (Nigeria)
+**The African dark horse:** Nigeria qualified for only their fourth World Cup ever, and they did it in style. Osimhen was the AFCON Player of the Tournament in 2024 — a competition in which Nigeria reached the semi-finals. His pace, power, and finishing make him a genuine threat in any match. Nigeria are unlikely to go all the way, but Osimhen could steal the Golden Boot from a deep tournament if a few group-stage braces fall his way.
+
+## 10. Lamine Yamal (Spain)
+**The generational talent:** At 18, Lamine Yamal is already one of the most exciting attacking players in world football. He became the youngest goalscorer in European Championship history in 2024 and plays with a maturity that belies his age. Spain have a generation built around him and Pedri — if they go deep into this World Cup, Yamal has the ability to finish as top scorer ahead of players with far more senior caps.
+
+## What Makes a Golden Boot Winner?
+Three factors separate Golden Boot winners from the pack:
+
+**1. Tournament depth** — The winner rarely comes from a team that exits early. Klose won in 2006 with Germany reaching the semi-finals. James Rodríguez won in 2014 with Colombia reaching the quarter-finals. Your striker needs matches — and goals in the knockout rounds.
+
+**2. Set-piece responsibility** — Penalty kicks and free kicks add goals that don't require open-play service. The best Golden Boot winners often have set-piece duties alongside their open-play scoring.
+
+**3. Group stage efficiency** — Most Golden Boot winners build their total in the group stage. Three group matches = opportunities before the pressure of knockout football. Players who blank in groups rarely recover.
+
+## The Outside Bets
+Don't write off: **Lamine Yamal (Spain)** — teenager and Barcelona's brightest talent, could light up the tournament. **Jamal Musiala (Germany)** — Germany always goes deep and Musiala is generational. **Leroy Sané (Germany)** — if his fitness holds, he's capable of anything.
+
+## Our Prediction
+If we had to pick one: **Kylian Mbappé**. France are the most complete team in the tournament, Mbappé has the scoring record, and he's in the form of his life. But the World Cup has a habit of producing moments no one predicted.
+
+That's exactly why prediction leagues exist.
+
+**Set your predictions now at Play Predict Win** — and back your Golden Boot winner before the first whistle blows.
+    `.trim(),
+    author: 'Danny Taylor',
+    authorRole: 'Football Analyst',
+    date: '23 April 2026',
+    dateIso: '2026-04-23',
+    category: 'Player Guide',
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop',
+    imageAlt: 'Footballer celebrating a goal with arms outstretched',
+    readingTime: '6 min read',
+  },
+  {
     slug: 'world-cup-2026-prediction-guide',
     title: 'How to Predict Every World Cup 2026 Scoreline Like a Pro',
     excerpt: 'From studying form to understanding venue conditions - the strategies that separate casual punters from prediction champions.',
