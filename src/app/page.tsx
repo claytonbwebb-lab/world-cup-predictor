@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import ScrollHeader from '@/components/ScrollHeader';
+import HomepageFAQ from '@/components/HomepageFAQ';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
   const params = await searchParams;
@@ -258,6 +259,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           </div>
         </div>
       </section>
+
+      <HomepageFAQ />
 
       {/* ── Countdown ── */}
       <section className="border-t border-border py-16 text-center">
