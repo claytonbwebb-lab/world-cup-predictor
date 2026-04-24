@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -85,7 +86,7 @@ function SignupForm() {
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-4xl mb-4 block">🏠</Link>
+          <Link href="/" className="mb-4 block"><Image src="/images/logos/logo3.jpg" alt="Play Predict Win" width={160} height={53} className="mx-auto object-contain" style={{ maxHeight: '48px' }} /></Link>
           <h1 className="text-3xl font-bold mb-2">Create Account</h1>
           <p className="text-textMuted">Join the prediction league</p>
         </div>
