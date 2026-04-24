@@ -4,6 +4,7 @@ import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import ScrollHeader from '@/components/ScrollHeader';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
   const params = await searchParams;
@@ -18,6 +19,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
 
   return (
     <div className="flex-1 flex flex-col">
+      <ScrollHeader />
 
       {/* ── Hero ── */}
       <section className="relative flex-1 flex items-center justify-center overflow-hidden min-h-[80vh]">
@@ -49,11 +51,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="inline-flex flex-col items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 text-primary text-sm font-medium mb-8">
             <span>FIFA World Cup 2026</span>
             <span className="text-xs opacity-70">USA · Canada · Mexico</span>
-          </div>
-
-          <div className="mb-8">
-            <Image src="/images/logos/logo3.jpg" alt="Logo option 3" width={300} height={150}
-              className="mx-auto object-contain" style={{ maxHeight: '120px' }} />
           </div>
 
           {/* Brand name */}
