@@ -21,8 +21,8 @@ export default function ScrollHeader() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image src="/images/logos/logo3.jpg" alt="Play Predict Win" width={180} height={60}
-            className="object-contain" style={{ maxHeight: '54px' }} />
+          <Image src="/images/logos/logo3.jpg" alt="Play Predict Win" width={220} height={73}
+            className="object-contain" style={{ maxHeight: '60px' }} />
         </Link>
 
         {/* Desktop social links — hidden on mobile */}
