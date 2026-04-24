@@ -86,7 +86,7 @@ function SignupForm() {
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="mb-4 block"><Image src="/images/logos/logo3.jpg" alt="Play Predict Win" width={260} height={87} className="mx-auto object-contain" style={{ maxHeight: '72px' }} /></Link>
+          <Link href="/" className="mb-4 block"><Image src="/images/logos/logo3.jpg" alt="Play Predict Win" width={300} height={100} className="mx-auto object-contain" style={{ maxHeight: '80px' }} /></Link>
           <h1 className="text-3xl font-bold mb-2">Create Account</h1>
           <p className="text-textMuted">Join the prediction league</p>
         </div>
