@@ -21,7 +21,7 @@ const partners = [
     alt: 'Telescore',
     tagline: 'The beautiful game, covered beautifully',
     description: 'Telescore delivers comprehensive coverage of the sport we all love — from grassroots to the biggest stages on earth. Whether it\'s transfer news, match analysis, or exclusive interviews, they bring the depth and passion every football fan deserves.',
-    stats: 'Trusted by 50K+ readers monthly',
+    stats: 'Trusted by 135,000 users',
     bgImage: '/images/partners/telescore-partner-bg.jpg',
     bgAlt: 'Telescore — mobile football scores app on smartphone screens',
     bgPosition: 'top center',
