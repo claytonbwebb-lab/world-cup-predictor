@@ -10,7 +10,7 @@ const partners = [
     alt: '90s Football',
     tagline: 'Relive the golden era of football',
     description: '90s Football is the ultimate destination for fans of the beautiful game\'s greatest decade. From Premier League legends to World Cup heroes, they celebrate the players, moments and kits that defined an era. Follow them for nostalgia, stats, and unrivalled football content.',
-    stats: '100K+ followers across social platforms',
+    stats: '800K+ followers across social platforms',
     bgImage: '/images/partners/90s-football-partner-bg.png',
     bgAlt: '90s Football — vintage football shirts and memorabilia display',
   },
