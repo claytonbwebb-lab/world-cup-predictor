@@ -42,7 +42,7 @@ const partners = [
     logo: '/images/partners/allstarsignings.png',
     url: '/allstarsignings',
     alt: 'Allstar Signings',
-    tagline: 'Authentic memorabilia from football\'s biggest names',
+    tagline: `We don't just tell you it's authentic...we show you!`,
     description: 'Allstar Signings is the go-to source for authenticated football memorabilia — from signed shirts to exclusive event appearances. They work directly with players and clubs to bring fans genuine pieces of football history.',
     stats: 'Official licensed memorabilia partner',
     bgImage: '/images/partners/allstar-signings-partner-bg.jpg',
