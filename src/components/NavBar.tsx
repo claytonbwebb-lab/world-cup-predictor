@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
@@ -75,11 +76,16 @@ export default function NavBar() {
             ))}
           </div>
 
-          {/* CENTRE — logo, always centred */}
-          <Link href="/" className="flex items-center gap-1.5 font-bold text-sm whitespace-nowrap">
-            <span className="text-yellow-400">The Football Predictor League</span>
-            <span className="text-text/50 hidden sm:inline">|</span>
-            <span className="text-primary hidden sm:inline">Play Predict Win</span>
+          {/* CENTRE — logo image, always centred */}
+          <Link href="/" className="flex items-center justify-center">
+            <Image
+              src="/images/logos/logo3.jpg"
+              alt="Play Predict Win"
+              width={200}
+              height={67}
+              className="object-contain w-[100px] sm:w-[180px]"
+              style={{ maxHeight: '52px' }}
+            />
           </Link>
 
           {/* RIGHT — desktop nav / mobile burger */}
