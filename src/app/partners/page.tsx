@@ -86,7 +86,7 @@ export default function PartnersPage() {
             <span className="text-primary">Supported</span> by the Best
           </h1>
           <p className="text-textMuted text-lg max-w-2xl mx-auto leading-relaxed">
-            We\'re proud to partner with some of the biggest names in football culture. 
+            We're proud to partner with some of the biggest names in football culture. 
             Each partner shares our passion for the beautiful game — check them out below.
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function PartnersPage() {
           <div className="text-4xl mb-4">🤝</div>
           <h2 className="text-2xl font-bold mb-3">Want to Partner With Us?</h2>
           <p className="text-textMuted max-w-md mx-auto mb-6">
-            We\'re always looking to collaborate with brands that share our love for football. 
+            We're always looking to collaborate with brands that share our love for football. 
             Get in touch to discuss partnership opportunities.
           </p>
           <a 
