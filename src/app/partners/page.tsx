@@ -32,7 +32,7 @@ const partners = [
     url: '/3retro',
     alt: '3Retro',
     tagline: 'Vintage footballwear for modern fans',
-    description: '3Retro is a curated marketplace for authentic vintage football shirts and apparel. Each piece is hand-picked for quality and authenticity, helping fans wear their football history with pride. From rare classics to iconic match-worn items.',
+    description: '3Retro is the home of retro football, bringing together a curated range of classic shirts and vintage sportswear. With a focus on quality, authenticity and timeless style, 3Retro celebrates the era of replica kits redefined and reborn for today's fans and collectors. *Replica. Redefined. Reborn.',
     stats: '500+ authentic vintage pieces',
     bgImage: '/images/partners/3retro-partner-bg.jpg',
     bgAlt: '3Retro — collection of vintage football shirts and retro jerseys',
