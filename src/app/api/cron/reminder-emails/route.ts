@@ -1,27 +1,23 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
 const FROM_EMAIL = 'World Cup Predictor <onboarding@resend.dev>';
-const CRON_SECRET = process.env.CRON_SECRET;
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-// Authorization check — Vercel cron passes a secret header
-function authorize(request: Request): boolean {
-  if (!CRON_SECRET) return process.env.NODE_ENV !== 'production';
-  return request.headers.get('x-cron-secret') === CRON_SECRET;
+function createServerClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
 
 export async function POST(request: Request) {
-  if (!authorize(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const supabase = await createClient();
+  const supabase = createServerClient();
 
   // ── Step 1: Find all matches kicking off tomorrow (UK midnight to midnight) ──
   const tomorrow = new Date();
