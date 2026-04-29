@@ -16,13 +16,16 @@ function createServerClient() {
   );
 }
 
-export async function GET() {
-  // Manual trigger for testing - same logic as POST
-  return POST(new Request('http://localhost'));
+export async function GET(request: Request) {
+  // Manual trigger for testing - same logic as POST, supports ?dryRun=true
+  const url = new URL(request.url);
+  return POST(new Request('http://localhost?' + url.searchParams.toString()));
 }
 
 export async function POST(request: Request) {
-  console.log('[reminder-emails] Cron triggered at', new Date().toISOString());
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get('dryRun') === 'true';
+  console.log('[reminder-emails] Cron triggered at', new Date().toISOString(), dryRun ? '(DRY RUN)' : '');
   console.log('[reminder-emails] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
   console.log('[reminder-emails] SUPABASE_SERVICE_ROLE_KEY set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   console.log('[reminder-emails] NEXT_PUBLIC_SUPABASE_URL set:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -172,6 +175,10 @@ export async function POST(request: Request) {
 </html>`;
 
       try {
+        if (dryRun) {
+          console.log(`[reminder-emails] 🧪 DRY RUN — would send to ${user.email} (${user.username}) — ${predictedCount === 0 ? 'no predictions' : `${predictedCount}/${totalCount} predicted`}`);
+          return { userId: user.id, email: user.email, sent: false, reason: 'dry-run', subject };
+        }
         console.log(`[reminder-emails] 📧 Sending email to ${user.email} (${user.username}) — ${predictedCount === 0 ? 'no predictions' : `${predictedCount}/${totalCount} predicted`}`);
         await getResend().emails.send({
           from: FROM_EMAIL,
