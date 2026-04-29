@@ -1,0 +1,10 @@
+{
+  "$schema": "vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/reminder-emails",
+      "schedule": "0 8 * * *",
+      "tz": "Europe/London"
+    }
+  ]
+}
