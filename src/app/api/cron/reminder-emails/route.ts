@@ -17,6 +17,11 @@ function createServerClient() {
 }
 
 export async function POST(request: Request) {
+  console.log('[reminder-emails] Cron triggered at', new Date().toISOString());
+  console.log('[reminder-emails] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
+  console.log('[reminder-emails] SUPABASE_SERVICE_ROLE_KEY set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log('[reminder-emails] NEXT_PUBLIC_SUPABASE_URL set:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+
   const supabase = createServerClient();
 
   // ── Step 1: Find all matches kicking off tomorrow (UK midnight to midnight) ──
@@ -27,6 +32,8 @@ export async function POST(request: Request) {
   const tomorrowEnd = new Date(tomorrow);
   tomorrowEnd.setUTCHours(23, 59, 59, 999);
 
+  console.log('[reminder-emails] Querying matches between', tomorrow.toISOString(), 'and', tomorrowEnd.toISOString());
+
   const { data: tomorrowMatches, error: matchesError } = await supabase
     .from('matches')
     .select('id, home_team, away_team, kickoff_at, group_stage')
@@ -35,14 +42,16 @@ export async function POST(request: Request) {
     .order('kickoff_at', { ascending: true });
 
   if (matchesError) {
-    console.error('Reminder emails: failed to fetch matches', matchesError);
-    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    console.error('[reminder-emails] ❌ Failed to fetch matches:', matchesError);
+    return NextResponse.json({ error: 'Database error', detail: matchesError.message }, { status: 500 });
   }
 
-  // No matches tomorrow — nothing to do
   if (!tomorrowMatches || tomorrowMatches.length === 0) {
+    console.log('[reminder-emails] ✅ No matches tomorrow — skipping');
     return NextResponse.json({ message: 'No matches tomorrow — skipping', sent: 0 });
   }
+
+  console.log(`[reminder-emails] ✅ Found ${tomorrowMatches.length} matches tomorrow:`, tomorrowMatches.map(m => `${m.home_team} vs ${m.away_team}`));
 
   const tomorrowMatchIds = tomorrowMatches.map((m) => m.id);
 
@@ -54,9 +63,11 @@ export async function POST(request: Request) {
     .neq('email', '');
 
   if (usersError) {
-    console.error('Reminder emails: failed to fetch users', usersError);
-    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    console.error('[reminder-emails] ❌ Failed to fetch users:', usersError);
+    return NextResponse.json({ error: 'Database error', detail: usersError.message }, { status: 500 });
   }
+
+  console.log(`[reminder-emails] ✅ Found ${users?.length ?? 0} users with emails`);
 
   // ── Step 3: Fetch all predictions for tomorrow's matches ──
   const { data: predictions, error: predError } = await supabase
@@ -65,9 +76,11 @@ export async function POST(request: Request) {
     .in('match_id', tomorrowMatchIds);
 
   if (predError) {
-    console.error('Reminder emails: failed to fetch predictions', predError);
-    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    console.error('[reminder-emails] ❌ Failed to fetch predictions:', predError);
+    return NextResponse.json({ error: 'Database error', detail: predError.message }, { status: 500 });
   }
+
+  console.log(`[reminder-emails] ✅ Found ${predictions?.length ?? 0} predictions for tomorrow's matches`);
 
   // Build a Set of "user → predicted matchIds" for O(1) lookup
   const userPredictedMap = new Map<string, Set<string>>();
@@ -91,8 +104,10 @@ export async function POST(request: Request) {
       const predicted = userPredictedMap.get(user.id) ?? new Set();
       const missing = tomorrowMatchIds.filter((id) => !predicted.has(id));
 
-      // Skip if they've predicted every match
-      if (missing.length === 0) return { userId: user.id, sent: false, reason: 'all-predicted' };
+      if (missing.length === 0) {
+        console.log(`[reminder-emails] ⏭️ ${user.email} — all predicted, skipping`);
+        return { userId: user.id, sent: false, reason: 'all-predicted' };
+      }
 
       const predictedCount = tomorrowMatchIds.length - missing.length;
       const totalCount = tomorrowMatches.length;
@@ -152,15 +167,17 @@ export async function POST(request: Request) {
 </html>`;
 
       try {
+        console.log(`[reminder-emails] 📧 Sending email to ${user.email} (${user.username}) — ${predictedCount === 0 ? 'no predictions' : `${predictedCount}/${totalCount} predicted`}`);
         await getResend().emails.send({
           from: FROM_EMAIL,
           to: user.email,
           subject,
           html,
         });
+        console.log(`[reminder-emails] ✅ Email sent to ${user.email}`);
         return { userId: user.id, sent: true };
       } catch (err) {
-        console.error(`Failed to send reminder to ${user.email}:`, err);
+        console.error(`[reminder-emails] ❌ Failed to send to ${user.email}:`, err);
         return { userId: user.id, sent: false, reason: 'send-error' };
       }
     })
@@ -168,6 +185,8 @@ export async function POST(request: Request) {
 
   const sent = results.filter((r) => r.status === 'fulfilled' && r.value.sent).length;
   const failed = results.filter((r) => r.status === 'rejected' || !r.value.sent).length;
+
+  console.log(`[reminder-emails] 📊 Done — sent: ${sent}, skipped/failed: ${failed}`);
 
   return NextResponse.json({
     message: `Reminder emails processed`,
