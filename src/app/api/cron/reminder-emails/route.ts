@@ -2,7 +2,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const FROM_EMAIL = 'World Cup Predictor <onboarding@resend.dev>';
+const FROM_EMAIL = 'World Cup Predictor <noreply@playpredictwin.com>';
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
