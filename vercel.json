@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/reminder-emails?dryRun=true",
-      "schedule": "59 15 * * *"
+      "schedule": "2 16 * * *"
     }
   ]
 }
