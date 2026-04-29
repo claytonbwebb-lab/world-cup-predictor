@@ -16,6 +16,11 @@ function createServerClient() {
   );
 }
 
+export async function GET() {
+  // Manual trigger for testing - same logic as POST
+  return POST(new Request('http://localhost'));
+}
+
 export async function POST(request: Request) {
   console.log('[reminder-emails] Cron triggered at', new Date().toISOString());
   console.log('[reminder-emails] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
