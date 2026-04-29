@@ -2,9 +2,13 @@ import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = 'World Cup Predictor <onboarding@resend.dev>';
 const CRON_SECRET = process.env.CRON_SECRET;
+
+function getResend() {
+  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 // Authorization check — Vercel cron passes a secret header
 function authorize(request: Request): boolean {
@@ -152,7 +156,7 @@ export async function POST(request: Request) {
 </html>`;
 
       try {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: FROM_EMAIL,
           to: user.email,
           subject,
