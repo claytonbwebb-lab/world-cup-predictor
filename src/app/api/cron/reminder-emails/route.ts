@@ -111,8 +111,10 @@ export async function POST(request: Request) {
     )
     .join('');
 
-  const results = await Promise.allSettled(
-    (users ?? []).map(async (user) => {
+  // Send sequentially with 250ms delay to respect Resend's 5 req/sec rate limit
+  const results: any[] = [];
+  for (const user of (users ?? [])) {
+    const result = await (async () => {
       const predicted = userPredictedMap.get(user.id) ?? new Set();
       const missing = tomorrowMatchIds.filter((id) => !predicted.has(id));
 
@@ -220,17 +222,17 @@ export async function POST(request: Request) {
         console.error(`[reminder-emails] ❌ Failed to send to ${user.email}:`, err);
         return { userId: user.id, sent: false, reason: 'send-error' };
       }
-    })
-  );
+        })();
+    results.push(result);
+    await new Promise(r => setTimeout(r, 250));
+  }
 
-  const sent = results.filter((r) => r.status === 'fulfilled' && r.value.sent).length;
-  const failed = results.filter((r) => r.status === 'rejected' || !r.value.sent).length;
+  const sent = results.filter((r) => r && r.sent).length;
+  const failed = results.filter((r) => !r || !r.sent).length;
 
   console.log(`[reminder-emails] 📊 Done — sent: ${sent}, skipped/failed: ${failed}`);
 
-  const detail = results.map((r) =>
-    r.status === 'fulfilled' ? r.value : { sent: false, reason: 'exception', error: String(r.reason) }
-  );
+  const detail = results;
 
   return NextResponse.json({
     message: `Reminder emails processed`,
