@@ -83,7 +83,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           {/* Stats row */}
           <div className="flex flex-wrap justify-center gap-8 mt-16 text-center">
             {[
-              { val: '48', label: 'Group Matches' },
+              { val: '104', label: 'Matches' },
               { val: '3pts', label: 'Exact Score' },
               { val: '1pt', label: 'Correct Result' },
               { val: '∞', label: 'Bragging Rights' },
@@ -217,6 +217,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         </div>
       </section>
 
+      {/* ── Countdown ── */}
+      <section className="border-t border-border py-16 text-center">
+        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
+        <Countdown />
+      </section>
+
       {/* ── Blog ── */}
       <section className="border-t border-border py-20">
         <div className="max-w-5xl mx-auto px-6">
@@ -261,12 +267,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       </section>
 
       <HomepageFAQ />
-
-      {/* ── Countdown ── */}
-      <section className="border-t border-border py-16 text-center">
-        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
-        <Countdown />
-      </section>
 
       {/* ── Footer ── */}
       <footer className="border-t border-border">
