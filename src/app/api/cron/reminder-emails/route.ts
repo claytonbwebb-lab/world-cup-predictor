@@ -224,11 +224,16 @@ export async function POST(request: Request) {
 
   console.log(`[reminder-emails] 📊 Done — sent: ${sent}, skipped/failed: ${failed}`);
 
+  const detail = results.map((r) =>
+    r.status === 'fulfilled' ? r.value : { sent: false, reason: 'exception', error: String(r.reason) }
+  );
+
   return NextResponse.json({
     message: `Reminder emails processed`,
     matchesTomorrow: tomorrowMatches.length,
     emailsSent: sent,
     skipped: failed,
+    detail,
   });
 }
 
