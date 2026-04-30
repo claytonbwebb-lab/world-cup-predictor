@@ -215,18 +215,19 @@ export default async function Dashboard() {
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
                 {/* Column headers */}
-                <div className="grid grid-cols-[1fr_5rem_5rem_1fr] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
+                <div className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
                   <div className="text-right pr-2">Home Team</div>
                   <div className="text-center">Actual</div>
                   <div className="text-center">Predicted</div>
                   <div className="text-left pl-2">Away Team</div>
+                  <div className="text-right pl-2">Pts</div>
                 </div>
                 {/* Rows */}
                 <div className="space-y-2">
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="grid grid-cols-[1fr_5rem_5rem_1fr] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
+                      className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
@@ -256,6 +257,14 @@ export default async function Dashboard() {
                         <div className="text-left">
                           <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.away_team, true)}</div>
                         </div>
+                      </div>
+
+                      {/* Points earned */}
+                      <div className="text-right pl-2">
+                        <span className="font-bold text-primary">+{pred.points_awarded}</span>
+                        {pred.is_exact_score && (
+                          <span className="ml-1 text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
+                        )}
                       </div>
                     </div>
                   ))}
