@@ -238,15 +238,21 @@ export default async function Dashboard() {
 
                       {/* Actual score */}
                       <div className="w-20 text-center">
-                        <div className="font-bold text-text text-sm">
-                          {pred.match.home_score} - {pred.match.away_score}
+                        <div className="font-bold text-base text-primary">
+                          {pred.match.home_score}
+                        </div>
+                        <div className="font-bold text-base text-primary">
+                          {pred.match.away_score}
                         </div>
                       </div>
 
                       {/* Prediction score */}
                       <div className="w-20 text-center">
-                        <div className="text-xs text-textMuted/60">
-                          {pred.home_prediction} - {pred.away_prediction}
+                        <div className="text-sm text-textMuted">
+                          {pred.home_prediction}
+                        </div>
+                        <div className="text-sm text-textMuted">
+                          {pred.away_prediction}
                         </div>
                       </div>
 
