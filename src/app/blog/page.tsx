@@ -1,4 +1,5 @@
 import PublicNav from '@/components/PublicNav';
+import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -58,6 +59,7 @@ export default function BlogPage() {
           ))}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

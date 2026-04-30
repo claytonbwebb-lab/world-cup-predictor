@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
 
 export const metadata: Metadata = {
@@ -154,6 +155,7 @@ export default function TermsPage() {
           </a>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

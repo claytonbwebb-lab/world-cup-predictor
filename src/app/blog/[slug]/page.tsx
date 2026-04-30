@@ -1,4 +1,5 @@
 import { blogPosts } from '@/lib/blog-data';
+import Footer from '@/components/Footer';
 import PublicNav from '@/components/PublicNav';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -150,6 +151,7 @@ export default async function BlogPostPage({ params }: Props) {
           </section>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

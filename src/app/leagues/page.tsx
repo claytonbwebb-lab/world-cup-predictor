@@ -1,4 +1,5 @@
 'use client';
+import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -311,6 +312,7 @@ export default function LeaguesPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

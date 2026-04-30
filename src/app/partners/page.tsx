@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
 
@@ -167,6 +168,7 @@ export default function PartnersPage() {
           </Link>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
