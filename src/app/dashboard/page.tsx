@@ -213,38 +213,54 @@ export default async function Dashboard() {
             </div>
             
             {recentPredictions && recentPredictions.length > 0 ? (
-              <div className="space-y-3">
-                {recentPredictions.map((pred: any) => (
-                  <div
-                    key={pred.id}
-                    className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 p-3 bg-surfaceLight rounded-lg"
-                  >
-                    {/* Home team — right-aligned, wraps to second line */}
-                    <div className="text-right">
-                      <div className="text-sm font-medium leading-tight">{pred.match.home_team}</div>
-                    </div>
+              <>
+                {/* Column headers */}
+                <div className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 px-3 pb-1 text-xs text-textMuted uppercase tracking-wider">
+                  <div className="text-right">Home Team</div>
+                  <div className="text-center w-14">Actual</div>
+                  <div className="text-center w-14">Predicted</div>
+                  <div className="text-left">Away Team</div>
+                </div>
+                {/* Rows */}
+                <div className="space-y-2">
+                  {recentPredictions.map((pred: any) => (
+                    <div
+                      key={pred.id}
+                      className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 p-3 bg-surfaceLight rounded-lg"
+                    >
+                      {/* Home team — right-aligned with flag */}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="text-right">
+                          <div className="text-sm font-medium leading-tight">{pred.match.home_team}</div>
+                        </div>
+                        <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
+                      </div>
 
-                    {/* Actual score */}
-                    <div className="text-center w-14">
-                      <div className="font-bold text-text text-sm">
-                        {pred.match.home_score} - {pred.match.away_score}
+                      {/* Actual score */}
+                      <div className="text-center w-14">
+                        <div className="font-bold text-text text-sm">
+                          {pred.match.home_score} - {pred.match.away_score}
+                        </div>
+                      </div>
+
+                      {/* Prediction score */}
+                      <div className="text-center w-14">
+                        <div className="text-xs text-textMuted/60">
+                          {pred.home_prediction} - {pred.away_prediction}
+                        </div>
+                      </div>
+
+                      {/* Away team — left-aligned with flag */}
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
+                        <div className="text-left">
+                          <div className="text-sm font-medium leading-tight">{pred.match.away_team}</div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Prediction score */}
-                    <div className="text-center w-14">
-                      <div className="text-xs text-textMuted/60">
-                        {pred.home_prediction} - {pred.away_prediction}
-                      </div>
-                    </div>
-
-                    {/* Away team — left-aligned, wraps to second line */}
-                    <div className="text-left">
-                      <div className="text-sm font-medium leading-tight">{pred.match.away_team}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <p className="text-textMuted text-center py-8">
                 No predictions scored yet. Go make some predictions!
