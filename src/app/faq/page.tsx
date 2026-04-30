@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import NavBar from '@/components/NavBar';
 
 export const metadata: Metadata = {
   title: 'FAQ | Play Predict Win',
@@ -23,6 +25,8 @@ export default function FAQPage() {
   };
 
   return (
+    <>
+      <NavBar />
     <div className="flex-1 max-w-3xl mx-auto px-6 py-20">
       <script
         type="application/ld+json"
@@ -77,5 +81,13 @@ export default function FAQPage() {
         ))}
       </div>
     </div>
+
+    {/* Back to site */}
+    <div className="text-center pb-12">
+      <Link href="/" className="text-primary text-sm font-medium hover:underline">
+        ← Back to site
+      </Link>
+    </div>
+    </>
   );
 }
