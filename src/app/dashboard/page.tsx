@@ -215,7 +215,7 @@ export default async function Dashboard() {
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
                 {/* Column headers */}
-                <div className="grid grid-cols-[10rem_5rem_5rem_10rem_auto] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
+                <div className="grid grid-cols-[1fr_4.5rem_4.5rem_auto_auto] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
                   <div className="text-right pr-2">Home Team</div>
                   <div className="text-center">Actual</div>
                   <div className="text-center">Predicted</div>
@@ -227,7 +227,7 @@ export default async function Dashboard() {
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="grid grid-cols-[10rem_5rem_5rem_10rem_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
+                      className="grid grid-cols-[1fr_4.5rem_4.5rem_auto_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
@@ -238,14 +238,14 @@ export default async function Dashboard() {
                       </div>
 
                       {/* Actual score */}
-                      <div className="w-20 text-center">
+                      <div className="w-[4.5rem] text-center">
                         <div className="font-bold text-base text-primary">
                           {pred.match.home_score} - {pred.match.away_score}
                         </div>
                       </div>
 
                       {/* Prediction score */}
-                      <div className="w-20 text-center">
+                      <div className="w-[4.5rem] text-center">
                         <div className="text-sm text-textMuted">
                           {pred.home_prediction} - {pred.away_prediction}
                         </div>
