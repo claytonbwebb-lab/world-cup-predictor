@@ -215,10 +215,10 @@ export default async function Dashboard() {
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
                 {/* Column headers */}
-                <div className="grid grid-cols-[1fr_4.5rem_4.5rem_auto_auto] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
+                <div className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 px-3 pb-1 text-xs text-textMuted uppercase tracking-wider">
                   <div className="text-right pr-2">Home Team</div>
-                  <div className="text-center">Actual</div>
                   <div className="text-center">Predicted</div>
+                  <div className="text-center">Actual</div>
                   <div className="text-left pl-2">Away Team</div>
                   <div className="text-right pl-2">Pts</div>
                 </div>
@@ -227,7 +227,7 @@ export default async function Dashboard() {
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="grid grid-cols-[1fr_4.5rem_4.5rem_auto_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
+                      className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
@@ -237,17 +237,19 @@ export default async function Dashboard() {
                         <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
                       </div>
 
-                      {/* Actual score */}
-                      <div className="w-[4.5rem] text-center">
-                        <div className="font-bold text-base text-primary">
-                          {pred.match.home_score} - {pred.match.away_score}
+                      {/* Predicted score */}
+                      <div className="w-[5rem] text-center">
+                        <div className="text-xs text-textMuted/60 mb-0.5">Predicted</div>
+                        <div className="text-sm font-medium">
+                          {pred.home_prediction} - {pred.away_prediction}
                         </div>
                       </div>
 
-                      {/* Prediction score */}
-                      <div className="w-[4.5rem] text-center">
-                        <div className="text-sm text-textMuted">
-                          {pred.home_prediction} - {pred.away_prediction}
+                      {/* Actual score */}
+                      <div className="w-[5rem] text-center">
+                        <div className="text-xs text-textMuted/60 mb-0.5">Actual</div>
+                        <div className="text-sm font-bold text-primary">
+                          {pred.match.home_score} - {pred.match.away_score}
                         </div>
                       </div>
 
