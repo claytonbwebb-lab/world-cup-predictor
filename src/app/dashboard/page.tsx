@@ -217,33 +217,36 @@ export default async function Dashboard() {
                 {recentPredictions.map((pred: any) => (
                   <div
                     key={pred.id}
-                    className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-2 gap-y-1 p-3 bg-surfaceLight rounded-lg"
+                    className="flex items-start gap-3 p-3 bg-surfaceLight rounded-lg"
                   >
-                    {/* Home team */}
-                    <span className="text-lg">{pred.match.home_flag || '🏳️'}</span>
-                    <div className="text-sm">
-                      <div className="font-medium leading-tight">{pred.match.home_team}</div>
-                      <div className="font-medium leading-tight">{pred.match.away_team}</div>
+                    {/* Flags stacked */}
+                    <div className="flex flex-col items-center gap-1 pt-0.5">
+                      <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
+                      <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
+                    </div>
+
+                    {/* Teams stacked, each wraps independently */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm leading-tight">{pred.match.home_team}</div>
+                      <div className="font-medium text-sm leading-tight mt-1">{pred.match.away_team}</div>
                     </div>
 
                     {/* Actual score */}
-                    <div className="text-center px-2">
-                      <div className="font-bold text-text text-base">
+                    <div className="text-center flex-shrink-0 pt-0.5">
+                      <div className="font-bold text-text text-sm">
                         {pred.match.home_score} - {pred.match.away_score}
+                      </div>
+                      <div className="text-xs text-textMuted/60 mt-0.5">
+                        ({pred.home_prediction} - {pred.away_prediction})
                       </div>
                     </div>
 
-                    {/* Prediction + points */}
-                    <div className="text-right">
-                      <div className="text-xs text-textMuted/60 mb-1">
-                        ({pred.home_prediction} - {pred.away_prediction})
-                      </div>
-                      <div className="flex items-center justify-end gap-1">
-                        <span className="text-sm font-bold text-primary">+{pred.points_awarded}</span>
-                        {pred.is_exact_score && (
-                          <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
-                        )}
-                      </div>
+                    {/* Points */}
+                    <div className="text-right flex-shrink-0 pt-0.5">
+                      <div className="text-sm font-bold text-primary">+{pred.points_awarded}</div>
+                      {pred.is_exact_score && (
+                        <div className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded mt-0.5">EXACT</div>
+                      )}
                     </div>
                   </div>
                 ))}
