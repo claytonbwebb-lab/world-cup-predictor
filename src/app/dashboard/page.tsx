@@ -226,7 +226,7 @@ export default async function Dashboard() {
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="grid grid-cols-[1fr_20px_20px_1fr] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
+                      className="grid grid-cols-[1fr_5rem_5rem_1fr] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
