@@ -231,7 +231,7 @@ export default async function Dashboard() {
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
                         <div className="text-right">
-                          <div className="text-sm font-medium leading-tight">{pred.match.home_team}</div>
+                          <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.home_team, true)}</div>
                         </div>
                         <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
                       </div>
@@ -254,7 +254,7 @@ export default async function Dashboard() {
                       <div className="flex items-center justify-start gap-2">
                         <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
                         <div className="text-left">
-                          <div className="text-sm font-medium leading-tight">{pred.match.away_team}</div>
+                          <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.away_team, true)}</div>
                         </div>
                       </div>
                     </div>
