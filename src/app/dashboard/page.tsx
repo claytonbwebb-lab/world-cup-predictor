@@ -217,28 +217,35 @@ export default async function Dashboard() {
                 {recentPredictions.map((pred: any) => (
                   <div
                     key={pred.id}
-                    className="flex items-center justify-between p-3 bg-surfaceLight rounded-lg"
+                    className="flex flex-wrap items-center justify-between gap-2 p-3 bg-surfaceLight rounded-lg"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{pred.match.home_flag || '🏳️'}</span>
-                      <span className="font-medium">{pred.match.home_team}</span>
-                      <span className="text-textMuted">
-                        {pred.match.home_score} - {pred.match.away_score}
-                        <span className="text-xs text-textMuted/60 ml-1">
-                          ({pred.home_prediction} - {pred.away_prediction})
-                        </span>
-                      </span>
-                      <span className="font-medium">{pred.match.away_team}</span>
-                      <span className="text-xl">{pred.match.away_flag || '🏳️'}</span>
+                    {/* Teams + scores */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-lg">{pred.match.home_flag || '🏳️'}</span>
+                      <span className="font-medium text-sm whitespace-nowrap">{pred.match.home_team}</span>
                     </div>
-                    <div className="text-right">
-                      <span className="text-lg font-bold text-primary">
-                        +{pred.points_awarded}
+
+                    {/* Score vs Prediction */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="font-bold text-text">
+                        {pred.match.home_score} - {pred.match.away_score}
                       </span>
+                      <span className="text-xs text-textMuted/50">vs</span>
+                      <span className="text-sm text-textMuted bg-surface px-2 py-1 rounded">
+                        ({pred.home_prediction} - {pred.away_prediction})
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium text-sm whitespace-nowrap">{pred.match.away_team}</span>
+                      <span className="text-lg">{pred.match.away_flag || '🏳️'}</span>
+                    </div>
+
+                    {/* Points */}
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-lg font-bold text-primary">+{pred.points_awarded}</span>
                       {pred.is_exact_score && (
-                        <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                          EXACT
-                        </span>
+                        <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-1 rounded">EXACT</span>
                       )}
                     </div>
                   </div>
