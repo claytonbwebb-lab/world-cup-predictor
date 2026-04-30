@@ -14,6 +14,7 @@ const partners = [
     stats: '800K+ followers across social platforms',
     bgImage: '/images/partners/90s-football-partner-bg.png',
     bgAlt: '90s Football — vintage football shirts and memorabilia display',
+    bgPosition: 'top center',
   },
   {
     name: 'Telescore',
@@ -37,6 +38,7 @@ const partners = [
     stats: 'Replica. Redefined. Reborn.',
     bgImage: '/images/partners/3retro-partner-bg.jpg',
     bgAlt: '3Retro — collection of vintage football shirts and retro jerseys',
+    bgPosition: 'top center',
   },
   {
     name: 'Allstar Signings',
@@ -97,13 +99,13 @@ export default function PartnersPage() {
           {partners.map(partner => partner.bgImage ? (
             <div key={partner.name} className="card overflow-hidden border-border hover:border-primary/40 transition-all group">
               {/* Logo section with background image */}
-              <div className="relative h-40 overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
                 <Image src={partner.bgImage} alt={partner.bgAlt} fill style={{ objectFit: 'cover', objectPosition: partner.bgPosition || 'center' }} unoptimized />
                 <div className="absolute inset-0 bg-background/30" />
               </div>
               {/* Content section */}
               <div className="p-6">
-                <div className="flex items-center justify-center -mt-20 mb-4 relative z-10">
+                <div className="flex items-center justify-center -mt-24 mb-4 relative z-10">
                   <div className="bg-background/80 rounded-xl p-4">
                     <Image src={partner.logo} alt={partner.alt} width={180} height={72} className="object-contain max-h-[72px]" />
                   </div>
