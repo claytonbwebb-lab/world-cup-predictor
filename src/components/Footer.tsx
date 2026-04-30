@@ -77,7 +77,7 @@ export default function Footer() {
               style={{ maxHeight: '48px' }}
             />
             <p className="text-textMuted text-sm mb-4">
-              The official World Cup 2026 prediction league. Compete with friends, predict every score, climb the leaderboard.
+              The World Cup 2026 prediction league. Compete with friends, predict every score, climb the leaderboard.
             </p>
             <div className="flex gap-3">
               {socialLinks.map(s => (

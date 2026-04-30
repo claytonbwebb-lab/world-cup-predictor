@@ -17,8 +17,8 @@ Message: ${message}
 
   const smtp = {
     host: 'smtp.zoho.eu',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
       user: 'info@brightstacklabs.co.uk',
       pass: '73fw65KxrMPQ',
@@ -27,12 +27,7 @@ Message: ${message}
 
   try {
     const nodemailer = (await import('nodemailer')).default;
-    const transporter = nodemailer.createTransport({
-      host: smtp.host,
-      port: smtp.port,
-      secure: smtp.secure,
-      auth: smtp.auth,
-    });
+    const transporter = nodemailer.createTransport(smtp);
 
     await transporter.sendMail({
       from: '"Play Predict Win" <info@brightstacklabs.co.uk>',
@@ -45,6 +40,6 @@ Message: ${message}
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Contact form error:', err);
-    return NextResponse.json({ error: 'Failed to send' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send', detail: String(err) }, { status: 500 });
   }
 }
