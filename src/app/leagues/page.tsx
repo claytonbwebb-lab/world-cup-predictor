@@ -38,6 +38,7 @@ export default function LeaguesPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,6 +67,13 @@ export default function LeaguesPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
     setUserId(user.id);
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+    setIsAdmin(profile?.is_admin === true);
 
     const { data: members } = await supabase
       .from('league_members')

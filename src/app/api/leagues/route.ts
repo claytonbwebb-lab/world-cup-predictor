@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
+import { requireAdmin } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,11 +17,15 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const name = body.name as string;
-    const is_public = !!body.is_public;
+    const requestedPublic = !!body.is_public;
 
     if (!name) {
       return NextResponse.json({ error: 'Missing league name' }, { status: 400 });
     }
+
+    // Only admins can create public leagues; non-admins always get private
+    const is_admin = await requireAdmin();
+    const is_public = is_admin ? requestedPublic : false;
 
     // Generate unique code
     const code = randomBytes(4).toString('hex').toUpperCase();
