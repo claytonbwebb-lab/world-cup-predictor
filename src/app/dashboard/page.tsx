@@ -215,18 +215,18 @@ export default async function Dashboard() {
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
                 {/* Column headers */}
-                <div className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 px-3 pb-1 text-xs text-textMuted uppercase tracking-wider">
-                  <div className="text-right">Home Team</div>
-                  <div className="text-center w-14">Actual</div>
-                  <div className="text-center w-14">Predicted</div>
-                  <div className="text-left">Away Team</div>
+                <div className="grid grid-cols-[1fr_5rem_5rem_1fr] items-center gap-2 px-3 text-xs text-textMuted uppercase tracking-wider">
+                  <div className="text-right pr-2">Home Team</div>
+                  <div className="text-center">Actual</div>
+                  <div className="text-center">Predicted</div>
+                  <div className="text-left pl-2">Away Team</div>
                 </div>
                 {/* Rows */}
                 <div className="space-y-2">
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 p-3 bg-surfaceLight rounded-lg"
+                      className="grid grid-cols-[1fr_20px_20px_1fr] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
                       {/* Home team — right-aligned with flag */}
                       <div className="flex items-center justify-end gap-2">
@@ -237,14 +237,14 @@ export default async function Dashboard() {
                       </div>
 
                       {/* Actual score */}
-                      <div className="text-center w-14">
+                      <div className="w-20 text-center">
                         <div className="font-bold text-text text-sm">
                           {pred.match.home_score} - {pred.match.away_score}
                         </div>
                       </div>
 
                       {/* Prediction score */}
-                      <div className="text-center w-14">
+                      <div className="w-20 text-center">
                         <div className="text-xs text-textMuted/60">
                           {pred.home_prediction} - {pred.away_prediction}
                         </div>
