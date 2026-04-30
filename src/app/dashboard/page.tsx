@@ -225,7 +225,7 @@ export default async function Dashboard() {
                       <span className="text-textMuted">
                         {pred.match.home_score} - {pred.match.away_score}
                         <span className="text-xs text-textMuted/60 ml-1">
-                          ({pred.home_score} - {pred.away_score})
+                          ({pred.home_prediction} - {pred.away_prediction})
                         </span>
                       </span>
                       <span className="font-medium">{pred.match.away_team}</span>
