@@ -2,7 +2,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const FROM_EMAIL = 'World Cup Predictor <noreply@playpredictwin.com>';
+const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
@@ -103,8 +103,11 @@ export async function POST(request: Request) {
   // ── Step 4: For each user, check if they're missing any prediction ──
   const matchesListHtml = tomorrowMatches
     .map(
-      (m) =>
-        `<li><strong>${m.home_team} vs ${m.away_team}</strong> — ${formatKickoff(m.kickoff_at)} (${m.group_stage ?? 'Match'})</li>`
+      (m, i) =>
+        `<div style="padding:12px 16px;border-bottom:${i < tomorrowMatches.length - 1 ? '1px solid #1e293b' : 'none'};">
+          <span style="color:#f8fafc;font-size:14px;font-weight:600;">${m.home_team} vs ${m.away_team}</span><br/>
+          <span style="color:#64748b;font-size:12px;">${formatKickoff(m.kickoff_at)} &nbsp;·&nbsp; ${m.group_stage ?? 'Match'}</span>
+        </div>`
     )
     .join('');
 
@@ -125,52 +128,69 @@ export async function POST(request: Request) {
           ? 'World Cup predictions due — you haven\'t predicted any matches for tomorrow!'
           : `World Cup predictions reminder — ${predictedCount}/${totalCount} matches predicted`;
 
-      const html = `
-<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <style>
-    body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 0; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: #1e293b; border-radius: 12px; padding: 32px; border: 1px solid #334155; }
-    .header { text-align: center; margin-bottom: 32px; }
-    .logo { font-size: 24px; font-weight: 900; color: #fbbf24; text-decoration: none; }
-    .h1 { font-size: 22px; font-weight: 700; color: #ffffff; margin: 0 0 8px; }
-    .subtitle { color: #94a3b8; font-size: 14px; margin: 0; }
-    .matches { background: #0f172a; border-radius: 8px; padding: 20px; margin: 24px 0; }
-    .matches ul { margin: 0; padding: 0 0 0 20px; }
-    .matches li { color: #fbbf24; font-size: 15px; padding: 6px 0; border-bottom: 1px solid #1e293b; }
-    .matches li:last-child { border-bottom: none; }
-    .btn { display: inline-block; background: #fbbf24; color: #0f172a; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px; margin: 16px 0; }
-    .footer { text-align: center; font-size: 12px; color: #475569; margin-top: 32px; }
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
 </head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="header">
-        <a href="https://playpredictwin.com" class="logo">⚽ Play Predict Win</a>
-      </div>
-      <h1 class="h1">Matches are coming — are your predictions in?</h1>
-      <p class="subtitle">
-        You've submitted ${predictedCount > 0 ? `predictions for ${predictedCount} of ${totalCount} matches` : 'no predictions yet'} for tomorrow's fixtures. Submit your predictions before kickoff to earn points!
-      </p>
-      <div class="matches">
-        <strong style="color:#e2e8f0; font-size:13px; display:block; margin-bottom:12px;">
-          TOMORROW'S FIXTURES — ${totalCount} match${totalCount > 1 ? 'es' : ''}
-        </strong>
-        <ul>${matchesListHtml}</ul>
-      </div>
-      <a href="https://playpredictwin.com/dashboard" class="btn">Submit Your Predictions →</a>
-      <p style="font-size:13px; color:#94a3b8; margin:0;">
-        You received this because you have an account on Play Predict Win and have outstanding predictions for tomorrow's World Cup matches.
-      </p>
+<body style="margin:0;padding:0;background:#0f172a;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="https://playpredictwin.com" style="text-decoration:none;">
+        <img src="https://www.playpredictwin.com/images/logos/logo3.jpg"
+             alt="Play Predict Win" width="200"
+             style="max-width:200px;height:auto;border-radius:10px;display:block;margin:0 auto;"/>
+      </a>
     </div>
-    <div class="footer">
+
+    <!-- Card -->
+    <div style="background:#1e293b;border-radius:16px;overflow:hidden;border:1px solid #334155;">
+
+      <!-- Green header bar -->
+      <div style="background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);padding:28px 32px;">
+        <h1 style="margin:0 0 8px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.3;">
+          ⚽ Matches tomorrow — are your predictions in?
+        </h1>
+        <p style="margin:0;color:#bbf7d0;font-size:14px;">
+          ${predictedCount > 0 ? `You've predicted ${predictedCount} of ${totalCount} matches.` : "You haven't predicted any matches yet."} Don't miss out on points!
+        </p>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:28px 32px;">
+
+        <!-- Fixtures -->
+        <p style="margin:0 0 12px;color:#94a3b8;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+          Tomorrow's fixtures — ${totalCount} match${totalCount > 1 ? 'es' : ''}
+        </p>
+        <div style="background:#0f172a;border-radius:10px;overflow:hidden;margin-bottom:28px;border:1px solid #334155;">
+          ${matchesListHtml}
+        </div>
+
+        <!-- CTA button -->
+        <div style="text-align:center;margin-bottom:24px;">
+          <a href="https://playpredictwin.com/dashboard"
+             style="display:inline-block;background:#22c55e;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 36px;border-radius:10px;">
+            Submit Your Predictions →
+          </a>
+        </div>
+
+        <p style="margin:0;font-size:13px;color:#64748b;text-align:center;line-height:1.6;">
+          +3 pts for exact score &nbsp;·&nbsp; +1 pt for correct result<br/>
+          Predictions lock at kickoff — get yours in first!
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:20px 0 8px;font-size:12px;color:#475569;">
       © Play Predict Win · World Cup 2026<br/>
-      <a href="https://playpredictwin.com/dashboard" style="color:#475569;">Unsubscribe from reminder emails</a>
+      <a href="https://playpredictwin.com/dashboard" style="color:#475569;text-decoration:underline;">Manage preferences</a>
     </div>
+
   </div>
 </body>
 </html>`;
