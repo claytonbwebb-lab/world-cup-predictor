@@ -204,10 +204,12 @@ export default function LeaguesPage() {
                   <input type="text" value={leagueName} onChange={e => setLeagueName(e.target.value)}
                     className="input w-full" placeholder="The Lads League" required />
                 </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="is_public" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
-                  <label htmlFor="is_public" className="text-sm text-textMuted">Make public (anyone can join)</label>
-                </div>
+                {isAdmin && (
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="is_public" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+                    <label htmlFor="is_public" className="text-sm text-textMuted">Make public (anyone can join)</label>
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <button type="submit" className="btn-primary flex-1">Create</button>
                   <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary flex-1">Cancel</button>
