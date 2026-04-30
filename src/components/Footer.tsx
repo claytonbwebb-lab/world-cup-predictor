@@ -38,11 +38,27 @@ const socialLinks = [
 export default function Footer() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In production this would send to an API route
-    setSubmitted(true);
+    setSending(true);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        alert('Failed to send. Please try again or email us directly.');
+      }
+    } catch {
+      alert('Failed to send. Please try again or email us directly.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -124,9 +140,10 @@ export default function Footer() {
                 />
                 <button
                   type="submit"
-                  className="btn-primary py-2 text-sm rounded-lg"
+                  disabled={sending}
+                  className="btn-primary py-2 text-sm rounded-lg disabled:opacity-50"
                 >
-                  Send Message
+                  {sending ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             )}
