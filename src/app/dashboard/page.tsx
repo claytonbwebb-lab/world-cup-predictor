@@ -224,6 +224,9 @@ export default async function Dashboard() {
                       <span className="font-medium">{pred.match.home_team}</span>
                       <span className="text-textMuted">
                         {pred.match.home_score} - {pred.match.away_score}
+                        <span className="text-xs text-textMuted/60 ml-1">
+                          ({pred.home_score} - {pred.away_score})
+                        </span>
                       </span>
                       <span className="font-medium">{pred.match.away_team}</span>
                       <span className="text-xl">{pred.match.away_flag || '🏳️'}</span>
