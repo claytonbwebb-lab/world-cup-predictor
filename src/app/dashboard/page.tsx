@@ -262,11 +262,11 @@ export default async function Dashboard() {
                       </div>
 
                       {/* Points earned */}
-                      <div className="text-right pl-2">
-                        <span className="font-bold text-primary">+{pred.points_awarded}</span>
+                      <div className="flex flex-col items-end gap-0.5">
                         {pred.is_exact_score && (
-                          <span className="ml-1 text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
+                          <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
                         )}
+                        <span className="font-bold text-primary">+{pred.points_awarded}</span>
                       </div>
                     </div>
                   ))}
