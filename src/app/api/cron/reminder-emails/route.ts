@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const url = new URL(request.url);
   const dryRun = url.searchParams.get('dryRun') === 'true';
+  const testEmail = url.searchParams.get('testEmail') || null;
   console.log('[reminder-emails] Cron triggered at', new Date().toISOString(), dryRun ? '(DRY RUN)' : '');
   console.log('[reminder-emails] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
   console.log('[reminder-emails] SUPABASE_SERVICE_ROLE_KEY set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -175,6 +176,9 @@ export async function POST(request: Request) {
 </html>`;
 
       try {
+        if (testEmail && user.email !== testEmail) {
+          return { userId: user.id, sent: false, reason: 'test-mode-skipped' };
+        }
         if (dryRun) {
           console.log(`[reminder-emails] 🧪 DRY RUN — would send to ${user.email} (${user.username}) — ${predictedCount === 0 ? 'no predictions' : `${predictedCount}/${totalCount} predicted`}`);
           return { userId: user.id, email: user.email, sent: false, reason: 'dry-run', subject };
