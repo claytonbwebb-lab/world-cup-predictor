@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import NavBar from '@/components/NavBar';
+import NavBar from '@/components/PublicNav';
 
 export const metadata: Metadata = {
   title: 'FAQ | Play Predict Win',
