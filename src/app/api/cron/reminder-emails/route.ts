@@ -204,14 +204,18 @@ export async function POST(request: Request) {
           return { userId: user.id, email: user.email, sent: false, reason: 'dry-run', subject };
         }
         console.log(`[reminder-emails] 📧 Sending email to ${user.email} (${user.username}) — ${predictedCount === 0 ? 'no predictions' : `${predictedCount}/${totalCount} predicted`}`);
-        await getResend().emails.send({
+        const { data: sendData, error: sendError } = await getResend().emails.send({
           from: FROM_EMAIL,
           to: user.email,
           subject,
           html,
         });
-        console.log(`[reminder-emails] ✅ Email sent to ${user.email}`);
-        return { userId: user.id, sent: true };
+        if (sendError) {
+          console.error(`[reminder-emails] ❌ Resend error for ${user.email}:`, sendError);
+          return { userId: user.id, email: user.email, sent: false, reason: 'resend-error', error: String(sendError.message ?? sendError) };
+        }
+        console.log(`[reminder-emails] ✅ Email sent to ${user.email} (id: ${sendData?.id})`);
+        return { userId: user.id, email: user.email, sent: true, resendId: sendData?.id };
       } catch (err) {
         console.error(`[reminder-emails] ❌ Failed to send to ${user.email}:`, err);
         return { userId: user.id, sent: false, reason: 'send-error' };
