@@ -149,7 +149,7 @@ export async function POST(request: Request) {
   <div class="container">
     <div class="card">
       <div class="header">
-        <a href="https://playpredictwin.com" class="logo">⚽ PlayPredictWin</a>
+        <a href="https://playpredictwin.com" class="logo">⚽ Play Predict Win</a>
       </div>
       <h1 class="h1">Matches are coming — are your predictions in?</h1>
       <p class="subtitle">
@@ -161,14 +161,14 @@ export async function POST(request: Request) {
         </strong>
         <ul>${matchesListHtml}</ul>
       </div>
-      <a href="https://playpredictwin.com/predictions" class="btn">Submit Your Predictions →</a>
+      <a href="https://playpredictwin.com/dashboard" class="btn">Submit Your Predictions →</a>
       <p style="font-size:13px; color:#94a3b8; margin:0;">
-        You received this because you have an account on PlayPredictWin and have outstanding predictions for tomorrow's World Cup matches.
+        You received this because you have an account on Play Predict Win and have outstanding predictions for tomorrow's World Cup matches.
       </p>
     </div>
     <div class="footer">
-      © PlayPredictWin · World Cup 2026<br/>
-      <a href="https://playpredictwin.com/settings" style="color:#475569;">Unsubscribe from reminder emails</a>
+      © Play Predict Win · World Cup 2026<br/>
+      <a href="https://playpredictwin.com/dashboard" style="color:#475569;">Unsubscribe from reminder emails</a>
     </div>
   </div>
 </body>
