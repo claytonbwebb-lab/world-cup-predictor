@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Countdown from '@/components/Countdown';
+import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
@@ -269,19 +270,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <HomepageFAQ />
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border">
-        <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-textMuted">
-          <span>World Cup 2026 Prediction League</span>
-          <div className="flex gap-6">
-            <Link href="/leaderboard" className="hover:text-text transition-colors">Leaderboard</Link>
-            <Link href="/privacy" className="hover:text-text transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-text transition-colors">Terms</Link>
-            <Link href="/faq" className="hover:text-text transition-colors">FAQ</Link>
-            <Link href="/auth/signup" className="hover:text-text transition-colors">Sign Up</Link>
-            <Link href="/auth/login" className="hover:text-text transition-colors">Login</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );

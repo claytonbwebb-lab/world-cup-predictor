@@ -60,45 +60,8 @@ export default function NavBar() {
         {/* Three-column grid: [left] [logo] [right] */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
-          {/* LEFT — social icons (desktop) / invisible spacer (mobile) */}
+          {/* LEFT — mobile burger / social icons on desktop */}
           <div className="flex items-center gap-3">
-            {socialLinks.map(s => (
-              <a
-                key={s.name}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.name}
-                className="hidden sm:flex text-textMuted hover:text-primary transition-colors"
-              >
-                {s.icon}
-              </a>
-            ))}
-          </div>
-
-          {/* CENTRE — logo image, always centred */}
-          <Link href="/" className="flex items-center justify-center">
-            <Image
-              src="/images/logos/logo3.jpg"
-              alt="Play Predict Win"
-              width={200}
-              height={67}
-              className="object-contain w-[100px] sm:w-[180px]"
-              style={{ maxHeight: '52px' }}
-            />
-          </Link>
-
-          {/* RIGHT — desktop nav / mobile burger */}
-          <div className="flex items-center justify-end gap-4">
-            {/* Desktop nav */}
-            <nav className="hidden sm:flex items-center gap-4 text-sm">
-              {links.map(l => (
-                <Link key={l.href} href={l.href} className={path === l.href ? active : inactive}>
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-
             {/* Mobile burger */}
             <button
               className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
@@ -115,6 +78,44 @@ export default function NavBar() {
                 </svg>
               )}
             </button>
+            {/* Social icons on desktop */}
+            <div className="hidden sm:flex items-center gap-3">
+              {socialLinks.map(s => (
+                <a
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.name}
+                  className="text-textMuted hover:text-primary transition-colors"
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* CENTRE — logo image, always centred */}
+          <Link href="/" className="flex items-center justify-center">
+            <Image
+              src="/images/logos/logo3.jpg"
+              alt="Play Predict Win"
+              width={200}
+              height={67}
+              className="object-contain w-[100px] sm:w-[180px]"
+              style={{ maxHeight: '52px' }}
+            />
+          </Link>
+
+          {/* RIGHT — desktop nav / invisible spacer on mobile */}
+          <div className="flex items-center justify-end gap-4">
+            <nav className="hidden sm:flex items-center gap-4 text-sm">
+              {links.map(l => (
+                <Link key={l.href} href={l.href} className={path === l.href ? active : inactive}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
       </div>

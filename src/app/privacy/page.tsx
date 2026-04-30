@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import NavBar from '@/components/PublicNav';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Play Predict Win',
@@ -116,6 +117,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

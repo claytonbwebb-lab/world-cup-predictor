@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import NavBar from '@/components/PublicNav';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'FAQ | Play Predict Win',
@@ -88,6 +89,7 @@ export default function FAQPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
