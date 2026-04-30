@@ -217,36 +217,30 @@ export default async function Dashboard() {
                 {recentPredictions.map((pred: any) => (
                   <div
                     key={pred.id}
-                    className="flex items-start gap-3 p-3 bg-surfaceLight rounded-lg"
+                    className="grid grid-cols-[1fr_auto_auto_1fr] items-center gap-3 p-3 bg-surfaceLight rounded-lg"
                   >
-                    {/* Flags stacked */}
-                    <div className="flex flex-col items-center gap-1 pt-0.5">
-                      <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
-                      <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
-                    </div>
-
-                    {/* Teams stacked, each wraps independently */}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm leading-tight">{pred.match.home_team}</div>
-                      <div className="font-medium text-sm leading-tight mt-1">{pred.match.away_team}</div>
+                    {/* Home team — right-aligned, wraps to second line */}
+                    <div className="text-right">
+                      <div className="text-sm font-medium leading-tight">{pred.match.home_team}</div>
                     </div>
 
                     {/* Actual score */}
-                    <div className="text-center flex-shrink-0 pt-0.5">
+                    <div className="text-center w-14">
                       <div className="font-bold text-text text-sm">
                         {pred.match.home_score} - {pred.match.away_score}
                       </div>
-                      <div className="text-xs text-textMuted/60 mt-0.5">
-                        ({pred.home_prediction} - {pred.away_prediction})
+                    </div>
+
+                    {/* Prediction score */}
+                    <div className="text-center w-14">
+                      <div className="text-xs text-textMuted/60">
+                        {pred.home_prediction} - {pred.away_prediction}
                       </div>
                     </div>
 
-                    {/* Points */}
-                    <div className="text-right flex-shrink-0 pt-0.5">
-                      <div className="text-sm font-bold text-primary">+{pred.points_awarded}</div>
-                      {pred.is_exact_score && (
-                        <div className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded mt-0.5">EXACT</div>
-                      )}
+                    {/* Away team — left-aligned, wraps to second line */}
+                    <div className="text-left">
+                      <div className="text-sm font-medium leading-tight">{pred.match.away_team}</div>
                     </div>
                   </div>
                 ))}
