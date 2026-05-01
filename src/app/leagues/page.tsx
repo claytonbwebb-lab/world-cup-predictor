@@ -80,11 +80,14 @@ export default function LeaguesPage() {
       .select('league:leagues(*)')
       .eq('user_id', user.id);
 
+    const myLeagueIds = (members?.map((m: any) => m.league).filter(Boolean) || [] as League[]).map(l => l.id);
+
     const { data: pub } = await supabase
       .from('leagues')
       .select('*')
       .eq('is_public', true)
-      .neq('created_by', user.id);
+      .neq('created_by', user.id)
+      .not('id', 'in', `(${myLeagueIds.map(id => `"${id}"`).join(',')})`);
 
     setMyLeagues((members?.map((m: any) => m.league).filter(Boolean) || []) as League[]);
     setPublicLeagues((pub || []) as League[]);
