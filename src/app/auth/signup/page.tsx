@@ -142,7 +142,7 @@ function SignupForm() {
                 className="mt-1 accent-primary"
               />
               <label htmlFor="marketing" className="text-sm text-textMuted leading-snug">
-                I&apos;d like to receive handy football tips, prediction reminders, and the occasional &ldquo;don&apos;t forget your picks&rdquo; message. Unsubscribe anytime.
+                Don&apos;t worry, we won&apos;t clog up your inbox. Just handy football tips, prediction reminders, and the occasional &ldquo;don&apos;t forget your picks&rdquo; message.
               </label>
             </div>
 
