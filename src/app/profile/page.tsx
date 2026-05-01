@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   const supabase = createClient();
 
@@ -38,13 +39,14 @@ export default function ProfilePage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, marketing_consent')
       .eq('id', user.id)
       .single();
 
     if (profile) {
       setProfile(profile);
       setUsername(profile.username || '');
+      setMarketingConsent(profile.marketing_consent || false);
     }
     setLoading(false);
   }
@@ -225,6 +227,43 @@ export default function ProfilePage() {
               </button>
             </form>
           </div>
+
+          {/* GDPR Consent */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Marketing Communications</h2>
+            <p className="text-textMuted text-sm mb-4">Stay up to date with football tips, predictions, and exclusive offers from Play Predict Win</p>
+            <div className="flex items-start gap-3 bg-background/50 border border-border rounded-lg p-4">
+              <input
+                type="checkbox"
+                id="marketing_consent"
+                checked={marketingConsent}
+                onChange={async (e) => {
+                  const checked = e.target.checked;
+                  setMarketingConsent(checked);
+                  setSaving(true);
+                  setError('');
+                  setSuccess('');
+                  const { error } = await supabase
+                    .from('profiles')
+                    .update({ marketing_consent: checked })
+                    .eq('id', user.id);
+                  if (error) {
+                    setError('Failed to save preference: ' + error.message);
+                    setMarketingConsent(!checked);
+                  } else {
+                    setSuccess(checked ? 'Subscribed to marketing emails!' : 'Unsubscribed from marketing emails.');
+                  }
+                  setSaving(false);
+                }}
+                disabled={saving}
+                className="mt-0.5 accent-primary shrink-0"
+              />
+              <label htmlFor="marketing_consent" className="text-sm text-textMuted leading-snug">
+                I would like to receive marketing emails from Play Predict Win about special offers, football content, and updates. I understand I can unsubscribe at any time.
+              </label>
+            </div>
+          </div>
+
 
           {/* Reset Password via Email */}
           <div className="card">
