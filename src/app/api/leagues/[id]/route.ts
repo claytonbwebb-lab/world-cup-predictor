@@ -26,11 +26,27 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { error } = await supabase
-    .from('leagues')
-    .delete()
-    .eq('id', params.id)
-    .eq('created_by', user.id);
+  // Check if admin (bypass creator check)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+
+  let error;
+  if (profile?.is_admin) {
+    // Admin: delete regardless of who created it
+    const result = await supabase.from('leagues').delete().eq('id', params.id);
+    error = result.error;
+  } else {
+    // Non-admin: must be the creator
+    const result = await supabase
+      .from('leagues')
+      .delete()
+      .eq('id', params.id)
+      .eq('created_by', user.id);
+    error = result.error;
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
