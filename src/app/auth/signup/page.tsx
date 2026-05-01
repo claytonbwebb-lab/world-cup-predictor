@@ -11,6 +11,7 @@ function SignupForm() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [over18, setOver18] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,7 +48,7 @@ function SignupForm() {
       email,
       password,
       options: {
-        data: { username },
+        data: { username, marketing_consent: marketingConsent },
         emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     });
@@ -56,6 +57,11 @@ function SignupForm() {
       setError(error.message);
       setLoading(false);
     } else if (authData.user) {
+      // Update profile with marketing_consent
+      await supabase
+        .from('profiles')
+        .update({ marketing_consent: marketingConsent })
+        .eq('id', authData.user.id);
       setSuccess(true);
     }
   };
@@ -126,8 +132,21 @@ function SignupForm() {
               <label htmlFor="over18" className="text-sm text-textMuted leading-snug">
                 I am aged 18 or over and agree to the{' '}
                 <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  Terms & Conditions
+                  Terms &amp; Conditions
                 </a>
+              </label>
+            </div>
+
+            <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3">
+              <input
+                type="checkbox"
+                id="marketing"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                className="mt-1 accent-primary"
+              />
+              <label htmlFor="marketing" className="text-sm text-textMuted leading-snug">
+                I&apos;d like to receive occasional updates about football tips, exclusive offers, and competition news from Play Predict Win. Unsubscribe anytime.
               </label>
             </div>
 
