@@ -138,6 +138,18 @@ export default function LeaguesPage() {
     }
   }
 
+  async function handleLeave(league: League) {
+    if (!confirm(`Leave "${league.name}"? You can rejoin later with an invite code.`)) return;
+    const res = await fetch(`/api/leagues/${league.id}/leave`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      setSuccess('Left league successfully.');
+      loadLeagues();
+    } else {
+      setError(data.error || 'Failed to leave league');
+    }
+  }
+
   function copyInviteLink(league: League) {
     const url = `${window.location.origin}/leagues?join=${league.code}`;
     navigator.clipboard.writeText(url);
@@ -286,12 +298,17 @@ export default function LeaguesPage() {
                           className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1">
                           {copied === league.id ? '✓ Copied!' : '🔗 Copy Link'}
                         </button>
-                        {userId === league.created_by && (<>
-                          <button onClick={() => { setEditingLeague(league); setLeagueName(league.name); setError(''); }}
-                            className="btn-secondary text-xs px-3 py-1.5">✏️ Rename</button>
-                          <button onClick={() => handleDelete(league)}
-                            className="text-xs px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">🗑 Delete</button>
-                        </>)}
+                        {userId === league.created_by ? (
+                          <>
+                            <button onClick={() => { setEditingLeague(league); setLeagueName(league.name); setError(''); }}
+                              className="btn-secondary text-xs px-3 py-1.5">✏️ Rename</button>
+                            <button onClick={() => handleDelete(league)}
+                              className="text-xs px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">🗑 Delete</button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleLeave(league)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 transition-colors">🚪 Leave League</button>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -35,6 +35,16 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 
   let count = 0;
 
+  // First, delete all associated league_members
+  const { error: memberError } = await supabase
+    .from('league_members')
+    .delete()
+    .eq('league_id', params.id);
+
+  if (memberError) {
+    return NextResponse.json({ error: `Failed to delete associated members: ${memberError.message}` }, { status: 500 });
+  }
+
   if (profile?.is_admin) {
     // Admin: delete regardless of who created it
     const result = await supabase.from('leagues').delete().eq('id', params.id);
