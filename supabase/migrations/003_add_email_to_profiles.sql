@@ -1,8 +1,8 @@
--- Fix trigger to capture email (already has email column per Steve's DB)
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+-- Fix trigger to capture email and set search_path explicitly
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-    INSERT INTO profiles (id, username, email)
+    INSERT INTO public.profiles (id, username, email)
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'username', 'User_' || LEFT(NEW.id::TEXT, 8)),
@@ -10,7 +10,7 @@ BEGIN
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Sync email for any existing profiles that have auth.users entry but no email
 UPDATE profiles p
