@@ -100,7 +100,7 @@ export default function PartnersPage() {
             <div key={partner.name} className="card overflow-hidden border-border hover:border-primary/40 transition-all group">
               {/* Logo section with background image */}
               <div className="relative h-48 overflow-hidden">
-                <Image src={partner.bgImage} alt={partner.bgAlt} fill style={{ objectFit: 'cover', objectPosition: partner.bgPosition || 'center' }} unoptimized />
+                <Image src={partner.bgImage} alt={partner.bgAlt} fill style={{ objectFit: 'cover', objectPosition: partner.bgPosition || 'center' }} sizes="(max-width: 768px) 100vw, 50vw" priority={false} />
                 <div className="absolute inset-0 bg-background/30" />
               </div>
               {/* Content section */}

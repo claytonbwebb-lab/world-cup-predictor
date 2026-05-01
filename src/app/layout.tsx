@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Analytics } from '@vercel/analytics/next';
+import dynamic from 'next/dynamic';
+const Analytics = dynamic(() => import('@vercel/analytics/next').then(m => m.Analytics), { ssr: false });
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ClientLayout from '@/components/ClientLayout';
 import './globals.css';
