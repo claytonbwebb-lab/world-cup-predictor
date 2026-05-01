@@ -57,11 +57,7 @@ function SignupForm() {
       setError(error.message);
       setLoading(false);
     } else if (authData.user) {
-      // Update profile with marketing_consent
-      await supabase
-        .from('profiles')
-        .update({ marketing_consent: marketingConsent })
-        .eq('id', authData.user.id);
+      // Profile is auto-created by trigger with marketing_consent from user metadata
       setSuccess(true);
     }
   };
