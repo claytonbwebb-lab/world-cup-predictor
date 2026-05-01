@@ -191,10 +191,12 @@ function LoginForm() {
   );
 }
 
+import { Suspense } from 'react';
+
 export default function LoginPage() {
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="text-textMuted">Loading...</div>
-    </div>
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="text-textMuted">Loading...</div></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
