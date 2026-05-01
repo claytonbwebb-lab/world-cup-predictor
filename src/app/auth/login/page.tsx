@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -12,11 +12,19 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const supabase = createClient();
+
+  async function syncMarketingConsent(userId: string, consent: boolean) {
+    await supabase
+      .from('profiles')
+      .update({ marketing_consent: consent })
+      .eq('id', userId);
+  }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,14 +33,13 @@ function LoginForm() {
 
     let loginEmail = email.trim();
 
-    // If it doesn't look like an email, treat it as a username and look up the email
     if (!email.includes('@')) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('email')
         .ilike('username', email.trim())
         .single();
-      
+
       if (profile?.email) {
         loginEmail = profile.email;
       } else {
@@ -42,12 +49,16 @@ function LoginForm() {
       }
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
 
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
+    } else if (data.user) {
+      const consent = data.user.raw_user_meta_data?.marketing_consent;
+      if (consent !== undefined) {
+        await syncMarketingConsent(data.user.id, consent);
+      }
       router.push(redirect);
     }
   };
@@ -76,6 +87,27 @@ function LoginForm() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setResetSent(true);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -95,6 +127,17 @@ function LoginForm() {
               </p>
               <button onClick={() => setMagicLinkSent(false)} className="btn-secondary mt-6 w-full">
                 Try again with different method
+              </button>
+            </div>
+          ) : resetSent ? (
+            <div className="text-center">
+              <div className="text-4xl mb-4">✉️</div>
+              <p className="text-lg mb-4">Check your email!</p>
+              <p className="text-textMuted text-sm">
+                We sent a password reset link to <strong>{email}</strong>
+              </p>
+              <button onClick={() => setResetSent(false)} className="btn-secondary mt-6 w-full">
+                Try again
               </button>
             </div>
           ) : (
@@ -128,6 +171,11 @@ function LoginForm() {
               <button type="button" onClick={handleMagicLink} disabled={loading} className="btn-secondary w-full">
                 Send Magic Link
               </button>
+              <div className="text-center mt-2">
+                <button type="button" onClick={handleForgotPassword} className="text-sm text-textMuted hover:text-primary transition-colors">
+                  Forgot password?
+                </button>
+              </div>
             </form>
           )}
         </div>
@@ -145,8 +193,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="text-textMuted">Loading...</div></div>}>
-      <LoginForm />
-    </Suspense>
+    <div className="flex-1 flex items-center justify-center">
+      <div className="text-textMuted">Loading...</div>
+    </div>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import Link from 'next/link';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
@@ -14,10 +13,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  // Form fields
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -35,7 +31,6 @@ export default function ProfilePage() {
       return;
     }
     setUser(user);
-    setEmail(user.email || '');
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -107,32 +102,8 @@ export default function ProfilePage() {
       setError('Failed to update password: ' + error.message);
     } else {
       setSuccess('Password updated!');
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    }
-    setSaving(false);
-  }
-
-  async function handleSendResetEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-
-    setSaving(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-    });
-
-    if (error) {
-      setError('Failed to send reset email: ' + error.message);
-    } else {
-      setSuccess('Password reset email sent! Check your inbox.');
     }
     setSaving(false);
   }
@@ -191,8 +162,7 @@ export default function ProfilePage() {
           {/* Email */}
           <div className="card">
             <h2 className="text-lg font-bold mb-1">Email Address</h2>
-            <p className="text-textMuted text-sm mb-4">Your current email address: <span className="text-primary">{email}</span></p>
-            <p className="text-textMuted text-sm">To change your email, use the password reset option below — a reset link will be sent to your new email address once you confirm.</p>
+            <p className="text-textMuted text-sm">Your email address: <span className="text-primary">{user?.email}</span></p>
           </div>
 
           {/* Password */}
@@ -262,25 +232,6 @@ export default function ProfilePage() {
                 I would like to receive marketing emails from Play Predict Win about special offers, football content, and updates. I understand I can unsubscribe at any time.
               </label>
             </div>
-          </div>
-
-
-          {/* Reset Password via Email */}
-          <div className="card">
-            <h2 className="text-lg font-bold mb-1">Forgot Password?</h2>
-            <p className="text-textMuted text-sm mb-4">Send yourself a password reset email</p>
-            <form onSubmit={handleSendResetEmail} className="flex gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input flex-1"
-                readOnly
-              />
-              <button type="submit" disabled={saving} className="btn-secondary">
-                {saving ? 'Sending...' : 'Send Reset Email'}
-              </button>
-            </form>
           </div>
 
         </div>
