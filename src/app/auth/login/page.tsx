@@ -55,7 +55,7 @@ function LoginForm() {
       setError(error.message);
       setLoading(false);
     } else if (data.user) {
-      const consent = data.user.raw_user_meta_data?.marketing_consent;
+      const consent = data.user.user_metadata?.marketing_consent;
       if (consent !== undefined) {
         await syncMarketingConsent(data.user.id, consent);
       }
