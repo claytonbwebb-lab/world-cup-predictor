@@ -142,7 +142,9 @@ function SignupForm() {
                 className="mt-1 accent-primary"
               />
               <label htmlFor="marketing" className="text-sm text-textMuted leading-snug">
-                Don&apos;t worry, we won&apos;t clog up your inbox. Just handy football tips, prediction reminders, and the occasional &ldquo;don&apos;t forget your picks&rdquo; message.
+                <label htmlFor="marketing" className="text-sm text-textMuted leading-snug">
+                  Tick to consent to receiving emails from us. Don&apos;t worry, we won&apos;t clog up your inbox. Just handy football tips, prediction reminders, and the occasional &ldquo;don&apos;t forget your picks&rdquo; message.
+                </label>
               </label>
             </div>
 
