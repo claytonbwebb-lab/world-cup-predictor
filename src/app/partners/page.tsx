@@ -71,7 +71,7 @@ const partners = [
     tagline: 'Step back into football\'s greatest managerial era',
     description: "Retro Football Manager is a wildly popular free-to-play, free-to-download retro football app with over 150k active users reliving bygone eras—pick any historic season or team, climb leaderboards, and win prizes as a true student of the game.",
     stats: "Be careful it's addictive!",
-    bgImage: '/images/partners/retro-football-manager-partner-bg.jpg',
+    bgImage: '/images/partners/retro-football-manager-partner-bg.png',
     bgAlt: 'Retro Football Manager — football management magazine and retro tactics',
     bgPosition: 'center 80%',
   },
