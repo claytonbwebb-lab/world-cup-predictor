@@ -129,7 +129,13 @@ export default function LeaguesPage() {
   async function handleDelete(league: League) {
     if (!confirm(`Delete "${league.name}"? This cannot be undone.`)) return;
     const res = await fetch(`/api/leagues/${league.id}`, { method: 'DELETE' });
-    if (res.ok) { setSuccess('League deleted.'); loadLeagues(); }
+    const data = await res.json();
+    if (res.ok) {
+      setSuccess('League deleted.');
+      loadLeagues();
+    } else {
+      setError(data.error || 'Failed to delete league');
+    }
   }
 
   function copyInviteLink(league: League) {
