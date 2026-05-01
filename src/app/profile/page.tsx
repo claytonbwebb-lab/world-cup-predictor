@@ -1,0 +1,252 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import Link from 'next/link';
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  // Form fields
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = '/auth/login';
+      return;
+    }
+    setUser(user);
+    setEmail(user.email || '');
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      setProfile(profile);
+      setUsername(profile.username || '');
+    }
+    setLoading(false);
+  }
+
+  async function handleUsernameUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setSaving(true);
+
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters');
+      setSaving(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setError('Username can only contain letters, numbers, and underscores');
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username })
+      .eq('id', user.id);
+
+    if (error) {
+      setError('Failed to update username: ' + error.message);
+    } else {
+      setSuccess('Username updated!');
+    }
+    setSaving(false);
+  }
+
+  async function handlePasswordUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    setSaving(true);
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      setError('Failed to update password: ' + error.message);
+    } else {
+      setSuccess('Password updated!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+    setSaving(false);
+  }
+
+  async function handleSendResetEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!email) {
+      setError('Email is required');
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    });
+
+    if (error) {
+      setError('Failed to send reset email: ' + error.message);
+    } else {
+      setSuccess('Password reset email sent! Check your inbox.');
+    }
+    setSaving(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavBar />
+        <div className="text-center py-16 text-textMuted">Loading profile...</div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <NavBar />
+      <main className="max-w-2xl mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-2">Profile</h1>
+        <p className="text-textMuted mb-8">Manage your account details</p>
+
+        {success && (
+          <div className="bg-primary/10 border border-primary/30 text-primary px-4 py-3 rounded-lg mb-6 text-sm">
+            {success}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-6">
+
+          {/* Username */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Username</h2>
+            <p className="text-textMuted text-sm mb-4">This is how you appear to other players</p>
+            <form onSubmit={handleUsernameUpdate} className="flex gap-3">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="input flex-1"
+                placeholder="football_fan"
+                minLength={3}
+                pattern="^[a-zA-Z0-9_]+$"
+              />
+              <button type="submit" disabled={saving} className="btn-primary">
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </form>
+          </div>
+
+          {/* Email */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Email Address</h2>
+            <p className="text-textMuted text-sm mb-4">Your current email address: <span className="text-primary">{email}</span></p>
+            <p className="text-textMuted text-sm">To change your email, use the password reset option below — a reset link will be sent to your new email address once you confirm.</p>
+          </div>
+
+          {/* Password */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Password</h2>
+            <p className="text-textMuted text-sm mb-4">Update your password</p>
+            <form onSubmit={handlePasswordUpdate} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="input w-full"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="input w-full"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <button type="submit" disabled={saving || !newPassword} className="btn-primary">
+                {saving ? 'Updating...' : 'Update Password'}
+              </button>
+            </form>
+          </div>
+
+          {/* Reset Password via Email */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Forgot Password?</h2>
+            <p className="text-textMuted text-sm mb-4">Send yourself a password reset email</p>
+            <form onSubmit={handleSendResetEmail} className="flex gap-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input flex-1"
+                readOnly
+              />
+              <button type="submit" disabled={saving} className="btn-secondary">
+                {saving ? 'Sending...' : 'Send Reset Email'}
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}

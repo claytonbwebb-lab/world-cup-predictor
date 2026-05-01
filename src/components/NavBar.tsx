@@ -12,6 +12,7 @@ const links = [
   { href: '/leagues',     label: 'Leagues' },
   { href: '/partners',    label: 'Partners' },
   { href: '/blog',        label: 'Blog' },
+  { href: '/profile',     label: 'Profile' },
   { href: '/auth/logout', label: 'Sign Out' },
 ];
 

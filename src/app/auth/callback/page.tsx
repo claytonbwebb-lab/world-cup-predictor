@@ -2,14 +2,23 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function CallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
   useEffect(() => {
     const supabase = createClient();
+
+    // Handle password reset flow
+    const type = searchParams.get('type');
+    if (type === 'recovery') {
+      setStatus('success');
+      setTimeout(() => router.replace('/auth/reset-password'), 500);
+      return;
+    }
 
     // With implicit flow, Supabase detects the #access_token in the URL hash automatically.
     // We just listen for the SIGNED_IN event and redirect.
