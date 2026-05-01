@@ -14,17 +14,17 @@ const nextConfig = {
       },
       {
         source: '/3retro',
-        destination: 'https://www.3retro.com/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
+        destination: 'https://assets.ikhnaie.me/click.html?wgcampaignid=1747476&wgprogramid=310484',
         permanent: false,
       },
       {
         source: '/allstarsignings',
-        destination: 'https://allstarsignings.com/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
+        destination: 'https://assets.ikhnaie.me/click.html?wgcampaignid=1747476&wgprogramid=295320',
         permanent: false,
       },
       {
         source: '/butterworths',
-        destination: 'https://butterworths.online/?utm_source=Partner&utm_medium=Website&utm_campaign=Play+Predict+Win',
+        destination: 'https://assets.ikhnaie.me/click.html?wgcampaignid=1747476&wgprogramid=310418',
         permanent: false,
       },
       {
