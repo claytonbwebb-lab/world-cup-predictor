@@ -15,6 +15,8 @@ function SignupForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,6 +64,18 @@ function SignupForm() {
     }
   };
 
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
+    });
+    setResendLoading(false);
+    setResendMessage(error ? 'Could not resend — please try again.' : 'Confirmation email resent! Check your inbox.');
+  };
+
   if (success) {
     return (
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -72,10 +86,26 @@ function SignupForm() {
             <p className="text-textMuted mb-4">
               We sent a confirmation link to <strong>{email}</strong>
             </p>
-            <p className="text-textMuted text-sm">
+            <p className="text-textMuted text-sm mb-4">
               Click the link to activate your account, then come back to sign in.
             </p>
-            <Link href={`/auth/login?redirect=${redirect}`} className="btn-primary mt-6 block">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 text-sm text-yellow-300 mb-6 text-left">
+              <span className="font-semibold">Can&apos;t find it?</span> Check your <strong>spam or junk folder</strong> — look for an email from <strong>support@playpredictwin.com</strong>. If you use Gmail, also check the Promotions tab.
+            </div>
+            {resendMessage ? (
+              <p className={`text-sm mb-4 ${resendMessage.includes('resent') ? 'text-green-400' : 'text-red-400'}`}>
+                {resendMessage}
+              </p>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="text-sm text-primary hover:underline disabled:opacity-50 mb-4 block mx-auto"
+              >
+                {resendLoading ? 'Sending...' : 'Resend confirmation email'}
+              </button>
+            )}
+            <Link href={`/auth/login?redirect=${redirect}`} className="btn-primary block">
               Go to Login
             </Link>
           </div>
