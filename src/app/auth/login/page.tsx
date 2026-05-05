@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -18,6 +18,11 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const supabase = createClient();
+
+  useEffect(() => {
+    const joinCode = searchParams.get('join');
+    if (joinCode) localStorage.setItem('pendingJoinLeagueCode', joinCode);
+  }, [searchParams]);
 
   async function syncMarketingConsent(userId: string, consent: boolean) {
     await supabase

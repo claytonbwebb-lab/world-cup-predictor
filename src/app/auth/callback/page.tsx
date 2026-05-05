@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'joining_league'>('loading');
 
   useEffect(() => {
     const supabase = createClient();
@@ -20,37 +20,63 @@ function CallbackContent() {
       return;
     }
 
-    // With implicit flow, Supabase detects the #access_token in the URL hash automatically.
-    // We just listen for the SIGNED_IN event and redirect.
+    const handlePostAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return false;
+
+      setStatus('success');
+
+      // Join code: check URL param first (works across browsers/devices),
+      // fall back to localStorage (same-browser flow)
+      const joinCode =
+        searchParams.get('join') ||
+        (typeof localStorage !== 'undefined' ? localStorage.getItem('pendingJoinLeagueCode') : null);
+
+      if (joinCode) {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem('pendingJoinLeagueCode');
+        setStatus('joining_league');
+        try {
+          const response = await fetch('/api/leagues/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: joinCode }),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            router.replace(`/leagues/${data.league.id}`);
+          } else {
+            router.replace('/dashboard');
+          }
+        } catch {
+          router.replace('/dashboard');
+        }
+      } else {
+        router.replace('/dashboard');
+      }
+      return true;
+    };
+
+    // Listen for auth state change (handles email confirmation token in URL hash)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setStatus('success');
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
         subscription.unsubscribe();
-        setTimeout(() => router.replace('/dashboard'), 500);
+        handlePostAuth();
       }
     });
 
-    // Also check if already signed in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setStatus('success');
-        subscription.unsubscribe();
-        setTimeout(() => router.replace('/dashboard'), 500);
-      }
-    });
+    // Also handle already-signed-in case
+    handlePostAuth();
 
     // Timeout fallback
-    const timeout = setTimeout(() => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          setStatus('success');
-          router.replace('/dashboard');
-        } else {
-          setStatus('error');
-          setTimeout(() => router.replace('/auth/login'), 2000);
-        }
-      });
-    }, 6000);
+    const timeout = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace('/dashboard');
+      } else {
+        setStatus('error');
+        setTimeout(() => router.replace('/auth/login'), 2000);
+      }
+    }, 8000);
 
     return () => {
       clearTimeout(timeout);
@@ -65,10 +91,12 @@ function CallbackContent() {
           {status === 'loading' && '🔐'}
           {status === 'success' && '✅'}
           {status === 'error' && '❌'}
+          {status === 'joining_league' && '🏆'}
         </div>
         <p className="text-textMuted">
           {status === 'loading' && 'Signing you in...'}
           {status === 'success' && 'Signed in! Redirecting...'}
+          {status === 'joining_league' && 'Joining your league...'}
           {status === 'error' && 'Link may have expired. Redirecting to login...'}
         </p>
       </div>

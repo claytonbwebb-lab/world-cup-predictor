@@ -44,7 +44,12 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/auth/login', request.url);
+    // Pass full path + query so ?join=CODE survives the redirect
+    const fullPath = pathname + (request.nextUrl.search || '');
     redirectUrl.searchParams.set('redirect', pathname);
+    // Hoist join param to top-level so login/signup pages can store it
+    const joinCode = request.nextUrl.searchParams.get('join');
+    if (joinCode) redirectUrl.searchParams.set('join', joinCode);
     return NextResponse.redirect(redirectUrl);
   }
 

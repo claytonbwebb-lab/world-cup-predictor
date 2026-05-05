@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -22,6 +22,11 @@ function SignupForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const supabase = createClient();
+
+  useEffect(() => {
+    const joinCode = searchParams.get('join');
+    if (joinCode) localStorage.setItem('pendingJoinLeagueCode', joinCode);
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +56,7 @@ function SignupForm() {
       password,
       options: {
         data: { username, marketing_consent: marketingConsent },
-        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}${searchParams.get('join') ? '&join=' + searchParams.get('join') : ''}`,
       },
     });
 
@@ -70,7 +75,7 @@ function SignupForm() {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}${searchParams.get('join') ? '&join=' + searchParams.get('join') : ''}` },
     });
     setResendLoading(false);
     setResendMessage(error ? 'Could not resend — please try again.' : 'Confirmation email resent! Check your inbox.');
