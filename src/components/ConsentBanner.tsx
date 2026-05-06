@@ -3,9 +3,9 @@
 import { useConsent, type Consent } from './ConsentContext';
 
 export default function ConsentBanner() {
-  const { consent, setConsent, showPrefs, setShowPrefs } = useConsent();
+  const { consent, setConsent, showPrefs, setShowPrefs, loaded } = useConsent();
 
-  if (consent.resolved) return null;
+  if (!loaded || consent.resolved) return null;
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 flex items-end justify-center px-4 pb-4 sm:pb-6">

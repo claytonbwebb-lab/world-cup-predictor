@@ -13,6 +13,7 @@ type ConsentContextType = {
   setConsent: (c: Consent) => void;
   showPrefs: boolean;
   setShowPrefs: (v: boolean) => void;
+  loaded: boolean;
 };
 
 const ConsentContext = createContext<ConsentContextType>({
@@ -20,6 +21,7 @@ const ConsentContext = createContext<ConsentContextType>({
   setConsent: () => {},
   showPrefs: false,
   setShowPrefs: () => {},
+  loaded: false,
 });
 
 export function useConsent() {
@@ -35,6 +37,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     resolved: false,
   });
   const [showPrefs, setShowPrefs] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -46,6 +49,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
         setConsentState({ analytics: false, advertising: false, resolved: true });
       }
     }
+    setLoaded(true);
   }, []);
 
   const setConsent = (c: Consent) => {
@@ -54,7 +58,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ConsentContext.Provider value={{ consent, setConsent, showPrefs, setShowPrefs }}>
+    <ConsentContext.Provider value={{ consent, setConsent, showPrefs, setShowPrefs, loaded }}>
       {children}
     </ConsentContext.Provider>
   );
