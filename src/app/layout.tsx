@@ -11,8 +11,18 @@ export const metadata: Metadata = {
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
     { rel: 'icon', url: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
-    { rel: 'apple-touch-icon', url: '/favicon-180.png', sizes: '180x180', type: 'image/png' },
+    { rel: 'apple-touch-icon', url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    { rel: 'manifest', url: '/manifest.json' },
   ],
+  appleWebApp: {
+    capable: true,
+    title: 'PlayPredictWin',
+    statusBarStyle: 'black-translucent',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'theme-color': '#0f172a',
+  },
   openGraph: {
     title: 'Play Predict Win',
     description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
@@ -35,6 +45,7 @@ export const metadata: Metadata = {
     description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
     images: ['/og-image.png'],
   },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
