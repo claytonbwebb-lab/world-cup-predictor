@@ -1,17 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+
+const DEFAULT_AVATAR = '/default-avatar.png';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -34,16 +39,47 @@ export default function ProfilePage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username, marketing_consent')
+      .select('username, avatar_url, marketing_consent')
       .eq('id', user.id)
       .single();
 
     if (profile) {
       setProfile(profile);
       setUsername(profile.username || '');
+      setAvatarPreview(profile.avatar_url || null);
       setMarketingConsent(profile.marketing_consent || false);
     }
     setLoading(false);
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    setUploadingAvatar(true);
+    setError('');
+    setSuccess('');
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const res = await fetch('/api/profile/avatar', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || 'Upload failed');
+      // Revert preview
+      setAvatarPreview(profile?.avatar_url || null);
+    } else {
+      setSuccess('Avatar updated!');
+      setProfile((p: any) => ({ ...p, avatar_url: data.url }));
+    }
+    setUploadingAvatar(false);
   }
 
   async function handleUsernameUpdate(e: React.FormEvent) {
@@ -138,6 +174,65 @@ export default function ProfilePage() {
         )}
 
         <div className="space-y-6">
+
+          {/* Avatar */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Profile Picture</h2>
+            <p className="text-textMuted text-sm mb-4">This is shown next to your name in leagues and on the leaderboard</p>
+            <div className="flex items-center gap-6">
+              <div className="relative shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={avatarPreview || DEFAULT_AVATAR}
+                  alt="Your avatar"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                />
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="btn-primary mb-2"
+                >
+                  {uploadingAvatar ? 'Uploading...' : 'Upload New Photo'}
+                </button>
+                <p className="text-textMuted text-xs">JPEG, PNG, WebP or GIF · Max 5MB</p>
+                {profile?.avatar_url && (
+                  <button
+                    onClick={async () => {
+                      setAvatarPreview(null);
+                      setSaving(true);
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({ avatar_url: null, updated_at: new Date().toISOString() })
+                        .eq('id', user.id);
+                      if (!error) {
+                        setProfile((p: any) => ({ ...p, avatar_url: null }));
+                        setSuccess('Avatar removed.');
+                      }
+                      setSaving(false);
+                    }}
+                    disabled={saving}
+                    className="text-red-400 hover:text-red-300 text-xs mt-2 underline"
+                  >
+                    {saving ? 'Removing...' : 'Remove photo'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Username */}
           <div className="card">

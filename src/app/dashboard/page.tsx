@@ -136,13 +136,21 @@ export default async function Dashboard() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {profile?.username || 'Player'}! 👋
-          </h1>
-          <p className="text-textMuted">
-            Ready to predict some matches?
-          </p>
+        <div className="mb-8 flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={profile?.avatar_url || '/default-avatar.png'}
+            alt={profile?.username || 'Player'}
+            className="w-16 h-16 rounded-full object-cover border-2 border-border"
+          />
+          <div>
+            <h1 className="text-3xl font-bold mb-1">
+              Welcome back, {profile?.username || 'Player'}! 👋
+            </h1>
+            <p className="text-textMuted">
+              Ready to predict some matches?
+            </p>
+          </div>
         </div>
 
         {/* Stats Cards */}

@@ -63,7 +63,7 @@ export default function LeagueLeaderboardPage() {
     const enriched = await Promise.all((memberList || []).map(async (m: any) => {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, avatar_url')
         .eq('id', m.user_id)
         .single();
 
@@ -81,6 +81,7 @@ export default function LeagueLeaderboardPage() {
       return {
         user_id: m.user_id,
         username: profile?.username || 'Unknown',
+        avatar_url: profile?.avatar_url || null,
         total_points: totalPoints,
         exact_scores: exactScores,
         correct_results: correctResults,
@@ -182,12 +183,20 @@ export default function LeagueLeaderboardPage() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <span className={`font-medium ${member.user_id === currentUserId ? 'text-primary' : ''}`}>
-                          {member.username}
-                        </span>
-                        {member.user_id === currentUserId && (
-                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">You</span>
-                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={member.avatar_url || '/default-avatar.png'}
+                          alt={member.username}
+                          className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
+                        />
+                        <div className="flex flex-col">
+                          <span className={`font-medium ${member.user_id === currentUserId ? 'text-primary' : ''}`}>
+                            {member.username}
+                          </span>
+                          {member.user_id === currentUserId && (
+                            <span className="text-xs text-primary">You</span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-center">

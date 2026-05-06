@@ -116,14 +116,20 @@ export default async function LeaderboardPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${entry.user_id === user.id ? 'text-primary' : ''}`}>
-                        {entry.username}
-                      </span>
-                      {entry.user_id === user.id && (
-                        <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
-                          You
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={entry.avatar_url || '/default-avatar.png'}
+                        alt={entry.username}
+                        className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
+                      />
+                      <div className="flex flex-col">
+                        <span className={`font-medium ${entry.user_id === user.id ? 'text-primary' : ''}`}>
+                          {entry.username}
                         </span>
-                      )}
+                        {entry.user_id === user.id && (
+                          <span className="text-xs text-primary">You</span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="py-3 px-4 text-center">
