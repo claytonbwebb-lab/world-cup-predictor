@@ -119,6 +119,16 @@ export default async function Dashboard() {
     .eq('user_id', user.id)
     .single();
 
+  // Fetch user rank from leaderboard
+  const { data: leaderboardData } = await supabase
+    .from('leaderboard')
+    .select('user_id')
+    .order('total_points', { ascending: false })
+    .order('exact_scores', { ascending: false });
+  const userRank = leaderboardData
+    ? leaderboardData.findIndex((e: any) => e.user_id === user.id) + 1
+    : 0;
+
   // Format date
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -171,7 +181,7 @@ export default async function Dashboard() {
           </div>
           <div className="card">
             <p className="text-textMuted text-sm mb-1">Rank</p>
-            <p className="text-3xl font-bold">-</p>
+            <p className="text-3xl font-bold">{userRank > 0 ? userRank : '-'}</p>
           </div>
         </div>
 
