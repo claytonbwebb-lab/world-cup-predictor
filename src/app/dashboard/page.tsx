@@ -190,7 +190,7 @@ export default async function Dashboard() {
                 {upcomingMatches.map((match) => (
                   <div
                     key={match.id}
-                    className="flex items-center p-3 bg-surfaceLight rounded-lg"
+                    className="flex items-center p-3 bg-surfaceLight rounded-lg w-full min-w-0"
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                       <span className="font-medium truncate text-right" title={match.home_team}>{getTeamName(match.home_team, true)}</span>
