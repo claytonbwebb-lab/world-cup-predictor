@@ -190,16 +190,18 @@ export default async function Dashboard() {
                 {upcomingMatches.map((match) => (
                   <div
                     key={match.id}
-                    className="flex items-center p-3 bg-surfaceLight rounded-lg w-full min-w-0"
+                    className="flex items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                      <span className="font-medium truncate text-right" title={match.home_team}>{getTeamName(match.home_team, true)}</span>
-                      <span className="text-xl shrink-0">{match.home_flag || '🏳️'}</span>
+                    {/* Home team: flag centred above name */}
+                    <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                      <span className="text-xl">{match.home_flag || '🏳️'}</span>
+                      <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(match.home_team, true)}</span>
                     </div>
-                    <span className="text-textMuted text-sm shrink-0 px-3">vs</span>
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-xl shrink-0">{match.away_flag || '🏳️'}</span>
-                      <span className="font-medium truncate" title={match.away_team}>{getTeamName(match.away_team, true)}</span>
+                    <span className="text-textMuted text-xs shrink-0">vs</span>
+                    {/* Away team: flag centred above name */}
+                    <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                      <span className="text-xl">{match.away_flag || '🏳️'}</span>
+                      <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(match.away_team, true)}</span>
                     </div>
                   </div>
                 ))}
@@ -222,35 +224,35 @@ export default async function Dashboard() {
             
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
-                {/* Mobile: compact flex row (default — shown below 768px) */}
+                {/* Mobile: flag-above-name, scores centred (default — shown below 768px) */}
                 <div className="md:hidden space-y-2">
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="flex items-center gap-1.5 px-2 py-2.5 bg-surfaceLight rounded-lg min-w-0"
+                      className="flex items-center gap-2 px-2 py-2.5 bg-surfaceLight rounded-lg"
                     >
-                      {/* Home team: flag + short name */}
-                      <div className="flex items-center gap-1 min-w-0 flex-shrink-0 max-w-[30%]">
-                        <span className="text-sm">{pred.match.home_flag || '🏳️'}</span>
-                        <span className="text-xs font-medium truncate">{getTeamName(pred.match.home_team, true)}</span>
+                      {/* Home: flag above name */}
+                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                        <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
+                        <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.home_team, true)}</span>
                       </div>
-                      {/* Predicted score */}
-                      <div className="flex-shrink-0 text-center px-1">
-                        <div className="text-[9px] text-textMuted">pred</div>
-                        <div className="text-xs font-medium">{pred.home_prediction}-{pred.away_prediction}</div>
+                      {/* Scores centred */}
+                      <div className="shrink-0 flex flex-col items-center gap-0.5">
+                        <div className="flex gap-2 text-[9px] text-textMuted">
+                          <span>pred</span><span>act</span>
+                        </div>
+                        <div className="flex gap-2 text-xs">
+                          <span className="font-medium">{pred.home_prediction}-{pred.away_prediction}</span>
+                          <span className="font-bold text-primary">{pred.match.home_score}-{pred.match.away_score}</span>
+                        </div>
                       </div>
-                      {/* Actual score */}
-                      <div className="flex-shrink-0 text-center px-1">
-                        <div className="text-[9px] text-textMuted">act</div>
-                        <div className="text-xs font-bold text-primary">{pred.match.home_score}-{pred.match.away_score}</div>
+                      {/* Away: flag above name */}
+                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                        <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
+                        <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
                       </div>
-                      {/* Away team: flag + short name */}
-                      <div className="flex items-center gap-1 min-w-0 flex-shrink-0 max-w-[30%]">
-                        <span className="text-xs font-medium truncate">{getTeamName(pred.match.away_team, true)}</span>
-                        <span className="text-sm">{pred.match.away_flag || '🏳️'}</span>
-                      </div>
-                      {/* Points — pushed to right edge */}
-                      <div className="ml-auto flex-shrink-0 flex flex-col items-end">
+                      {/* Points */}
+                      <div className="shrink-0 flex flex-col items-end gap-0.5">
                         {pred.is_exact_score && (
                           <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded">EXACT</span>
                         )}
