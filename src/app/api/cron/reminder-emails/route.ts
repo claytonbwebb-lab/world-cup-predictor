@@ -1,16 +1,19 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
-import * as webpush from 'web-push';
+const webpush = require('web-push');
 
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 
 // Configure web-push with VAPID keys
-webpush.setVapidDetails(
-  'mailto:noreply@playpredictwin.com',
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Only set VAPID details if keys are configured
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:noreply@playpredictwin.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');

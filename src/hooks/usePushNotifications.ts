@@ -56,7 +56,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
           endpoint: existing.endpoint,
           keys: {
             p256dh: existing.options?.applicationServerKey 
-              ? arrayBufferToBase64(existing.options.applicationServerKey)
+              ? arrayBufferToBase64(existing.options.applicationServerKey as ArrayBuffer)
               : '',
             auth: 'push-notifications', // Auth is part of the subscription object
           } as any,
@@ -94,13 +94,13 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: base64ToUint8Array(publicKey),
+        applicationServerKey: base64ToUint8Array(publicKey) as unknown as BufferSource,
       });
 
       const subData = {
         endpoint: sub.endpoint,
         keys: {
-          p256dh: arrayBufferToBase64(sub.options.applicationServerKey!),
+          p256dh: arrayBufferToBase64((sub.options.applicationServerKey as ArrayBuffer) || new ArrayBuffer(0)),
           auth: 'ppw-auth', // placeholder - real auth is in sub
         },
       };
