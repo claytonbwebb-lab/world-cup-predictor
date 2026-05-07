@@ -1,8 +1,16 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import * as webpush from 'web-push';
 
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
+
+// Configure web-push with VAPID keys
+webpush.setVapidDetails(
+  'mailto:noreply@playpredictwin.com',
+  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+);
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
@@ -25,6 +33,7 @@ export async function POST(request: Request) {
   const url = new URL(request.url);
   const dryRun = url.searchParams.get('dryRun') === 'true';
   const testEmail = url.searchParams.get('testEmail') || null;
+  const forcePush = url.searchParams.get('push') === 'true'; // override to always push
   console.log('[reminder-emails] Cron triggered at', new Date().toISOString(), dryRun ? '(DRY RUN)' : '');
 
   const supabase = createServerClient();
@@ -81,7 +90,25 @@ export async function POST(request: Request) {
     userPredictedMap.get(pred.user_id)!.add(pred.match_id);
   }
 
-  // ── Step 4: Build fixture list HTML (shared across all emails) ──
+  // ── Step 4: Fetch push subscriptions for users ──
+  const userIds = (users ?? []).map((u) => u.id);
+  const { data: pushSubscriptions, error: pushError } = await supabase
+    .from('push_subscriptions')
+    .select('user_id, endpoint, keys')
+    .in('user_id', userIds)
+    .eq('is_active', true);
+
+  if (pushError) {
+    console.error('[reminder-emails] Error fetching push subscriptions:', pushError);
+  }
+
+  // Build a map of user_id -> push subscription
+  const pushSubMap = new Map<string, { endpoint: string; keys: any }>();
+  for (const sub of pushSubscriptions ?? []) {
+    pushSubMap.set(sub.user_id, { endpoint: sub.endpoint, keys: sub.keys });
+  }
+
+  // ── Step 5: Build fixture list HTML (shared across all emails) ──
   const matchesListHtml = tomorrowMatches
     .map((m, i) => `<div style="padding:12px 16px;border-bottom:${i < tomorrowMatches.length - 1 ? '1px solid #1e293b' : 'none'};">
       <span style="color:#f8fafc;font-size:14px;font-weight:600;">${m.home_team} vs ${m.away_team}</span><br/>
@@ -89,7 +116,7 @@ export async function POST(request: Request) {
     </div>`)
     .join('');
 
-  // ── Step 5: Determine who needs emails, build payloads ──
+  // ── Step 6: Determine who needs emails, build payloads ──
   type EmailPayload = { userId: string; email: string; subject: string; html: string };
   const toSend: EmailPayload[] = [];
   const skippedResults: any[] = [];
@@ -125,7 +152,7 @@ export async function POST(request: Request) {
     toSend.push({ userId: user.id, email: user.email, subject, html });
   }
 
-  // ── Step 6: Batch send in chunks of 100 ──
+  // ── Step 7: Batch send emails in chunks of 100 ──
   const sentResults: any[] = [];
   const BATCH_SIZE = 100;
 
@@ -156,17 +183,73 @@ export async function POST(request: Request) {
     }
   }
 
-  const results = [...skippedResults, ...sentResults];
-  const sent = sentResults.filter((r) => r.sent).length;
-  const failed = results.filter((r) => !r.sent).length;
+  // ── Step 8: Send push notifications ──
+  const pushResults: any[] = [];
 
-  console.log(`[reminder-emails] 📊 Done — sent: ${sent}, skipped/failed: ${failed}`);
+  if (!dryRun && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    for (const user of (users ?? [])) {
+      const pushSub = pushSubMap.get(user.id);
+      if (!pushSub) continue; // No push subscription
+
+      const predicted = userPredictedMap.get(user.id) ?? new Set();
+      const missing = tomorrowMatchIds.filter((id) => !predicted.has(id));
+      if (missing.length === 0) continue; // Already predicted all
+
+      const predictedCount = tomorrowMatchIds.length - missing.length;
+      const totalCount = tomorrowMatches.length;
+
+      const pushPayload = {
+        title: '⚽ Matches tomorrow — predict now!',
+        body: predictedCount === 0
+          ? "You haven't predicted any matches for tomorrow yet."
+          : `You've predicted ${predictedCount}/${totalCount} matches. Don't miss out!`,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-72.png',
+        tag: 'ppw-reminder',
+        data: { url: 'https://playpredictwin.com/dashboard' },
+      };
+
+      try {
+        await webpush.sendNotification(
+          { endpoint: pushSub.endpoint, keys: pushSub.keys },
+          JSON.stringify(pushPayload)
+        );
+        console.log(`[reminder-emails] 🔔 Push sent to user ${user.id}`);
+        pushResults.push({ userId: user.id, sent: true });
+      } catch (pushErr: any) {
+        console.error(`[reminder-emails] ❌ Push failed for user ${user.id}:`, pushErr.message);
+        // If subscription expired/invalid, mark as inactive
+        if (pushErr.statusCode === 404 || pushErr.statusCode === 410) {
+          await supabase
+            .from('push_subscriptions')
+            .update({ is_active: false })
+            .eq('user_id', user.id)
+            .eq('endpoint', pushSub.endpoint);
+          console.log(`[reminder-emails] 🗑️ Marked invalid subscription as inactive`);
+        }
+        pushResults.push({ userId: user.id, sent: false, reason: pushErr.message });
+      }
+    }
+  } else if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.log('[reminder-emails] ⚠️ VAPID keys not configured — skipping push notifications');
+  }
+
+  // ── Step 9: Final results ──
+  const results = [...skippedResults, ...sentResults];
+  const sentEmails = sentResults.filter((r) => r.sent).length;
+  const failedEmails = results.filter((r) => !r.sent).length;
+  const sentPush = pushResults.filter((r) => r.sent).length;
+  const failedPush = pushResults.filter((r) => !r.sent).length;
+
+  console.log(`[reminder-emails] 📊 Done — emails: ${sentEmails} sent, ${failedEmails} skipped/failed | push: ${sentPush} sent, ${failedPush} failed`);
 
   return NextResponse.json({
     message: 'Reminder emails processed',
     matchesTomorrow: tomorrowMatches.length,
-    emailsSent: sent,
-    skipped: failed,
+    emailsSent: sentEmails,
+    emailsSkipped: failedEmails,
+    pushSent: sentPush,
+    pushFailed: failedPush,
     detail: results,
   });
 }

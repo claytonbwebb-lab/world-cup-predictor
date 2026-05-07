@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 const Analytics = dynamic(() => import('@vercel/analytics/next').then(m => m.Analytics), { ssr: false });
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ClientLayout from '@/components/ClientLayout';
+import RegisterServiceWorker from '@/components/RegisterServiceWorker';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -57,6 +58,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClientLayout>{children}</ClientLayout>
+        <RegisterServiceWorker />
         <SpeedInsights />
         <Analytics />
         <script
