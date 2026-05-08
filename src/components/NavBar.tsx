@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import NotificationToggle from './NotificationToggle';
 
 const links = [
   { href: '/dashboard',   label: 'Dashboard' },
@@ -118,9 +117,6 @@ export default function NavBar() {
                 </Link>
               ))}
             </nav>
-            <div className="hidden sm:block">
-              <NotificationToggle />
-            </div>
           </div>
         </div>
       </div>
