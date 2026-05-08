@@ -1,178 +1,166 @@
-'use client';
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
-import { useEffect, useState } from 'react';
+// Utility to convert VAPID key to Uint8Array
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
 
-interface PushSubscription {
-  endpoint: string;
-  keys: { p256dh: string; auth: string };
-}
-
-interface UsePushNotificationsReturn {
-  permission: NotificationPermission | 'unsupported';
-  subscription: PushSubscription | null;
-  isLoading: boolean;
-  error: string | null;
-  subscribe: () => Promise<void>;
-  unsubscribe: () => Promise<void>;
-}
-
-export function usePushNotifications(): UsePushNotificationsReturn {
-  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported');
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-      setPermission('unsupported');
-      setIsLoading(false);
-      return;
-    }
-
-    // Check current permission
-    setPermission(Notification.permission);
-
-    // Check if already subscribed
-    checkSubscription();
-
-    // Listen for permission changes
-    const interval = setInterval(() => {
-      setPermission(Notification.permission);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  async function checkSubscription() {
-    try {
-      const swReady = navigator.serviceWorker.ready;
-      const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-      const registration = await Promise.race([swReady, timeout]);
-      const existing = await registration.pushManager.getSubscription();
-      if (existing) {
-        setSubscription({
-          endpoint: existing.endpoint,
-          keys: {
-            p256dh: existing.options?.applicationServerKey 
-              ? arrayBufferToBase64(existing.options.applicationServerKey as ArrayBuffer)
-              : '',
-            auth: 'push-notifications', // Auth is part of the subscription object
-          } as any,
-        });
-      }
-    } catch (err) {
-      console.error('[Push] Error checking subscription:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function subscribe() {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      // Request notification permission
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') {
-        setError('Notification permission denied');
-        setIsLoading(false);
-        return;
-      }
-      setPermission(perm);
-
-      // Get VAPID public key from server
-      const keyRes = await fetch('/api/push/subscribe');
-      if (!keyRes.ok) {
-        throw new Error('Failed to get VAPID public key');
-      }
-      const { publicKey } = await keyRes.json();
-
-      // Subscribe to push
-      const registration = await navigator.serviceWorker.ready;
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: base64ToUint8Array(publicKey) as unknown as BufferSource,
-      });
-
-      const subData = {
-        endpoint: sub.endpoint,
-        keys: {
-          p256dh: arrayBufferToBase64((sub.options.applicationServerKey as ArrayBuffer) || new ArrayBuffer(0)),
-          auth: 'ppw-auth', // placeholder - real auth is in sub
-        },
-      };
-
-      // Save to backend
-      const res = await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subData),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to save subscription');
-      }
-
-      setSubscription(subData);
-    } catch (err: any) {
-      console.error('[Push] Subscribe error:', err);
-      setError(err.message || 'Failed to enable notifications');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function unsubscribe() {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      const existing = await registration.pushManager.getSubscription();
-
-      if (existing) {
-        // Unsubscribe from push
-        await existing.unsubscribe();
-
-        // Remove from backend
-        await fetch('/api/push/subscribe', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: existing.endpoint }),
-        });
-      }
-
-      setSubscription(null);
-    } catch (err: any) {
-      console.error('[Push] Unsubscribe error:', err);
-      setError(err.message || 'Failed to disable notifications');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return { permission, subscription, isLoading, error, subscribe, unsubscribe };
-}
-
-// Helper: Convert ArrayBuffer to Base64 string
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
-
-// Helper: Convert Base64 string to Uint8Array
-function base64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
+}
+
+export function usePushNotifications() {
+  const [isSupported, setIsSupported] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function checkNotificationStatus() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        setIsSupported(false);
+        setLoading(false);
+        return;
+      }
+
+      setIsSupported(true);
+      setPermission(Notification.permission);
+
+      try {
+        registrationRef.current = await navigator.serviceWorker.ready;
+        const subscription = await registrationRef.current.pushManager.getSubscription();
+        setIsSubscribed(!!subscription);
+        setLoading(false);
+      } catch (err: any) {
+        console.error('Error checking push subscription:', err);
+        setError(err.message || 'Error checking push subscription');
+        setLoading(false);
+      }
+    }
+    checkNotificationStatus();
+  }, []);
+
+  const subscribe = async () => {
+    if (!isSupported || !registrationRef.current) {
+      setError('Push notifications not supported or service worker not ready.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (Notification.permission === 'denied') {
+        setError('Notification permission denied. Please enable it in your browser settings.');
+        setLoading(false);
+        return;
+      }
+
+      const permissionResult = await Notification.requestPermission();
+      setPermission(permissionResult);
+
+      if (permissionResult !== 'granted') {
+        setError('Notification permission not granted.');
+        setLoading(false);
+        return;
+      }
+
+      const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY;
+      if (!VAPID_PUBLIC_KEY) {
+        setError('VAPID public key not configured.');
+        setLoading(false);
+        return;
+      }
+      const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
+      const subscription = await registrationRef.current.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey,
+      });
+
+      // Send subscription to your backend
+      const { data, error: sbError } = await supabase
+        .from('push_subscriptions')
+        .insert({
+          subscription_data: subscription,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (sbError) {
+        console.error('Supabase error saving subscription:', sbError);
+        setError(sbError.message || 'Error saving subscription on server.');
+        // Unsubscribe from PushManager if database save fails
+        await subscription.unsubscribe();
+        setIsSubscribed(false);
+      } else {
+        setIsSubscribed(true);
+        console.log('Push subscription saved:', subscription);
+      }
+    } catch (err: any) {
+      console.error('Error subscribing to push notifications:', err);
+      setError(err.message || 'Error subscribing to push notifications.');
+      setIsSubscribed(false); // Ensure state is correct if error happened mid-subscribe
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const unsubscribe = async () => {
+    if (!isSubscribed || !registrationRef.current) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const subscription = await registrationRef.current.pushManager.getSubscription();
+      if (subscription) {
+        await subscription.unsubscribe();
+
+        // Remove subscription from your backend
+        const { error: sbError } = await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', subscription.endpoint);
+
+        if (sbError) {
+          console.error('Supabase error deleting subscription:', sbError);
+          setError(sbError.message || 'Error deleting subscription from server.');
+          // If server delete fails, re-subscribe PushManager to keep the state consistent
+          // This might be tricky, so for now, we'll just log and let it be
+        } else {
+          setIsSubscribed(false);
+          console.log('Push subscription removed:', subscription);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error unsubscribing from push notifications:', err);
+      setError(err.message || 'Error unsubscribing.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  return {
+    isSupported,
+    isSubscribed,
+    permission,
+    loading,
+    error,
+    subscribe,
+    unsubscribe,
+    registration: registrationRef.current,
+  };
 }

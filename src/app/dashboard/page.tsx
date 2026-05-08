@@ -3,6 +3,9 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const NotificationBanner = dynamic(() => import('@/components/NotificationBanner'), { ssr: false });
 
 // Official short names for World Cup branding
 const TEAM_SHORT: Record<string, string> = {
@@ -145,6 +148,8 @@ export default async function Dashboard() {
       <NavBar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        <NotificationBanner />
+
         {/* Welcome Section */}
         <div className="mb-8 flex items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}

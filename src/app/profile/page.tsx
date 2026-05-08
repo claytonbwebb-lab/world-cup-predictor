@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { isIOS, isStandalone } from '@/utils/pwa';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 
@@ -22,6 +24,8 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(false);
+
+  const { isSupported, isSubscribed, permission, subscribe, unsubscribe, loading: pushLoading } = usePushNotifications();
 
   const supabase = createClient();
 
@@ -327,6 +331,79 @@ export default function ProfilePage() {
                 I would like to receive marketing emails from Play Predict Win about special offers, football content, and updates. I understand I can unsubscribe at any time.
               </label>
             </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Push Notifications</h2>
+            <p className="text-textMuted text-sm mb-4">Get reminders for upcoming matches so you never miss a prediction.</p>
+
+            {/* Unsupported */}
+            {!isSupported && (
+              <p className="text-textMuted text-sm">Push notifications are not supported on this browser.</p>
+            )}
+
+            {/* iOS standalone prompt */}
+            {isSupported && isIOS() && !isStandalone() && (
+              <p className="text-textMuted text-sm">Install the app to your home screen to enable push notifications.</p>
+            )}
+
+            {/* Other states */}
+            {isSupported && (!isIOS() || isStandalone()) && (
+              <div className="flex items-center gap-4">
+                {permission === 'granted' && isSubscribed ? (
+                  <>
+                    <span className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Match reminders enabled</p>
+                      <button
+                        onClick={unsubscribe}
+                        disabled={pushLoading}
+                        className="text-primary hover:underline text-xs mt-1"
+                      >
+                        {pushLoading ? 'Disabling...' : 'Disable reminders'}
+                      </button>
+                    </div>
+                  </>
+                ) : permission === 'denied' ? (
+                  <>
+                    <span className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0" />
+                    <p className="text-sm text-textMuted">Notifications are blocked &mdash; enable them in your browser/device settings.</p>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-3 h-3 bg-amber-500 rounded-full flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">Match reminders off</p>
+                      <button
+                        onClick={async () => {
+                          await subscribe();
+                          localStorage.setItem('ppw_notif_dismissed', 'true');
+                        }}
+                        disabled={pushLoading}
+                        className="text-primary hover:underline text-xs mt-1"
+                      >
+                        {pushLoading ? 'Enabling...' : 'Enable reminders'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Reset localStorage helper (only in dev and if dismissed) */}
+            {process.env.NODE_ENV === 'development' && (typeof window !== 'undefined' && localStorage.getItem('ppw_notif_dismissed')) && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('ppw_notif_dismissed');
+                  alert('Notification prompt reset for testing. Reload the page.');
+                  window.location.reload();
+                }}
+                className="text-textMuted hover:text-white text-xs mt-4 underline"
+              >
+                Reset notification prompt
+              </button>
+            )}
           </div>
 
         </div>
