@@ -39,13 +39,16 @@ export function usePushNotifications() {
       setPermission(Notification.permission);
 
       try {
-        registrationRef.current = await navigator.serviceWorker.ready;
+        const swReady = navigator.serviceWorker.ready;
+        const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+        registrationRef.current = await Promise.race([swReady, timeout]);
         const subscription = await registrationRef.current.pushManager.getSubscription();
         setIsSubscribed(!!subscription);
         setLoading(false);
       } catch (err: any) {
         console.error('Error checking push subscription:', err);
-        setError(err.message || 'Error checking push subscription');
+        // Timeout or error — treat as unsupported to avoid stuck loading state
+        setIsSupported(false);
         setLoading(false);
       }
     }
