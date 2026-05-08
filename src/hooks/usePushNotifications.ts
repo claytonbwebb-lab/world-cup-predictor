@@ -23,25 +23,21 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       setPermission('unsupported');
       setIsLoading(false);
       return;
     }
 
     // Check current permission
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-    }
+    setPermission(Notification.permission);
 
     // Check if already subscribed
     checkSubscription();
 
     // Listen for permission changes
     const interval = setInterval(() => {
-      if ('Notification' in window) {
-        setPermission(Notification.permission);
-      }
+      setPermission(Notification.permission);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -49,7 +45,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   async function checkSubscription() {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const swReady = navigator.serviceWorker.ready;
+      const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+      const registration = await Promise.race([swReady, timeout]);
       const existing = await registration.pushManager.getSubscription();
       if (existing) {
         setSubscription({
