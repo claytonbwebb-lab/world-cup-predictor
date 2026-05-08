@@ -40,7 +40,7 @@ export default function NotificationBanner() {
     setIsVisible(false);
   };
 
-  if (!isVisible) {
+  if (!isVisible || loading) {
     return null;
   }
 

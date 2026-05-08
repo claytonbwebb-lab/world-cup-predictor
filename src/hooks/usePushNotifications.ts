@@ -47,8 +47,9 @@ export function usePushNotifications() {
         setLoading(false);
       } catch (err: any) {
         console.error('Error checking push subscription:', err);
-        // Timeout or error — treat as unsupported to avoid stuck loading state
+        // Timeout or SW error — mark unsupported so banner stays hidden
         setIsSupported(false);
+        setIsSubscribed(false);
         setLoading(false);
       }
     }

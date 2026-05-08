@@ -338,14 +338,14 @@ export default function ProfilePage() {
             <h2 className="text-lg font-bold mb-1">Push Notifications</h2>
             <p className="text-textMuted text-sm mb-4">Get reminders for upcoming matches so you never miss a prediction.</p>
 
-            {/* Unsupported */}
-            {!isSupported && (
-              <p className="text-textMuted text-sm">Push notifications are not supported on this browser.</p>
+            {/* iOS not in standalone — always show install prompt */}
+            {isIOS() && !isStandalone() && (
+              <p className="text-textMuted text-sm">Add this app to your home screen to enable push notifications. In Safari, tap the Share button then "Add to Home Screen".</p>
             )}
 
-            {/* iOS standalone prompt */}
-            {isSupported && isIOS() && !isStandalone() && (
-              <p className="text-textMuted text-sm">Install the app to your home screen to enable push notifications.</p>
+            {/* Unsupported (non-iOS) */}
+            {!isSupported && !isIOS() && (
+              <p className="text-textMuted text-sm">Push notifications are not supported on this browser.</p>
             )}
 
             {/* Other states */}
