@@ -10,12 +10,13 @@ export default function RegisterServiceWorker() {
 
     async function register() {
       try {
-        const registration = await navigator.serviceWorker.register('/sw.js', {
+        // next-pwa registers /sw.js automatically; we register a separate push SW
+        const registration = await navigator.serviceWorker.register('/push-sw.js', {
           scope: '/',
         });
-        console.log('[PPW] Service Worker registered:', registration.scope);
+        console.log('[PPW] Push Service Worker registered:', registration.scope);
       } catch (err) {
-        console.error('[PPW] Service Worker registration failed:', err);
+        console.error('[PPW] Push Service Worker registration failed:', err);
       }
     }
 

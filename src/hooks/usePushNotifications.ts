@@ -41,17 +41,14 @@ export function usePushNotifications() {
 
     async function checkExistingSubscription() {
       try {
-        // Wait for SW with a generous timeout
-        const swReady = navigator.serviceWorker.ready;
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('sw-timeout')), 5000)
-        );
-        registrationRef.current = await Promise.race([swReady, timeout]);
-        const subscription = await registrationRef.current.pushManager.getSubscription();
+        // Register and get the push-specific SW
+        const reg = await navigator.serviceWorker.register('/push-sw.js', { scope: '/' });
+        await reg.update();
+        registrationRef.current = reg;
+        const subscription = await reg.pushManager.getSubscription();
         setIsSubscribed(!!subscription);
       } catch (err: any) {
-        // SW not registered / timed out — supported but no subscription yet
-        console.warn('[Push] SW not ready:', err.message);
+        console.warn('[Push] SW registration failed:', err.message);
         setIsSubscribed(false);
       } finally {
         setLoading(false);
@@ -90,10 +87,7 @@ export function usePushNotifications() {
       // 2. Get SW registration (after permission granted)
       if (!registrationRef.current) {
         try {
-          registrationRef.current = await Promise.race([
-            navigator.serviceWorker.ready,
-            new Promise<never>((_, r) => setTimeout(() => r(new Error('timeout')), 8000)),
-          ]);
+          registrationRef.current = await navigator.serviceWorker.register('/push-sw.js', { scope: '/' });
         } catch {
           setError('Service worker not ready — try closing and reopening the app.');
           setLoading(false);
