@@ -235,7 +235,7 @@ export default function FixturesPage() {
     <div className="min-h-screen bg-background">
       <NavBar />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
         <h1 className="text-2xl font-bold mb-6">Fixtures & Predictions</h1>
 
         {loading ? (
@@ -249,15 +249,6 @@ export default function FixturesPage() {
                 </h2>
                 <div className="space-y-3">
                   {upcoming.map(m => <MatchCard key={m.id} match={m} onSave={saveMatch} justSaved={savedMatch === m.id} />)}
-                </div>
-                <div className="mt-6 sticky bottom-4">
-                  <button
-                    onClick={saveAllPredictions}
-                    disabled={saving}
-                    className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
-                  >
-                    {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
-                  </button>
                 </div>
               </section>
             )}
@@ -290,6 +281,19 @@ export default function FixturesPage() {
           </div>
         )}
       </main>
+      {upcoming.length > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent">
+          <div className="max-w-2xl mx-auto">
+            <button
+              onClick={saveAllPredictions}
+              disabled={saving}
+              className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+            >
+              {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+            </button>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );
