@@ -66,25 +66,14 @@ export function usePushNotifications() {
       setError('Push notifications not supported on this browser.');
       return;
     }
-    // If SW wasn't ready at init time, try again now
-    if (!registrationRef.current) {
-      try {
-        registrationRef.current = await Promise.race([
-          navigator.serviceWorker.ready,
-          new Promise<never>((_, r) => setTimeout(() => r(new Error('timeout')), 5000)),
-        ]);
-      } catch {
-        setError('Service worker not ready. Try refreshing the page.');
-        return;
-      }
-    }
 
     setLoading(true);
     setError(null);
 
     try {
+      // 1. Request permission FIRST — must happen synchronously from user gesture on iOS
       if (Notification.permission === 'denied') {
-        setError('Notification permission denied. Please enable it in your browser settings.');
+        setError('Notifications blocked — enable them in your device settings.');
         setLoading(false);
         return;
       }
@@ -93,46 +82,63 @@ export function usePushNotifications() {
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        setError('Notification permission not granted.');
+        setError('Permission not granted.');
         setLoading(false);
         return;
       }
 
+      // 2. Get SW registration (after permission granted)
+      if (!registrationRef.current) {
+        try {
+          registrationRef.current = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise<never>((_, r) => setTimeout(() => r(new Error('timeout')), 8000)),
+          ]);
+        } catch {
+          setError('Service worker not ready — try closing and reopening the app.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 3. Subscribe to push
       const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY;
       if (!VAPID_PUBLIC_KEY) {
-        setError('VAPID public key not configured.');
+        setError('Push not configured — contact support.');
         setLoading(false);
         return;
       }
-      const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
 
       const subscription = await registrationRef.current.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: convertedVapidKey,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      // Send subscription to your backend
-      const { data, error: sbError } = await supabase
+      // 4. Save to Supabase with correct column names
+      const subJson = subscription.toJSON();
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: sbError } = await supabase
         .from('push_subscriptions')
-        .insert({
-          subscription_data: subscription,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-        });
+        .upsert({
+          user_id: user?.id,
+          endpoint: subscription.endpoint,
+          keys: subJson.keys ?? {},
+          is_active: true,
+        }, { onConflict: 'user_id,endpoint' });
 
       if (sbError) {
-        console.error('Supabase error saving subscription:', sbError);
-        setError(sbError.message || 'Error saving subscription on server.');
-        // Unsubscribe from PushManager if database save fails
+        console.error('[Push] Supabase save error:', sbError);
+        setError(sbError.message);
         await subscription.unsubscribe();
         setIsSubscribed(false);
       } else {
         setIsSubscribed(true);
-        console.log('Push subscription saved:', subscription);
+        console.log('[Push] Subscribed successfully');
       }
     } catch (err: any) {
-      console.error('Error subscribing to push notifications:', err);
-      setError(err.message || 'Error subscribing to push notifications.');
-      setIsSubscribed(false); // Ensure state is correct if error happened mid-subscribe
+      console.error('[Push] Subscribe error:', err);
+      setError(err.message || 'Failed to enable notifications.');
+      setIsSubscribed(false);
     } finally {
       setLoading(false);
     }
