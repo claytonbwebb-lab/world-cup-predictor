@@ -18,48 +18,65 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export function usePushNotifications() {
-  const [isSupported, setIsSupported] = useState(false);
+  // API-level support (synchronous — known immediately)
+  const apiSupported = typeof window !== 'undefined'
+    && 'serviceWorker' in navigator
+    && 'PushManager' in window
+    && 'Notification' in window;
+
+  const [isSupported, setIsSupported] = useState(apiSupported);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [loading, setLoading] = useState(true);
+  const [permission, setPermission] = useState<NotificationPermission>(
+    apiSupported ? Notification.permission : 'default'
+  );
+  // loading = true only while we're checking for an existing subscription
+  const [loading, setLoading] = useState(apiSupported);
   const [error, setError] = useState<string | null>(null);
 
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    async function checkNotificationStatus() {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-        setIsSupported(false);
-        setLoading(false);
-        return;
-      }
+    if (!apiSupported) return;
 
-      setIsSupported(true);
-      setPermission(Notification.permission);
-
+    async function checkExistingSubscription() {
       try {
+        // Wait for SW with a generous timeout
         const swReady = navigator.serviceWorker.ready;
-        const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('sw-timeout')), 5000)
+        );
         registrationRef.current = await Promise.race([swReady, timeout]);
         const subscription = await registrationRef.current.pushManager.getSubscription();
         setIsSubscribed(!!subscription);
-        setLoading(false);
       } catch (err: any) {
-        console.error('Error checking push subscription:', err);
-        // Timeout or SW error — mark unsupported so banner stays hidden
-        setIsSupported(false);
+        // SW not registered / timed out — supported but no subscription yet
+        console.warn('[Push] SW not ready:', err.message);
         setIsSubscribed(false);
+      } finally {
         setLoading(false);
       }
     }
-    checkNotificationStatus();
+    checkExistingSubscription();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subscribe = async () => {
-    if (!isSupported || !registrationRef.current) {
-      setError('Push notifications not supported or service worker not ready.');
+    if (!isSupported) {
+      setError('Push notifications not supported on this browser.');
       return;
+    }
+    // If SW wasn't ready at init time, try again now
+    if (!registrationRef.current) {
+      try {
+        registrationRef.current = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise<never>((_, r) => setTimeout(() => r(new Error('timeout')), 5000)),
+        ]);
+      } catch {
+        setError('Service worker not ready. Try refreshing the page.');
+        return;
+      }
     }
 
     setLoading(true);

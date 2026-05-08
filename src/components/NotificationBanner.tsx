@@ -28,11 +28,9 @@ export default function NotificationBanner() {
 
   const handleEnable = async () => {
     await subscribe();
-    // If subscribed successfully, dismiss the banner
-    if (isSubscribed || permission === 'granted') {
-      localStorage.setItem('ppw_notif_dismissed', 'true');
-      setIsVisible(false);
-    }
+    // Always dismiss after attempting — either succeeded or user will use profile settings
+    localStorage.setItem('ppw_notif_dismissed', 'true');
+    setIsVisible(false);
   };
 
   const handleNotNow = () => {
