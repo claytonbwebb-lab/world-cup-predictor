@@ -1,7 +1,6 @@
-// PPW Service Worker — push notifications + Workbox caching
-// This file is the entry point; Workbox injects its precache manifest via next-pwa
+// Custom service worker additions — push notifications
+// next-pwa merges this with the Workbox precache SW
 
-// Push event handler — show notification when push received
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {};
   const title = data.title || 'Play Predict Win';
@@ -9,13 +8,12 @@ self.addEventListener('push', (event) => {
     body: data.body || "Don't forget to make your predictions!",
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-72.png',
-    data: data.url ? { url: data.url } : { url: '/fixtures' },
+    data: { url: data.url || '/fixtures' },
     vibrate: [200, 100, 200],
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Notification click — open the app
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/fixtures';
@@ -24,7 +22,7 @@ self.addEventListener('notificationclick', (event) => {
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.focus();
-          client.navigate(url);
+          if ('navigate' in client) client.navigate(url);
           return;
         }
       }
@@ -32,4 +30,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-

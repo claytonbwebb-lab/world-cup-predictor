@@ -114,21 +114,21 @@ export function usePushNotifications() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      // 4. Save to Supabase with correct column names
+      // 4. Save via API route (handles auth server-side)
       const subJson = subscription.toJSON();
-      const { data: { user } } = await supabase.auth.getUser();
-      const { error: sbError } = await supabase
-        .from('push_subscriptions')
-        .upsert({
-          user_id: user?.id,
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           endpoint: subscription.endpoint,
           keys: subJson.keys ?? {},
-          is_active: true,
-        }, { onConflict: 'user_id,endpoint' });
+        }),
+      });
 
-      if (sbError) {
-        console.error('[Push] Supabase save error:', sbError);
-        setError(sbError.message);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('[Push] API save error:', errData);
+        setError(errData.error || 'Failed to save subscription.');
         await subscription.unsubscribe();
         setIsSubscribed(false);
       } else {
