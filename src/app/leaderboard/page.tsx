@@ -2,8 +2,9 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 25;
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
@@ -18,10 +19,41 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
+function pageUrl(page: number) {
+  return `/leaderboard?page=${page}`;
+}
+
+function getVisiblePages(currentPage: number, totalPages: number) {
+  const pages: Array<number | 'ellipsis'> = [];
+
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  pages.push(1);
+
+  if (currentPage > 4) {
+    pages.push('ellipsis');
+  }
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+
+  if (currentPage < totalPages - 3) {
+    pages.push('ellipsis');
+  }
+
+  pages.push(totalPages);
+  return pages;
+}
+
 export default async function LeaderboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const page = Math.max(1, parseInt(params.page || '1', 10));
-  const offset = (page - 1) * PAGE_SIZE;
+  const requestedPage = Number.parseInt(params.page || '1', 10);
 
   const supabase = await createClient();
 
@@ -33,15 +65,17 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     redirect('/auth/login');
   }
 
-  // Get total count for pagination
   const { count } = await supabase
     .from('leaderboard')
     .select('*', { count: 'exact', head: true });
 
   const totalUsers = count ?? 0;
-  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
+  const offset = (currentPage - 1) * PAGE_SIZE;
 
-  // Fetch paginated leaderboard data
+  // Fetch leaderboard data for the current page.
+  // Three-column sort ensures deterministic pagination (no duplicate entries across pages).
   const { data: leaderboard } = await supabase
     .from('leaderboard')
     .select('*')
@@ -50,7 +84,6 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     .order('user_id', { ascending: true })
     .range(offset, offset + PAGE_SIZE - 1);
 
-  // Get all-time ranks so we can show the user's true rank
   const { data: allRanks } = await supabase
     .from('leaderboard')
     .select('user_id')
@@ -58,12 +91,20 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     .order('exact_scores', { ascending: false })
     .order('user_id', { ascending: true });
 
-  const userRank = allRanks?.findIndex((r) => r.user_id === user.id);
-  const userEntry = leaderboard?.find((e) => e.user_id === user.id);
+  const userRank = allRanks?.findIndex((entry) => entry.user_id === user.id);
+  let userEntry = leaderboard?.find((entry) => entry.user_id === user.id);
 
-  function pageUrl(p: number) {
-    return `/leaderboard?page=${p}`;
+  if (!userEntry) {
+    const { data } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    userEntry = data ?? undefined;
   }
+
+  const visiblePages = getVisiblePages(currentPage, totalPages);
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,6 +172,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             <tbody>
               {leaderboard?.map((entry, index) => {
                 const rank = offset + index + 1;
+
                 return (
                   <tr
                     key={entry.user_id}
@@ -191,23 +233,49 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           )}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {page > 1 && (
-              <a href={pageUrl(page - 1)} className="btn-secondary px-4 py-2 text-sm">
-                ← Prev
-              </a>
-            )}
-            <span className="text-textMuted text-sm">
-              Page {page} of {totalPages} &nbsp;·&nbsp; {totalUsers} players
+          <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Leaderboard pages">
+            <Link
+              href={pageUrl(currentPage - 1)}
+              aria-disabled={currentPage === 1}
+              className={`btn-secondary px-4 py-2 text-sm ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
+            >
+              Previous
+            </Link>
+
+            {visiblePages.map((page, index) => (
+              page === 'ellipsis' ? (
+                <span key={`ellipsis-${index}`} className="px-2 text-textMuted">
+                  ...
+                </span>
+              ) : (
+                <Link
+                  key={page}
+                  href={pageUrl(page)}
+                  aria-current={page === currentPage ? 'page' : undefined}
+                  className={`min-w-10 rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors ${
+                    page === currentPage
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-border bg-surface hover:bg-surfaceLight text-text'
+                  }`}
+                >
+                  {page}
+                </Link>
+              )
+            ))}
+
+            <Link
+              href={pageUrl(currentPage + 1)}
+              aria-disabled={currentPage === totalPages}
+              className={`btn-secondary px-4 py-2 text-sm ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
+            >
+              Next
+            </Link>
+
+            <span className="w-full text-center text-sm text-textMuted sm:w-auto sm:pl-2">
+              {totalUsers} players
             </span>
-            {page < totalPages && (
-              <a href={pageUrl(page + 1)} className="btn-secondary px-4 py-2 text-sm">
-                Next →
-              </a>
-            )}
-          </div>
+          </nav>
         )}
       </main>
       <Footer />
