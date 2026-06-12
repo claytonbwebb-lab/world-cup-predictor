@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Countdown from '@/components/Countdown';
 import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
@@ -177,6 +176,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-center mb-2">Our Partners</h2>
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
+          {/* Featured partner — Thrill Casino */}
+          <div className="flex justify-center mb-10">
+            <a href="https://thrillcasino.io/tdxofefoh" target="_blank" rel="noopener noreferrer sponsored"
+              className="flex items-center justify-center bg-white/5 border border-primary/30 rounded-2xl px-10 py-6 hover:border-primary/60 hover:bg-white/10 transition-all group">
+              <div className="text-center">
+                <div className="text-xs text-primary font-bold uppercase tracking-widest mb-3 opacity-70">Featured Partner</div>
+                <Image src="/images/partners/thrill.svg" alt="Thrill Casino" width={260} height={104}
+                  className="object-contain max-h-[72px] group-hover:opacity-90 transition-opacity" />
+              </div>
+            </a>
+          </div>
+
+          {/* Other partners */}
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
               { name: '90s Football', href: '/90sfootball', src: '/images/partners/90sfootball.png', alt: '90s Football' },
@@ -209,19 +221,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="text-5xl mb-6 text-primary">★</div>
           <h2 className="text-4xl font-black mb-4">Ready to Play?</h2>
           <p className="text-textMuted text-lg mb-8">
-            The 2026 World Cup kicks off on 11 June 2026. Get your predictions in early.
+            The 2026 World Cup is live! Make your predictions for every match.
           </p>
           <Link href="/auth/signup"
             className="btn-primary px-12 py-4 rounded-xl text-lg font-bold inline-block shadow-lg shadow-primary/20">
             Create Free Account
           </Link>
         </div>
-      </section>
-
-      {/* ── Countdown ── */}
-      <section className="border-t border-border py-16 text-center">
-        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
-        <Countdown />
       </section>
 
       {/* ── Blog ── */}

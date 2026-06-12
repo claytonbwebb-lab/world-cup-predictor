@@ -5,6 +5,16 @@ import NavBar from '@/components/NavBar';
 
 const partners = [
   {
+    name: 'Thrill Casino',
+    logo: '/images/partners/thrill.svg',
+    url: 'https://thrillcasino.io/tdxofefoh',
+    alt: 'Thrill Casino',
+    tagline: 'The thrill of the game — wherever you are',
+    description: 'Thrill is a crypto‑first casino and sportsbook built for pure, focused rush – choosing precision over noise, fairness over gimmicks, and emotion over empty hype, with instant crypto withdrawals in seconds, innovative Thrill Originals, day‑one rewards powered by a smart XP system that matches higher risk with higher potential rewards, a competitive sportsbook with enhanced live and pre‑match odds plus fast settlement and reliable cash‑out, all wrapped in a fast, clean, player‑focused site backed by 24/7 knowledgeable support for bold players who value sharp product, sharp odds and a genuinely player‑first experience.',
+    stats: 'Play responsibly. 18+ only. Terms apply.',
+    featured: true,
+  },
+  {
     name: '90s Football',
     logo: '/images/partners/90sfootball.png',
     url: '/90sfootball',
@@ -94,9 +104,34 @@ export default function PartnersPage() {
           </p>
         </div>
 
+        {/* Featured partner — Thrill Casino */}
+        {partners.filter(p => p.featured).map(partner => (
+          <div key={partner.name} className="mb-10 card border-2 border-primary/60 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] overflow-hidden">
+            <div className="flex flex-col md:flex-row items-center gap-8 p-8 md:p-10">
+              {/* Logo */}
+              <div className="flex-shrink-0 flex items-center justify-center bg-white/5 rounded-2xl p-6 w-full md:w-64">
+                <Image src={partner.logo} alt={partner.alt} width={220} height={88} className="object-contain max-h-[88px]" />
+              </div>
+              {/* Content */}
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-4 py-1 text-primary text-xs font-bold uppercase tracking-widest mb-3">
+                  ⭐ Featured Partner
+                </div>
+                <p className="text-primary text-sm font-semibold mb-1">{partner.tagline}</p>
+                <h2 className="text-3xl font-black mb-3">{partner.name}</h2>
+                <p className="text-textMuted leading-relaxed mb-4">{partner.description}</p>
+                <p className="text-xs text-textMuted/60 mb-6">{partner.stats}</p>
+                <a href={partner.url} target="_blank" rel="noopener noreferrer sponsored" className="btn-primary px-8 py-3 inline-block">
+                  Visit {partner.name} →
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+
         {/* Partner cards */}
         <div className="grid md:grid-cols-2 gap-8">
-          {partners.map(partner => partner.bgImage ? (
+          {partners.filter(p => !p.featured).map(partner => partner.bgImage ? (
             <div key={partner.name} className="card overflow-hidden border-border hover:border-primary/40 transition-all group">
               {/* Logo section with background image */}
               <div className="relative h-48 overflow-hidden">
