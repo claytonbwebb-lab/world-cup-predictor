@@ -33,13 +33,13 @@ export default function ConsentGate() {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '188391209695379');
+              fbq('init', '1895307837834496');
               fbq('track', 'PageView');
             `}
           </Script>
           <noscript>
             <img height="1" width="1" style={{display:'none'}}
-              src="https://www.facebook.com/tr?id=188391209695379&ev=PageView&noscript=1" />
+              src="https://www.facebook.com/tr?id=1895307837834496&ev=PageView&noscript=1" />
           </noscript>
         </>
       )}
