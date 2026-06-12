@@ -14,6 +14,7 @@ export default function LeagueLeaderboardPage() {
   const [members, setMembers] = useState<any[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -226,10 +227,12 @@ export default function LeagueLeaderboardPage() {
               onClick={() => {
                 const url = `${window.location.origin}/leagues?join=${league?.code}`;
                 navigator.clipboard.writeText(url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
               }}
               className="btn-secondary text-sm"
             >
-              📋 Copy Invite Link
+              {copied ? '✅ Copied!' : '📋 Copy Invite Link'}
             </button>
           </div>
         </div>

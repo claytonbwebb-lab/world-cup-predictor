@@ -103,6 +103,7 @@ export default function Footer() {
               <Link href="/fixtures" className="text-textMuted hover:text-text transition-colors">Fixtures</Link>
               <Link href="/leagues" className="text-textMuted hover:text-text transition-colors">Leagues</Link>
               <Link href="/blog" className="text-textMuted hover:text-text transition-colors">Blog</Link>
+              <Link href="/recommended-sites" className="text-textMuted hover:text-text transition-colors">Recommended Sites</Link>
               <Link href="/partners" className="text-textMuted hover:text-text transition-colors">Partners</Link>
             </div>
           </div>

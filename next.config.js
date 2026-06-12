@@ -81,6 +81,14 @@ const nextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/admin/matches',
+        destination: '/_api_skip/admin/matches',
+      },
+    ];
+  },
   async headers() {
     return [
       {

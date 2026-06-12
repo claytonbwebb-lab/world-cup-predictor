@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PlayPredictWin</string>
+    <string name="title_activity_main">PlayPredictWin</string>
+    <string name="package_name">com.playpredictwin.app</string>
+    <string name="custom_url_scheme">com.playpredictwin.app</string>
+</resources>

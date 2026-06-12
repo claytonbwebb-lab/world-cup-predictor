@@ -51,7 +51,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           {/* Badge */}
           <div className="inline-flex flex-col items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 text-primary text-sm font-medium mb-8">
-            <span>FIFA World Cup 2026</span>
+            <span>World Cup 2026</span>
             <span className="text-xs opacity-70">USA · Canada · Mexico</span>
           </div>
 

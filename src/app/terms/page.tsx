@@ -14,7 +14,7 @@ export default function TermsPage() {
       <main className="max-w-3xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black mb-2">Terms & Conditions</h1>
-          <p className="text-textMuted text-sm">Last updated: 22 April 2026</p>
+          <p className="text-textMuted text-sm">Last updated: 3 June 2026</p>
         </div>
 
         <div className="space-y-8 text-textMuted leading-relaxed text-sm">
@@ -57,9 +57,15 @@ export default function TermsPage() {
               <li><strong>0 points</strong> — for incorrect predictions</li>
             </ul>
             <p className="mt-2">
+              <strong>All predictions are scored on the result at full time (90 minutes), including any
+              stoppage time added by the referee.</strong> Goals scored in extra time or penalty shootouts
+              do not count towards your prediction. For example, if you predict 1–0 and the match ends
+              1–1 after 90 minutes before the winning team scores in extra time, your prediction scores
+              0 points.
+            </p>
+            <p className="mt-2">
               Predictions lock when the match kicks off. Once locked, predictions cannot be changed.
-              In the event of a match being postponed, cancelled, or decided by extra time or penalties
-              when not specified, our decisions on scoring will be final.
+              In the event of a match being postponed or cancelled, our decisions on scoring will be final.
             </p>
           </div>
 
