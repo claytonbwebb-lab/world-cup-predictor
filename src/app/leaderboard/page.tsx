@@ -2,7 +2,8 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+
+const PAGE_SIZE = 20;
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
@@ -13,7 +14,15 @@ const breadcrumbSchema = {
   ],
 };
 
-export default async function LeaderboardPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function LeaderboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || '1', 10));
+  const offset = (page - 1) * PAGE_SIZE;
+
   const supabase = await createClient();
 
   const {
@@ -24,16 +33,37 @@ export default async function LeaderboardPage() {
     redirect('/auth/login');
   }
 
-  // Fetch leaderboard data
+  // Get total count for pagination
+  const { count } = await supabase
+    .from('leaderboard')
+    .select('*', { count: 'exact', head: true });
+
+  const totalUsers = count ?? 0;
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+
+  // Fetch paginated leaderboard data
   const { data: leaderboard } = await supabase
     .from('leaderboard')
     .select('*')
     .order('total_points', { ascending: false })
-    .limit(50);
+    .order('exact_scores', { ascending: false })
+    .order('user_id', { ascending: true })
+    .range(offset, offset + PAGE_SIZE - 1);
 
-  // Get current user's rank
-  const userRank = leaderboard?.findIndex((entry) => entry.user_id === user.id);
-  const userEntry = userRank !== undefined && userRank >= 0 ? leaderboard?.[userRank] : undefined;
+  // Get all-time ranks so we can show the user's true rank
+  const { data: allRanks } = await supabase
+    .from('leaderboard')
+    .select('user_id')
+    .order('total_points', { ascending: false })
+    .order('exact_scores', { ascending: false })
+    .order('user_id', { ascending: true });
+
+  const userRank = allRanks?.findIndex((r) => r.user_id === user.id);
+  const userEntry = leaderboard?.find((e) => e.user_id === user.id);
+
+  function pageUrl(p: number) {
+    return `/leaderboard?page=${p}`;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,7 +96,7 @@ export default async function LeaderboardPage() {
                 <p className="text-textMuted text-sm">Your Position</p>
                 <p className="text-3xl font-bold">
                   {userRank !== undefined ? userRank + 1 : '-'}
-                  <span className="text-textMuted text-lg font-normal"> / {leaderboard?.length || 0}</span>
+                  <span className="text-textMuted text-lg font-normal"> / {totalUsers}</span>
                 </p>
               </div>
               <div className="text-right">
@@ -99,53 +129,56 @@ export default async function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {leaderboard?.map((entry, index) => (
-                <tr
-                  key={entry.user_id}
-                  className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${
-                    entry.user_id === user.id ? 'bg-primary/10' : ''
-                  }`}
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center justify-center w-8">
-                      {index === 0 && <span className="text-2xl">🥇</span>}
-                      {index === 1 && <span className="text-2xl">🥈</span>}
-                      {index === 2 && <span className="text-2xl">🥉</span>}
-                      {index > 2 && <span className="text-textMuted">{index + 1}</span>}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={entry.avatar_url || '/default-avatar.png'}
-                        alt={entry.username}
-                        className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
-                      />
-                      <div className="flex flex-col">
-                        <span className={`font-medium ${entry.user_id === user.id ? 'text-primary' : ''}`}>
-                          {entry.username}
-                        </span>
-                        {entry.user_id === user.id && (
-                          <span className="text-xs text-primary">You</span>
-                        )}
+              {leaderboard?.map((entry, index) => {
+                const rank = offset + index + 1;
+                return (
+                  <tr
+                    key={entry.user_id}
+                    className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${
+                      entry.user_id === user.id ? 'bg-primary/10' : ''
+                    }`}
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center w-8">
+                        {rank === 1 && <span className="text-2xl">🥇</span>}
+                        {rank === 2 && <span className="text-2xl">🥈</span>}
+                        {rank === 3 && <span className="text-2xl">🥉</span>}
+                        {rank > 3 && <span className="text-textMuted">{rank}</span>}
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="text-xl font-bold text-primary">{entry.total_points}</span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="text-warning font-medium">{entry.exact_scores}</span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="text-textMuted">{entry.correct_results}</span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="text-textMuted">{entry.total_predictions}</span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={entry.avatar_url || '/default-avatar.png'}
+                          alt={entry.username}
+                          className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
+                        />
+                        <div className="flex flex-col">
+                          <span className={`font-medium ${entry.user_id === user.id ? 'text-primary' : ''}`}>
+                            {entry.username}
+                          </span>
+                          {entry.user_id === user.id && (
+                            <span className="text-xs text-primary">You</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-xl font-bold text-primary">{entry.total_points}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-warning font-medium">{entry.exact_scores}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-textMuted">{entry.correct_results}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-textMuted">{entry.total_predictions}</span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 
@@ -157,6 +190,25 @@ export default async function LeaderboardPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            {page > 1 && (
+              <a href={pageUrl(page - 1)} className="btn-secondary px-4 py-2 text-sm">
+                ← Prev
+              </a>
+            )}
+            <span className="text-textMuted text-sm">
+              Page {page} of {totalPages} &nbsp;·&nbsp; {totalUsers} players
+            </span>
+            {page < totalPages && (
+              <a href={pageUrl(page + 1)} className="btn-secondary px-4 py-2 text-sm">
+                Next →
+              </a>
+            )}
+          </div>
+        )}
       </main>
       <Footer />
     </div>
