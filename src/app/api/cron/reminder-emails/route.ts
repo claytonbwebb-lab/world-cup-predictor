@@ -71,7 +71,8 @@ export async function POST(request: Request) {
     .from('profiles')
     .select('id, username, email')
     .not('email', 'is', null)
-    .neq('email', '');
+    .neq('email', '')
+    .limit(10000);
 
   if (usersError) {
     return NextResponse.json({ error: 'Database error', detail: usersError.message }, { status: 500 });
@@ -81,7 +82,8 @@ export async function POST(request: Request) {
   const { data: predictions, error: predError } = await supabase
     .from('predictions')
     .select('user_id, match_id')
-    .in('match_id', tomorrowMatchIds);
+    .in('match_id', tomorrowMatchIds)
+    .limit(10000);
 
   if (predError) {
     return NextResponse.json({ error: 'Database error', detail: predError.message }, { status: 500 });
