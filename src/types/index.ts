@@ -81,6 +81,8 @@ export type UserStats = {
   total_points: number;
   matches_predicted: number;
   scored_predictions: number;
+  exact_scores: number;
+  correct_results: number;
 };
 
 export type MatchWithPrediction = Match & {

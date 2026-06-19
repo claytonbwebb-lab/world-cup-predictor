@@ -169,7 +169,7 @@ export default async function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="card">
             <p className="text-textMuted text-sm mb-1">Total Points</p>
             <p className="text-3xl font-bold text-primary">{stats?.total_points || 0}</p>
@@ -180,9 +180,11 @@ export default async function Dashboard() {
           </div>
           <div className="card">
             <p className="text-textMuted text-sm mb-1">Exact Scores</p>
-            <p className="text-3xl font-bold text-warning">
-              {stats?.scored_predictions || 0}
-            </p>
+            <p className="text-3xl font-bold text-warning">{stats?.exact_scores || 0}</p>
+          </div>
+          <div className="card">
+            <p className="text-textMuted text-sm mb-1">Correct Results</p>
+            <p className="text-3xl font-bold text-green-400">{stats?.correct_results || 0}</p>
           </div>
           <div className="card">
             <p className="text-textMuted text-sm mb-1">Rank</p>
