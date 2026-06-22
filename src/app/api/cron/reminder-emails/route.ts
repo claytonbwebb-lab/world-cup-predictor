@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 const webpush = require('web-push');
 
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
+const SUPABASE_PAGE_SIZE = 1000;
 
 // Configure web-push with VAPID keys
 // Only set VAPID details if keys are configured
@@ -25,6 +26,25 @@ function createServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+async function fetchAllRows<T>(buildQuery: () => any): Promise<{ data: T[]; error: any }> {
+  const rows: T[] = [];
+
+  for (let page = 0; ; page += 1) {
+    const from = page * SUPABASE_PAGE_SIZE;
+    const to = from + SUPABASE_PAGE_SIZE - 1;
+    const { data, error } = await buildQuery().range(from, to);
+
+    if (error) return { data: rows, error };
+
+    const pageRows = (data ?? []) as T[];
+    rows.push(...pageRows);
+
+    if (pageRows.length < SUPABASE_PAGE_SIZE) {
+      return { data: rows, error: null };
+    }
+  }
 }
 
 export async function GET(request: Request) {
@@ -67,23 +87,32 @@ export async function POST(request: Request) {
   console.log(`[reminder-emails] ${tomorrowMatches.length} matches tomorrow`);
 
   // ── Step 2: Find all users with an email address ──
-  const { data: users, error: usersError } = await supabase
-    .from('profiles')
-    .select('id, username, email')
-    .not('email', 'is', null)
-    .neq('email', '')
-    .limit(10000);
+  const { data: users, error: usersError } = await fetchAllRows<{
+    id: string;
+    username: string | null;
+    email: string;
+  }>(() =>
+    supabase
+      .from('profiles')
+      .select('id, username, email')
+      .not('email', 'is', null)
+      .neq('email', '')
+  );
 
   if (usersError) {
     return NextResponse.json({ error: 'Database error', detail: usersError.message }, { status: 500 });
   }
 
   // ── Step 3: Fetch predictions for tomorrow's matches ──
-  const { data: predictions, error: predError } = await supabase
-    .from('predictions')
-    .select('user_id, match_id')
-    .in('match_id', tomorrowMatchIds)
-    .limit(10000);
+  const { data: predictions, error: predError } = await fetchAllRows<{
+    user_id: string;
+    match_id: string;
+  }>(() =>
+    supabase
+      .from('predictions')
+      .select('user_id, match_id')
+      .in('match_id', tomorrowMatchIds)
+  );
 
   if (predError) {
     return NextResponse.json({ error: 'Database error', detail: predError.message }, { status: 500 });
@@ -97,11 +126,15 @@ export async function POST(request: Request) {
 
   // ── Step 4: Fetch push subscriptions for users ──
   const userIds = (users ?? []).map((u) => u.id);
-  const { data: pushSubscriptions, error: pushError } = await supabase
-    .from('push_subscriptions')
-    .select('user_id, endpoint, keys')
-    .in('user_id', userIds)
-    .eq('is_active', true);
+  const { data: pushSubscriptions, error: pushError } = userIds.length > 0
+    ? await fetchAllRows<{ user_id: string; endpoint: string; keys: any }>(() =>
+      supabase
+        .from('push_subscriptions')
+        .select('user_id, endpoint, keys')
+        .in('user_id', userIds)
+        .eq('is_active', true)
+    )
+    : { data: [], error: null };
 
   if (pushError) {
     console.error('[reminder-emails] Error fetching push subscriptions:', pushError);
