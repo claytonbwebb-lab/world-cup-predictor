@@ -1,4 +1,6 @@
 -- Fix trigger to capture email and set search_path explicitly
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
