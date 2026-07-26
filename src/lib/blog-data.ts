@@ -9,7 +9,7 @@ export interface BlogPost {
   content: string;
 }
 
-export const BLOG_POSTS: BlogPost[] = [
+export const blogPosts: BlogPost[] = [
   {
     slug: "predict-like-a-pro",
     title: "How to Predict Every Premier League Scoreline Like a Pro",
