@@ -61,12 +61,12 @@ export default function AddMatchForm() {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Home Flag (emoji)</label>
-          <input type="text" name="home_flag" className="input w-full" placeholder="🇦🇷" />
+          <label className="block text-sm font-medium mb-2">Home Badge URL</label>
+          <input type="url" name="home_flag" className="input w-full" placeholder="https://..." />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Away Flag (emoji)</label>
-          <input type="text" name="away_flag" className="input w-full" placeholder="🇧🇷" />
+          <label className="block text-sm font-medium mb-2">Away Badge URL</label>
+          <input type="url" name="away_flag" className="input w-full" placeholder="https://..." />
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-4">

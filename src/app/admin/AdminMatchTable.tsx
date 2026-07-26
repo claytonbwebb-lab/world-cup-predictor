@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import TeamBadge from '@/components/TeamBadge';
 
 interface Match {
   id: string;
@@ -166,11 +167,11 @@ export default function AdminMatchTable({ matches }: AdminMatchTableProps) {
               <tr key={match.id} className="border-b border-border/50">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    <span>{match.home_flag || '🏳️'}</span>
+                    <TeamBadge value={match.home_flag} size="sm" />
                     <span className="font-medium">{match.home_team}</span>
                     <span className="text-textMuted">vs</span>
                     <span className="font-medium">{match.away_team}</span>
-                    <span>{match.away_flag || '🏳️'}</span>
+                    <TeamBadge value={match.away_flag} size="sm" />
                   </div>
                 </td>
                 <td className="py-3 px-4 text-textMuted text-sm">{match.group_stage || '-'}</td>

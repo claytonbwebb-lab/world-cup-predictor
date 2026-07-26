@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import TeamBadge from '@/components/TeamBadge';
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
@@ -163,7 +164,7 @@ export default function FixturesPage() {
         <div className="flex items-center justify-between gap-2">
           {/* Home team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-            <span className="text-4xl">{match.home_flag}</span>
+            <TeamBadge value={match.home_flag} size="lg" />
             <span className="font-bold text-sm text-center leading-tight">{match.home_team}</span>
           </div>
 
@@ -192,7 +193,7 @@ export default function FixturesPage() {
 
           {/* Away team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-            <span className="text-4xl">{match.away_flag}</span>
+            <TeamBadge value={match.away_flag} size="lg" />
             <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
           </div>
         </div>

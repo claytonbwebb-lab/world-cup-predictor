@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import TeamBadge from '@/components/TeamBadge';
 
 const NotificationBanner = dynamic(() => import('@/components/NotificationBanner'), { ssr: false });
 
@@ -209,13 +210,13 @@ export default async function Dashboard() {
                   >
                     {/* Home team: flag centred above name */}
                     <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                      <span className="text-xl">{match.home_flag || '🏳️'}</span>
+                      <TeamBadge value={match.home_flag} size="md" />
                       <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(match.home_team, true)}</span>
                     </div>
                     <span className="text-textMuted text-xs shrink-0">vs</span>
                     {/* Away team: flag centred above name */}
                     <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                      <span className="text-xl">{match.away_flag || '🏳️'}</span>
+                      <TeamBadge value={match.away_flag} size="md" />
                       <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(match.away_team, true)}</span>
                     </div>
                   </div>
@@ -248,7 +249,7 @@ export default async function Dashboard() {
                     >
                       {/* Home: flag above name */}
                       <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                        <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
+                        <TeamBadge value={pred.match.home_flag} size="sm" />
                         <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.home_team, true)}</span>
                       </div>
                       {/* Scores centred */}
@@ -263,7 +264,7 @@ export default async function Dashboard() {
                       </div>
                       {/* Away: flag above name */}
                       <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                        <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
+                        <TeamBadge value={pred.match.away_flag} size="sm" />
                         <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
                       </div>
                       {/* Points */}
@@ -296,7 +297,7 @@ export default async function Dashboard() {
                           <div className="text-right">
                             <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.home_team, true)}</div>
                           </div>
-                          <span className="text-base">{pred.match.home_flag || '🏳️'}</span>
+                          <TeamBadge value={pred.match.home_flag} size="sm" />
                         </div>
                         <div className="w-[5rem] text-center">
                           <div className="text-xs text-textMuted/60 mb-0.5">Predicted</div>
@@ -311,7 +312,7 @@ export default async function Dashboard() {
                           </div>
                         </div>
                         <div className="flex items-center justify-start gap-2">
-                          <span className="text-base">{pred.match.away_flag || '🏳️'}</span>
+                          <TeamBadge value={pred.match.away_flag} size="sm" />
                           <div className="text-left">
                             <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.away_team, true)}</div>
                           </div>
