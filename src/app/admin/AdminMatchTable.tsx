@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import TeamBadge from '@/components/TeamBadge';
+import TeamSelect from '@/components/TeamSelect';
 
 interface Match {
   id: string;
@@ -55,30 +56,34 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     }
   }
 
+  function handleTeamChange(name: string, teamName: string, badge: string) {
+    setForm(p => ({
+      ...p,
+      [name === 'home_team' ? 'home_team' : 'away_team']: teamName,
+      [name === 'home_team' ? 'home_flag' : 'away_flag']: badge,
+    }));
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-2xl">
         <h2 className="text-xl font-bold mb-4">Edit Match</h2>
         <form onSubmit={handleSave} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1 text-textMuted">Home Team</label>
-              <input className="input w-full" value={form.home_team} onChange={e => setForm(p => ({ ...p, home_team: e.target.value }))} required />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1 text-textMuted">Away Team</label>
-              <input className="input w-full" value={form.away_team} onChange={e => setForm(p => ({ ...p, away_team: e.target.value }))} required />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1 text-textMuted">Home Flag</label>
-              <input className="input w-full" value={form.home_flag} onChange={e => setForm(p => ({ ...p, home_flag: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1 text-textMuted">Away Flag</label>
-              <input className="input w-full" value={form.away_flag} onChange={e => setForm(p => ({ ...p, away_flag: e.target.value }))} />
-            </div>
+            <TeamSelect
+              label="Home Team"
+              name="home_team"
+              value={form.home_team}
+              onChange={handleTeamChange}
+              small
+            />
+            <TeamSelect
+              label="Away Team"
+              name="away_team"
+              value={form.away_team}
+              onChange={handleTeamChange}
+              small
+            />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1 text-textMuted">Group / Stage</label>

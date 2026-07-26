@@ -21,12 +21,15 @@ export default function TeamBadge({ value, size = 'md', className = '' }: TeamBa
     );
   }
 
-  if (value.startsWith('http')) {
+  // Handle both absolute URLs (http://, https://) and relative paths (/badges/...)
+  const isUrl = value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/');
+
+  if (isUrl) {
     return (
       <img
         src={value}
         alt=""
-        className={`${sizeClasses[size]} object-contain rounded`}
+        className={`${sizeClasses[size]} object-contain rounded ${className}`}
         loading="lazy"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = 'none';
