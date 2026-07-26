@@ -7,8 +7,9 @@ export interface BlogPost {
   date: string;
   dateIso: string;
   author: string;
-  readingTime: string; // Renamed from readTime
+  readingTime: string;
   category: string;
+  authorRole: string; // Added authorRole
   content: string;
 }
 
@@ -24,6 +25,7 @@ export const blogPosts: BlogPost[] = [
     author: "Play Predict Win",
     readingTime: "6 min read",
     category: "Strategy",
+    authorRole: "Founder and Lead Analyst",
     content: `The 2026/27 Premier League season kicks off on 15 August — and if you are not preparing your prediction strategy now, you are already behind.
 
 Every casual predictor leans on league form. Home team on a five-game winning streak? Easy money, right? Not quite. Premier League prediction rewards the kind of analysis that goes deeper than the table position.
@@ -61,6 +63,7 @@ A last-minute injury to a goalkeeper or playmaker shifts a predicted 2-1 to a 1-
     author: "Play Predict Win",
     readingTime: "5 min read",
     category: "Predictions",
+    authorRole: "Founder and Lead Analyst",
     content: `The Premier League Golden Boot is never a two-horse race. Its a brutal, relentless 38-game marathon where the top scorers do not just need skill — they need volume, fitness, and the right system around them. Heres who is best placed for 2026/27.
 
 The early contenders list is packed. The big question is always: whose team creates enough chances, and who can stay fit across the full season?
@@ -80,6 +83,7 @@ The gap between a 20-goal season and a 30-goal season is partly about talent and
     author: "Play Predict Win",
     readingTime: "7 min read",
     category: "Guide",
+    authorRole: "Founder and Lead Analyst",
     content: `The 2026/27 Premier League is the world's most competitive domestic football league — and prediction leagues make it better. Heres everything you need to know before you start setting your scorelines.
 
 **How the season works**
@@ -107,6 +111,7 @@ Every match becomes personal. Every goal changes the board. Your mates 2-1 predi
     author: "Play Predict Win",
     readingTime: "4 min read",
     category: "Strategy",
+    authorRole: "Founder and Lead Analyst",
     content: `Every season, offices, friend groups, and families up and down the country run prediction leagues. Some call it a sweepstakes; some call it a predictor competition. Whatever the name, the premise is the same: predict the scores, win the prize.
 
 **Setting up a private league**
@@ -138,6 +143,7 @@ Prediction leagues turn passive watchers into invested fans. Every match matters
     author: "Play Predict Win",
     readingTime: "4 min read",
     category: "Opinion",
+    authorRole: "Founder and Lead Analyst",
     content: `There are two ways to watch a football match. One is passive — a beer, a match on in the background, mild interest in the outcome. The other is invested. You have a prediction on the line. Your scoreline. Your mates watching the same board.
 
 The difference is not small. Its enormous.
