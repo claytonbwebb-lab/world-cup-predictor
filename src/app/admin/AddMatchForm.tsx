@@ -74,8 +74,8 @@ export default function AddMatchForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4 overflow-hidden">
+      <div className="grid md:grid-cols-2 gap-4 min-w-0">
         <TeamSelect
           label="Home Team"
           name="home_team"
@@ -90,7 +90,7 @@ export default function AddMatchForm() {
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 min-w-0">
         <div>
           <label className="block text-sm font-medium mb-2">Gameweek / Stage</label>
           <input
@@ -101,7 +101,7 @@ export default function AddMatchForm() {
             placeholder="GW1, GW2, Quarter-final, etc."
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
           <input
             type="datetime-local"
@@ -109,7 +109,8 @@ export default function AddMatchForm() {
             required
             value={kickoffAt}
             onChange={(e) => setKickoffAt(e.target.value)}
-            className="input w-full"
+            className="input w-full min-w-0"
+            style={{ minWidth: 0, maxWidth: '100%' }}
           />
         </div>
       </div>

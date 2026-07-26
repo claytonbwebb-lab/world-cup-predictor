@@ -37,12 +37,13 @@ export default function TeamSelect({ label, name, value, onChange, small }: Team
   const labelClass = small ? 'block text-xs font-medium mb-1 text-textMuted' : 'block text-sm font-medium mb-2';
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative min-w-0">
       {label && <label className={labelClass}>{label}</label>}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full input flex items-center gap-3 text-left"
+        className="w-full flex items-center gap-3 text-left min-w-0 overflow-hidden bg-surface border border-border rounded-lg px-4 py-2.5 text-sm"
+        style={{ minWidth: 0 }}
       >
         {selected ? (
           <>
