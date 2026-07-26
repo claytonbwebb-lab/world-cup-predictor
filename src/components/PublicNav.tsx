@@ -6,11 +6,12 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const links = [
-  { href: '/',             label: 'Home' },
-  { href: '/blog',        label: 'Blog' },
-  { href: '/partners',    label: 'Partners' },
-  { href: '/auth/signup', label: 'Sign Up' },
-  { href: '/auth/login',  label: 'Login' },
+  { href: '/',                  label: 'Home' },
+  { href: '/supporter-league',  label: 'Supporter League' },
+  { href: '/blog',              label: 'Blog' },
+  { href: '/partners',          label: 'Partners' },
+  { href: '/auth/signup',       label: 'Sign Up' },
+  { href: '/auth/login',        label: 'Login' },
 ];
 
 export default function PublicNav() {

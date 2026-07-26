@@ -164,4 +164,45 @@ When your prediction is public — in a league with your mates, colleagues, or f
 
 Join or create a Premier League prediction league on Play Predict Win. 38 gameweeks of scorelines, leaderboards, and bragging rights. The 2026/27 season starts 15 August.`,
   },
+  {
+    slug: "introducing-the-supporter-league",
+    title: "Introducing the Supporter League — Predict for Your Club",
+    excerpt: "Your prediction points don't just win you prizes. Now they count for your club too. The Supporter League tracks which club's fans are the best predictors.",
+    image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200&auto=format&fit=crop",
+    imageAlt: "Football stadium crowd cheering",
+    date: "2026-07-26",
+    dateIso: "2026-07-26T09:00:00Z",
+    author: "Play Predict Win",
+    readingTime: "3 min read",
+    category: "Feature",
+    authorRole: "Founder and Lead Analyst",
+    content: `Until now, your prediction points have been all about you — climbing the leaderboard, winning your league, proving you are the best predictor among your mates.
+
+That part is still there. But now there is something more.
+
+**Introducing the Supporter League**
+
+When you sign up, you pick your favourite club. It can be any club from the Premier League, Championship, League One, or League Two. Once you do, every point you earn from your predictions also counts toward your club's Supporter League total.
+
+**How it works**
+
+- Pick your club from the full English football league system — all 92 clubs across the top four divisions
+- Every prediction you make earns points
+- Your points add to your club's running total
+- The club whose supporters have earned the most points combined tops the Supporter League
+
+**Why it matters**
+
+Most prediction competitions are purely individual. The Supporter League gives your predictions a second meaning. You are not just competing for yourself — you are representing your club. Manchester City could have 200 predictors, but if Liverpool supporters are more accurate on average, Liverpool could still win.
+
+It also changes the dynamic of the season. You find yourself more invested in matches that do not involve your club, because other supporters of your club are playing in those games, and their predictions affect the total.
+
+**How to join**
+
+New users can select their club during sign-up. Existing users can go to their Profile page and pick their club at any time. It takes about 10 seconds.
+
+The Supporter League resets at the start of each season. This season's champion will be the club whose supporters collectively earned the most prediction points across all 38 Premier League gameweeks.
+
+Go to your Profile to pick your club and join the competition.`,
+  },
 ];

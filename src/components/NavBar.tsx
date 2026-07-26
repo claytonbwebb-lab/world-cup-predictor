@@ -6,14 +6,15 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const links = [
-  { href: '/dashboard',   label: 'Dashboard' },
-  { href: '/fixtures',    label: 'Fixtures' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/leagues',     label: 'Leagues' },
-  { href: '/partners',    label: 'Partners' },
-  { href: '/blog',        label: 'Blog' },
-  { href: '/profile',     label: 'Profile' },
-  { href: '/auth/logout', label: 'Sign Out' },
+  { href: '/dashboard',        label: 'Dashboard' },
+  { href: '/fixtures',         label: 'Fixtures' },
+  { href: '/supporter-league', label: 'Supporter League' },
+  { href: '/leaderboard',      label: 'Leaderboard' },
+  { href: '/leagues',          label: 'Leagues' },
+  { href: '/partners',         label: 'Partners' },
+  { href: '/blog',             label: 'Blog' },
+  { href: '/profile',          label: 'Profile' },
+  { href: '/auth/logout',      label: 'Sign Out' },
 ];
 
 const socialLinks = [

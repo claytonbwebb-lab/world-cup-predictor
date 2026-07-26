@@ -201,6 +201,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         </div>
       </section>
 
+      {/* ── Supporter League ── */}
+      <section className="border-t border-border py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-gradient-to-br from-primary/10 via-surface to-secondary/10 border border-primary/20 rounded-2xl p-8 md:p-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-4">
+              🏆 New Feature
+            </div>
+            <h2 className="text-3xl font-black mb-3">Introducing the Supporter League</h2>
+            <p className="text-textMuted text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+              Your prediction points don&apos;t just count for you — they count for your club. Pick your
+              favourite team from all 92 clubs in the football league and join the Supporter League.
+              See which club&apos;s fans are the best predictors.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/auth/signup"
+                className="btn-primary px-8 py-3 rounded-xl font-bold">
+                Join the Supporter League →
+              </Link>
+              <Link href="/supporter-league"
+                className="btn-secondary px-8 py-3 rounded-xl font-bold">
+                View Standings
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="relative overflow-hidden border-t border-border bg-surface/30">
         <div className="absolute inset-0 pointer-events-none"

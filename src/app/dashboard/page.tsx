@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import TeamBadge from '@/components/TeamBadge';
+import SupporterLeagueBanner from '@/components/SupporterLeagueBanner';
 
 const NotificationBanner = dynamic(() => import('@/components/NotificationBanner'), { ssr: false });
 
@@ -190,6 +191,9 @@ export default async function Dashboard() {
             <p className="text-3xl font-bold">{userRank > 0 ? userRank : '-'}</p>
           </div>
         </div>
+
+        {/* Supporter League Banner */}
+        <SupporterLeagueBanner hasFavouriteTeam={!!profile?.favourite_team} />
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upcoming Fixtures */}
