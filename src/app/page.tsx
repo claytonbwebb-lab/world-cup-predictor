@@ -28,7 +28,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         {/* Background image with overlay */}
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1766934824997-f99bbcad64f3?q=80&w=1920&auto=format&fit=crop"
             alt="World Cup stadium at night with floodlights"
             fill
             priority
