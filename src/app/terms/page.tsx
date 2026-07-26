@@ -4,7 +4,7 @@ import NavBar from '@/components/NavBar';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Play Predict Win',
-  description: 'Terms and conditions for Play Predict Win — FIFA World Cup 2026 prediction league.',
+  description: 'Terms and conditions for Play Predict Win — Premier League 2026/27 prediction league.',
 };
 
 export default function TermsPage() {
@@ -14,7 +14,7 @@ export default function TermsPage() {
       <main className="max-w-3xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black mb-2">Terms & Conditions</h1>
-          <p className="text-textMuted text-sm">Last updated: 22 April 2026</p>
+          <p className="text-textMuted text-sm">Last updated: 26 July 2026</p>
         </div>
 
         <div className="space-y-8 text-textMuted leading-relaxed text-sm">
@@ -49,7 +49,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold text-text mb-2">3. How the Competition Works</h2>
             <p>
               Play Predict Win is a free-to-enter football score prediction competition. Participants predict
-              the exact result of World Cup matches before kick-off. Points are awarded as follows:
+              the exact result of Premier League matches before kick-off. Points are awarded as follows:
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li><strong>3 points</strong> — for predicting the exact final score</li>
@@ -58,8 +58,7 @@ export default function TermsPage() {
             </ul>
             <p className="mt-2">
               Predictions lock when the match kicks off. Once locked, predictions cannot be changed.
-              In the event of a match being postponed, cancelled, or decided by extra time or penalties
-              when not specified, our decisions on scoring will be final.
+              In the event of a match being postponed or cancelled, our decisions on scoring will be final.
             </p>
           </div>
 

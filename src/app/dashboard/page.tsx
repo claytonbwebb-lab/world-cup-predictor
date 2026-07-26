@@ -8,7 +8,7 @@ import TeamBadge from '@/components/TeamBadge';
 
 const NotificationBanner = dynamic(() => import('@/components/NotificationBanner'), { ssr: false });
 
-// Official short names for World Cup branding
+// Official short names for Premier League branding
 const TEAM_SHORT: Record<string, string> = {
   'South Korea': 'Korea Republic',
   'Czech Republic': 'Czech Rep.',

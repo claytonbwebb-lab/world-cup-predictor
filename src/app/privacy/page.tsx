@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Play Predict Win',
-  description: 'Privacy policy for Play Predict Win — FIFA World Cup 2026 prediction league.',
+  description: 'Privacy policy for Play Predict Win — Premier League 2026/27 prediction league.',
 };
 
 export default function PrivacyPage() {

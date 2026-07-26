@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'FAQ | Play Predict Win',
-  description: 'Common questions about Play Predict Win — World Cup 2026 prediction league.',
+  description: 'Common questions about Play Predict Win — Premier League 2026/27 prediction league.',
 };
 
 export default function FAQPage() {
@@ -13,7 +13,7 @@ export default function FAQPage() {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      { "@type": "Question", "name": "When does the World Cup 2026 start?", "acceptedAnswer": { "@type": "Answer", "text": "The tournament kicks off on 11 June 2026 in the USA, Canada, and Mexico. The final is on 19 July 2026 in New Jersey." } },
+      { "@type": "Question", "name": "When does the Premier League 2026/27 season start?", "acceptedAnswer": { "@type": "Answer", "text": "The 2026/27 Premier League season kicks off on 15 August 2026. The final gameweek is scheduled for May 2027." } },
       { "@type": "Question", "name": "How do points work?", "acceptedAnswer": { "@type": "Answer", "text": "You earn 3 points for every exact scoreline you predict correctly (e.g. you say 2-1, it ends 2-1). You earn 1 point for predicting the correct result but the wrong score (e.g. you say 2-1, it ends 3-1). Wrong results earn 0 points." } },
       { "@type": "Question", "name": "When can I submit predictions?", "acceptedAnswer": { "@type": "Answer", "text": "You can submit predictions at any time before kickoff of the relevant match. Once the match kicks off, your predictions for that match are locked and cannot be changed." } },
       { "@type": "Question", "name": "Is it free to play?", "acceptedAnswer": { "@type": "Answer", "text": "Yes — creating an account and competing in leagues is completely free. Prizes are funded by our partners, who you can find linked on the homepage." } },
@@ -39,8 +39,8 @@ export default function FAQPage() {
         <div className="space-y-8">
           {[
             {
-              q: 'When does the World Cup 2026 start?',
-              a: 'The tournament kicks off on 11 June 2026 in the USA, Canada, and Mexico. The final is on 19 July 2026 in New Jersey.',
+              q: 'When does the Premier League 2026/27 season start?',
+              a: 'The 2026/27 Premier League season kicks off on 15 August 2026. The final gameweek is scheduled for May 2027.',
             },
             {
               q: 'How do points work?',
@@ -64,7 +64,7 @@ export default function FAQPage() {
             },
             {
               q: 'How is the leaderboard ranked?',
-              a: 'By total points accumulated across all group and knockout matches. If there is a tie on points, the tiebreaker is whoever got the most exact scorelines.',
+              a: 'By total points accumulated across all Premier League matches. If there is a tie on points, the tiebreaker is whoever got the most exact scorelines.',
             },
             {
               q: 'Can I change my prediction after submitting?',

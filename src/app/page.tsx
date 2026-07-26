@@ -29,7 +29,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1766934824997-f99bbcad64f3?q=80&w=1920&auto=format&fit=crop"
-            alt="World Cup stadium at night with floodlights"
+            alt="Premier League football on a grassy pitch with goalposts"
             fill
             priority
             className="object-cover"
@@ -51,8 +51,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           {/* Badge */}
           <div className="inline-flex flex-col items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 text-primary text-sm font-medium mb-8">
-            <span>FIFA World Cup 2026</span>
-            <span className="text-xs opacity-70">USA · Canada · Mexico</span>
+            <span>Premier League 2026/27</span>
+            <span className="text-xs opacity-70">August 2026 — May 2027</span>
           </div>
 
           {/* Brand name */}
@@ -209,7 +209,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="text-5xl mb-6 text-primary">★</div>
           <h2 className="text-4xl font-black mb-4">Ready to Play?</h2>
           <p className="text-textMuted text-lg mb-8">
-            The 2026 World Cup kicks off on 11 June 2026. Get your predictions in early.
+            The 2026/27 Premier League season kicks off on 15 August. Get your predictions in early.
           </p>
           <Link href="/auth/signup"
             className="btn-primary px-12 py-4 rounded-xl text-lg font-bold inline-block shadow-lg shadow-primary/20">
@@ -230,7 +230,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-black">From the Blog</h2>
-              <p className="text-textMuted text-sm mt-1">Prediction tips & World Cup guides</p>
+              <p className="text-textMuted text-sm mt-1">Prediction tips & Premier League guides</p>
             </div>
             <Link href="/blog" className="text-primary text-sm font-medium hover:underline">
               View all →
