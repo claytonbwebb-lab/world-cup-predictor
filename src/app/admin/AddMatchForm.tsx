@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import TeamSelect from '@/components/TeamSelect';
 
+// Convert a datetime-local string (YYYY-MM-DDTHH:mm) to a UTC ISO string.
+// The browser knows the user's timezone, so new Date() here = correct local time.
 function localToUtcIso(localDt: string): string {
   return new Date(localDt).toISOString();
 }
@@ -12,49 +13,22 @@ export default function AddMatchForm() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [homeTeam, setHomeTeam] = useState('');
-  const [awayTeam, setAwayTeam] = useState('');
-  const [homeBadge, setHomeBadge] = useState('');
-  const [awayBadge, setAwayBadge] = useState('');
-  const [groupStage, setGroupStage] = useState('');
-  const [kickoffAt, setKickoffAt] = useState('');
-
-  function handleTeamChange(name: string, teamName: string, badge: string) {
-    if (name === 'home_team') {
-      setHomeTeam(teamName);
-      setHomeBadge(badge);
-    } else {
-      setAwayTeam(teamName);
-      setAwayBadge(badge);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setStatus('idle');
 
-    if (!homeTeam || !awayTeam || !kickoffAt) {
-      setStatus('error');
-      setMessage('Please select both teams and a kickoff time.');
-      setLoading(false);
-      return;
-    }
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
-    const kickoffUtc = localToUtcIso(kickoffAt);
+    // Convert kickoff_at to UTC ISO before sending — server runs in UTC and must receive UTC
+    const kickoffLocal = formData.get('kickoff_at') as string;
+    formData.set('kickoff_at', localToUtcIso(kickoffLocal));
 
     try {
-      const fd = new FormData();
-      fd.set('home_team', homeTeam);
-      fd.set('away_team', awayTeam);
-      fd.set('home_flag', homeBadge);
-      fd.set('away_flag', awayBadge);
-      fd.set('group_stage', groupStage);
-      fd.set('kickoff_at', kickoffUtc);
-
       const res = await fetch('/api/admin/matches', {
         method: 'POST',
-        body: fd,
+        body: formData,
       });
       const json = await res.json();
       if (res.ok && json.success) {
@@ -74,53 +48,44 @@ export default function AddMatchForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 overflow-hidden">
-      <div className="grid md:grid-cols-2 gap-4 min-w-0">
-        <TeamSelect
-          label="Home Team"
-          name="home_team"
-          value={homeTeam}
-          onChange={handleTeamChange}
-        />
-        <TeamSelect
-          label="Away Team"
-          name="away_team"
-          value={awayTeam}
-          onChange={handleTeamChange}
-        />
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4 min-w-0">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Gameweek / Stage</label>
-          <input
-            type="text"
-            value={groupStage}
-            onChange={(e) => setGroupStage(e.target.value)}
-            className="input w-full"
-            placeholder="GW1, GW2, Quarter-final, etc."
-          />
+          <label className="block text-sm font-medium mb-2">Home Team</label>
+          <input type="text" name="home_team" required className="input w-full" placeholder="Argentina" />
         </div>
-        <div className="min-w-0">
-          <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
-          <input
-            type="datetime-local"
-            name="kickoff_at"
-            required
-            value={kickoffAt}
-            onChange={(e) => setKickoffAt(e.target.value)}
-            className="input w-full min-w-0"
-            style={{ minWidth: 0, maxWidth: '100%' }}
-          />
+        <div>
+          <label className="block text-sm font-medium mb-2">Away Team</label>
+          <input type="text" name="away_team" required className="input w-full" placeholder="Brazil" />
         </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Home Flag (emoji)</label>
+          <input type="text" name="home_flag" className="input w-full" placeholder="🇦🇷" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Away Flag (emoji)</label>
+          <input type="text" name="away_flag" className="input w-full" placeholder="🇧🇷" />
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Group/Stage</label>
+          <input type="text" name="group_stage" className="input w-full" placeholder="Group A, Quarter-final, etc." />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Week Number (1-38, optional)</label>
+          <input type="number" name="week_number" min="1" max="38" className="input w-full" placeholder="Auto-computed if blank" />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
+        <input type="datetime-local" name="kickoff_at" required className="input w-full" />
       </div>
 
       {status !== 'idle' && (
-        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
-          status === 'success'
-            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-        }`}>
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${status === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
           {message}
         </div>
       )}
