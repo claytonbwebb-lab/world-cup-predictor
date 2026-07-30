@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     const away_flag = formData.get('away_flag') as string;
     const group_stage = formData.get('group_stage') as string;
     const kickoff_at = formData.get('kickoff_at') as string;
+    const week_number_str = formData.get('week_number') as string;
+    const week_number = week_number_str ? parseInt(week_number_str) : null;
 
     if (!home_team || !away_team || !kickoff_at) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -33,6 +35,7 @@ export async function POST(request: NextRequest) {
         away_flag: away_flag || null,
         group_stage: group_stage || null,
         kickoff_at,
+        week_number,
       })
       .select();
 

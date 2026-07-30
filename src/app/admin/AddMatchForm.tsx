@@ -75,9 +75,13 @@ export default function AddMatchForm() {
           <input type="text" name="group_stage" className="input w-full" placeholder="Group A, Quarter-final, etc." />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
-          <input type="datetime-local" name="kickoff_at" required className="input w-full" />
+          <label className="block text-sm font-medium mb-2">Week Number (1-38, optional)</label>
+          <input type="number" name="week_number" min="1" max="38" className="input w-full" placeholder="Auto-computed if blank" />
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Kickoff (your local time)</label>
+        <input type="datetime-local" name="kickoff_at" required className="input w-full" />
       </div>
 
       {status !== 'idle' && (
