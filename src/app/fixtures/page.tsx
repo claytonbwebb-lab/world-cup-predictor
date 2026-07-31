@@ -76,7 +76,7 @@ export default function FixturesPage() {
       .select('week_number')
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
-    const weeks = [...new Set((weekData || []).map((m: { week_number: number }) => m.week_number))].sort((a, b) => b - a);
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
 
     let query = supabase

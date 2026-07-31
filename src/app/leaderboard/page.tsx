@@ -82,7 +82,7 @@ export default function LeaderboardPage() {
       .not('week_number', 'is', null)
       .eq('result_entered', true)
       .order('week_number', { ascending: false });
-    const weeks = [...new Set((weekData || []).map((m: { week_number: number }) => m.week_number))].sort((a, b) => b - a);
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
     if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
       setSelectedWeek(weeks[0]);
