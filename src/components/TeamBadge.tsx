@@ -26,15 +26,17 @@ export default function TeamBadge({ value, size = 'md', className = '' }: TeamBa
 
   if (isUrl) {
     return (
-      <img
-        src={value}
-        alt=""
-        className={`${sizeClasses[size]} object-contain rounded ${className}`}
-        loading="lazy"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
-        }}
-      />
+      <div className={`${sizeClasses[size]} rounded-full bg-surfaceLight flex items-center justify-center shrink-0`}>
+        <img
+          src={value}
+          alt=""
+          className={`object-contain w-3/4 h-3/4`}
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+      </div>
     );
   }
 
