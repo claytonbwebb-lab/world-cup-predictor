@@ -22,24 +22,8 @@ export default function ScrollHeader() {
         {/* Three-column grid: [left] [logo] [right] — logo is always mathematically centred */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
-          {/* LEFT — mobile burger on mobile, social icons on desktop */}
+          {/* LEFT — social icons on desktop only. Mobile uses NavBar's burger. */}
           <div className="flex items-center gap-3">
-            {/* Mobile burger */}
-            <button
-              className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
-              onClick={() => setOpen(o => !o)}
-              aria-label="Toggle menu"
-            >
-              {open ? (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
             {/* Social icons on desktop */}
             <div className="hidden sm:flex items-center gap-3">
               <a href="https://x.com/playpredictwin" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"
