@@ -49,7 +49,6 @@ export async function GET() {
       team,
       total_points: stats.total,
       num_supporters: stats.count,
-      avg_points: stats.count > 0 ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
     }))
     .sort((a, b) => b.total_points - a.total_points)
     .slice(0, 30);

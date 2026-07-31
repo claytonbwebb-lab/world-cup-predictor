@@ -10,7 +10,6 @@ interface ClubStanding {
   team: string;
   total_points: number;
   num_supporters: number;
-  avg_points: number;
 }
 
 async function getSupporterLeague(): Promise<ClubStanding[]> {
@@ -53,7 +52,6 @@ async function getSupporterLeague(): Promise<ClubStanding[]> {
       team,
       total_points: stats.total,
       num_supporters: stats.count,
-      avg_points: stats.count > 0 ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
     }))
     .sort((a, b) => b.total_points - a.total_points)
     .slice(0, 20);
@@ -125,10 +123,9 @@ export default async function SupporterLeaguePage() {
             {/* Header */}
             <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b border-border text-xs font-medium text-textMuted uppercase tracking-wide">
               <div className="col-span-1">Pos</div>
-              <div className="col-span-5">Club</div>
+              <div className="col-span-7">Club</div>
               <div className="col-span-2 text-right">Points</div>
               <div className="col-span-2 text-right">Fans</div>
-              <div className="col-span-2 text-right">Avg</div>
             </div>
 
             {/* Rows */}
@@ -152,7 +149,7 @@ export default async function SupporterLeaguePage() {
                   </div>
 
                   {/* Club */}
-                  <div className="col-span-5 flex items-center gap-3">
+                  <div className="col-span-7 flex items-center gap-3">
                     {teamInfo ? (
                       <img src={teamInfo.badge} alt={club.team} className="w-8 h-8 object-contain" />
                     ) : (
@@ -171,11 +168,6 @@ export default async function SupporterLeaguePage() {
                   {/* Num supporters */}
                   <div className="col-span-2 text-right text-textMuted text-sm">
                     {club.num_supporters}
-                  </div>
-
-                  {/* Avg points */}
-                  <div className="col-span-2 text-right text-textMuted text-sm">
-                    {club.avg_points}
                   </div>
                 </div>
               );
