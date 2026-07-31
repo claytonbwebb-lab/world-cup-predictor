@@ -4,67 +4,39 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import NavBar from '@/components/NavBar';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-
-// Season start: Tuesday 2026-08-11 00:00 UTC
-const SEASON_START = new Date('2026-08-11T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
-
-interface MemberEntry {
-  user_id: string;
-  username: string;
-  avatar_url: string | null;
-  total_points: number;
-  exact_scores: number;
-  correct_results: number;
-  total_predictions: number;
-}
+import { useParams, useRouter } from 'next/navigation';
 
 export default function LeagueLeaderboardPage() {
   const params = useParams();
+  const router = useRouter();
   const leagueId = params.id as string;
   const [league, setLeague] = useState<any>(null);
-  const [members, setMembers] = useState<MemberEntry[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [mode, setMode] = useState<'season' | 'week'>('week');
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
-  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
   const supabase = createClient();
 
-  useEffect(() => { loadLeagueData(); }, [leagueId]);
   useEffect(() => {
-    if (league) computeMemberScores();
-  }, [mode, selectedWeek, league]);
+    loadLeagueLeaderboard();
+  }, [leagueId]);
 
-  async function loadLeagueData() {
+  async function loadLeagueLeaderboard() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
+    if (!user) { router.push('/auth/login'); return; }
     setCurrentUserId(user.id);
 
+    // Fetch league info
     const { data: leagueData } = await supabase
       .from('leagues')
       .select('*')
       .eq('id', leagueId)
       .single();
 
-    if (!leagueData) return;
+    if (!leagueData) {
+      router.push('/leagues');
+      return;
+    }
     setLeague(leagueData);
 
     // Check membership
@@ -75,13 +47,12 @@ export default function LeagueLeaderboardPage() {
       .eq('user_id', user.id)
       .single();
 
-    if (!membership) return;
-  }
+    if (!membership) {
+      router.push('/leagues');
+      return;
+    }
 
-  async function computeMemberScores() {
-    if (!league) return;
-    setLoading(true);
-
+    // Fetch all members
     const { data: memberList } = await supabase
       .from('league_members')
       .select('user_id')
@@ -89,18 +60,7 @@ export default function LeagueLeaderboardPage() {
 
     if (!memberList) { setLoading(false); return; }
 
-    let matchIds: string[] = [];
-
-    if (mode === 'week') {
-      const { data: weekMatches } = await supabase
-        .from('matches')
-        .select('id')
-        .eq('week_number', selectedWeek)
-        .eq('result_entered', true);
-      matchIds = (weekMatches || []).map(m => m.id);
-    }
-    // For 'season' mode, matchIds stays empty = all scored predictions
-
+    // Get scores for each member
     const enriched = await Promise.all((memberList || []).map(async (m: any) => {
       const { data: profile } = await supabase
         .from('profiles')
@@ -108,19 +68,13 @@ export default function LeagueLeaderboardPage() {
         .eq('id', m.user_id)
         .single();
 
-      let query = supabase
+      const { data: scored } = await supabase
         .from('predictions')
         .select('points_awarded, is_exact_score, is_correct_result')
         .eq('user_id', m.user_id)
         .not('scored_at', 'is', null);
 
-      if (mode === 'week' && matchIds.length > 0) {
-        query = query.in('match_id', matchIds);
-      }
-
-      const { data: scored } = await query;
-
-      const totalPoints = (scored || []).reduce((s: number, p: any) => s + (p.points_awarded || 0), 0);
+      const totalPoints = (scored || []).reduce((sum: number, p: any) => sum + (p.points_awarded || 0), 0);
       const exactScores = (scored || []).filter((p: any) => p.is_exact_score).length;
       const correctResults = (scored || []).filter((p: any) => p.is_correct_result && !p.is_exact_score).length;
       const totalPreds = (scored || []).length;
@@ -141,28 +95,22 @@ export default function LeagueLeaderboardPage() {
     setLoading(false);
   }
 
-  if (!league) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-textMuted">Loading...</div>
+        <div className="text-textMuted">Loading leaderboard...</div>
       </div>
     );
   }
 
   const myIndex = members.findIndex(m => m.user_id === currentUserId);
 
-  // Build week options
-  const weekOptions = [];
-  for (let w = currentWeek; w >= 1; w--) {
-    weekOptions.push({ value: w, label: `Week ${w} — ${getWeekRange(w)}` });
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-3 mb-8">
           <Link href="/leagues" className="text-textMuted hover:text-text transition-colors">← Leagues</Link>
           <span className="text-textMuted">/</span>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -173,58 +121,12 @@ export default function LeagueLeaderboardPage() {
           )}
         </div>
 
-        {/* Mode toggle */}
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="flex bg-surfaceLight rounded-xl p-1 gap-1">
-            <button
-              onClick={() => setMode('week')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🗓️ Weekly
-            </button>
-            <button
-              onClick={() => setMode('season')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🏆 Season
-            </button>
-          </div>
-
-          {mode === 'week' && (
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-textMuted">Week:</label>
-              <select
-                value={selectedWeek}
-                onChange={e => setSelectedWeek(Number(e.target.value))}
-                className="input py-1.5 text-sm"
-              >
-                {weekOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {mode === 'week' && (
-            <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>
-          )}
-          {mode === 'season' && (
-            <span className="text-xs text-textMuted">All predictions across the full season</span>
-          )}
-        </div>
-
         {/* My Rank Summary */}
         {myIndex >= 0 && (
           <div className="card mb-6 bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-textMuted text-sm">
-                  {mode === 'week' ? `Week ${selectedWeek}` : 'Season'} Position
-                </p>
+                <p className="text-textMuted text-sm">Your Position</p>
                 <p className="text-3xl font-bold">
                   {myIndex + 1}
                   <span className="text-textMuted text-lg font-normal"> / {members.length}</span>
@@ -248,14 +150,10 @@ export default function LeagueLeaderboardPage() {
 
         {/* Leaderboard Table */}
         <div className="card overflow-hidden">
-          {loading ? (
-            <div className="text-center py-12 text-textMuted">Loading...</div>
-          ) : members.length === 0 ? (
+          {members.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">🏆</div>
-              <p className="text-textMuted">
-                {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` : 'No predictions yet'}
-              </p>
+              <p className="text-textMuted">No predictions yet</p>
             </div>
           ) : (
             <table className="w-full">

@@ -1,203 +1,118 @@
-'use client';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { createClient } from '@/lib/supabase/client';
-import { useState, useEffect } from 'react';
-
-// Season start: Tuesday 2026-08-11 00:00 UTC
-const SEASON_START = new Date('2026-08-11T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 const PAGE_SIZE = 25;
 
-interface LeaderboardEntry {
-  user_id: string;
-  username: string;
-  avatar_url: string | null;
-  total_points: number;
-  exact_scores: number;
-  correct_results: number;
-  total_predictions: number;
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Leaderboard", "item": "https://www.playpredictwin.com/leaderboard" },
+  ],
+};
+
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+function pageUrl(page: number) {
+  return `/leaderboard?page=${page}`;
 }
 
 function getVisiblePages(currentPage: number, totalPages: number) {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-  const pages: (number | 'ellipsis')[] = [1];
-  if (currentPage > 4) pages.push('ellipsis');
+  const pages: Array<number | 'ellipsis'> = [];
+
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  pages.push(1);
+
+  if (currentPage > 4) {
+    pages.push('ellipsis');
+  }
+
   const start = Math.max(2, currentPage - 1);
   const end = Math.min(totalPages - 1, currentPage + 1);
-  for (let p = start; p <= end; p++) pages.push(p);
-  if (currentPage < totalPages - 3) pages.push('ellipsis');
+
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+
+  if (currentPage < totalPages - 3) {
+    pages.push('ellipsis');
+  }
+
   pages.push(totalPages);
   return pages;
 }
 
-export default function LeaderboardPage() {
-  const [mode, setMode] = useState<'season' | 'week'>('week');
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
-  const [selectedWeek, setSelectedWeek] = useState(getWeekNumber());
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [userRank, setUserRank] = useState<number | null>(null);
-  const [userEntry, setUserEntry] = useState<LeaderboardEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const supabase = createClient();
+export default async function LeaderboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const requestedPage = Number.parseInt(params.page || '1', 10);
 
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
-    })();
-  }, []);
+  const supabase = await createClient();
 
-  useEffect(() => {
-    loadLeaderboard();
-  }, [mode, selectedWeek, currentPage]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  async function loadLeaderboard() {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-
-    if (mode === 'season') {
-      await loadSeasonLeaderboard(user.id);
-    } else {
-      await loadWeeklyLeaderboard(user.id, selectedWeek);
-    }
-    setLoading(false);
+  if (!user) {
+    redirect('/auth/login');
   }
 
-  async function loadSeasonLeaderboard(currentUserId: string) {
-    const { data: allUsers } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
+  const { count } = await supabase
+    .from('leaderboard')
+    .select('*', { count: 'exact', head: true });
 
-    if (!allUsers) return;
+  const totalUsers = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, Number.isNaN(requestedPage) ? 1 : requestedPage), totalPages);
+  const offset = (currentPage - 1) * PAGE_SIZE;
 
-    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
-      const { data: scored } = await supabase
-        .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
-        .eq('user_id', profile.id)
-        .not('scored_at', 'is', null);
+  // Fetch leaderboard data for the current page.
+  // Three-column sort ensures deterministic pagination (no duplicate entries across pages).
+  const { data: leaderboard } = await supabase
+    .from('leaderboard')
+    .select('*')
+    .order('total_points', { ascending: false })
+    .order('exact_scores', { ascending: false })
+    .order('user_id', { ascending: true })
+    .range(offset, offset + PAGE_SIZE - 1);
 
-      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
-      const exact = (scored || []).filter(p => p.is_exact_score).length;
-      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
-      const total = (scored || []).length;
-      return {
-        user_id: profile.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url,
-        total_points: pts,
-        exact_scores: exact,
-        correct_results: correct,
-        total_predictions: total,
-      };
-    }));
+  const { data: allRanks } = await supabase
+    .from('leaderboard')
+    .select('user_id')
+    .order('total_points', { ascending: false })
+    .order('exact_scores', { ascending: false })
+    .order('user_id', { ascending: true });
 
-    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
-    const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
-    const page = Math.min(currentPage, totalPages);
-    const offset = (page - 1) * PAGE_SIZE;
-    setEntries(enriched.slice(offset, offset + PAGE_SIZE));
-    setTotalCount(enriched.length);
-    setCurrentPage(page);
-    const rank = enriched.findIndex(e => e.user_id === currentUserId);
-    setUserRank(rank >= 0 ? rank + 1 : null);
-    setUserEntry(enriched.find(e => e.user_id === currentUserId) || null);
+  const userRank = allRanks?.findIndex((entry) => entry.user_id === user.id);
+  let userEntry = leaderboard?.find((entry) => entry.user_id === user.id);
+
+  if (!userEntry) {
+    const { data } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    userEntry = data ?? undefined;
   }
 
-  async function loadWeeklyLeaderboard(currentUserId: string, weekNum: number) {
-    const { data: allUsers } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
-
-    if (!allUsers) return;
-
-    const { data: weekMatches } = await supabase
-      .from('matches')
-      .select('id')
-      .eq('week_number', weekNum)
-      .eq('result_entered', true);
-
-    const matchIds = (weekMatches || []).map(m => m.id);
-
-    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
-      if (matchIds.length === 0) {
-        return {
-          user_id: profile.id,
-          username: profile.username,
-          avatar_url: profile.avatar_url,
-          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
-        };
-      }
-      const { data: scored } = await supabase
-        .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
-        .eq('user_id', profile.id)
-        .in('match_id', matchIds)
-        .not('scored_at', 'is', null);
-
-      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
-      const exact = (scored || []).filter(p => p.is_exact_score).length;
-      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
-      const total = (scored || []).length;
-      return {
-        user_id: profile.id,
-        username: profile.username,
-        avatar_url: profile.avatar_url,
-        total_points: pts,
-        exact_scores: exact,
-        correct_results: correct,
-        total_predictions: total,
-      };
-    }));
-
-    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
-    const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
-    const page = Math.min(currentPage, totalPages);
-    const offset = (page - 1) * PAGE_SIZE;
-    setEntries(enriched.slice(offset, offset + PAGE_SIZE));
-    setTotalCount(enriched.length);
-    setCurrentPage(page);
-    const rank = enriched.findIndex(e => e.user_id === currentUserId);
-    setUserRank(rank >= 0 ? rank + 1 : null);
-    setUserEntry(enriched.find(e => e.user_id === currentUserId) || null);
-  }
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-
-  // Build week selector options
-  const weekOptions = [];
-  for (let w = currentWeek; w >= 1; w--) {
-    weekOptions.push({ value: w, label: `Week ${w} — ${getWeekRange(w)}` });
-  }
+  const visiblePages = getVisiblePages(currentPage, totalPages);
 
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
-          <span>🥇</span> Leaderboard
+          <span>🥇</span> Global Leaderboard
         </h1>
 
         {/* Prizes banner */}
@@ -214,61 +129,15 @@ export default function LeaderboardPage() {
           ))}
         </div>
 
-        {/* Mode toggle */}
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="flex bg-surfaceLight rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setMode('week'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🗓️ Weekly
-            </button>
-            <button
-              onClick={() => { setMode('season'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🏆 Season
-            </button>
-          </div>
-
-          {mode === 'week' && (
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-textMuted">Week:</label>
-              <select
-                value={selectedWeek}
-                onChange={e => { setSelectedWeek(Number(e.target.value)); setCurrentPage(1); }}
-                className="input py-1.5 text-sm"
-              >
-                {weekOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {mode === 'week' && (
-            <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>
-          )}
-          {mode === 'season' && (
-            <span className="text-xs text-textMuted">All scored predictions across the full season</span>
-          )}
-        </div>
-
         {/* User's Rank Summary */}
-        {userEntry && userRank && (
-          <div className="card mb-6 bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+        {userEntry && (
+          <div className="card mb-8 bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-textMuted text-sm">
-                  {mode === 'week' ? `Week ${selectedWeek}` : 'Season'} Position
-                </p>
+                <p className="text-textMuted text-sm">Your Position</p>
                 <p className="text-3xl font-bold">
-                  {userRank}
-                  <span className="text-textMuted text-lg font-normal"> / {totalCount}</span>
+                  {userRank !== undefined ? userRank + 1 : '-'}
+                  <span className="text-textMuted text-lg font-normal"> / {totalUsers}</span>
                 </p>
               </div>
               <div className="text-right">
@@ -288,121 +157,123 @@ export default function LeaderboardPage() {
         )}
 
         {/* Leaderboard Table */}
-        {loading ? (
-          <div className="text-center py-16 text-textMuted">Loading...</div>
-        ) : (
-          <div className="card overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-textMuted font-medium">Rank</th>
-                  <th className="text-left py-3 px-4 text-textMuted font-medium">Player</th>
-                  <th className="text-center py-3 px-4 text-textMuted font-medium">Points</th>
-                  <th className="text-center py-3 px-4 text-textMuted font-medium">Exact</th>
-                  <th className="text-center py-3 px-4 text-textMuted font-medium">Results</th>
-                  <th className="text-center py-3 px-4 text-textMuted font-medium">Preds</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry, index) => {
-                  const rank = (currentPage - 1) * PAGE_SIZE + index + 1;
-                  return (
-                    <tr
-                      key={entry.user_id}
-                      className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${
-                        entry.user_id === userId ? 'bg-primary/10' : ''
-                      }`}
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center w-8">
-                          {rank === 1 && <span className="text-2xl">🥇</span>}
-                          {rank === 2 && <span className="text-2xl">🥈</span>}
-                          {rank === 3 && <span className="text-2xl">🥉</span>}
-                          {rank > 3 && <span className="text-textMuted">{rank}</span>}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={entry.avatar_url || '/default-avatar.png'}
-                            alt={entry.username}
-                            className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
-                          />
-                          <div className="flex flex-col">
-                            <span className={`font-medium ${entry.user_id === userId ? 'text-primary' : ''}`}>
-                              {entry.username}
-                            </span>
-                            {entry.user_id === userId && (
-                              <span className="text-xs text-primary">You</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-xl font-bold text-primary">{entry.total_points}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-warning font-medium">{entry.exact_scores}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-textMuted">{entry.correct_results}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-textMuted">{entry.total_predictions}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <div className="card overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 text-textMuted font-medium">Rank</th>
+                <th className="text-left py-3 px-4 text-textMuted font-medium">Player</th>
+                <th className="text-center py-3 px-4 text-textMuted font-medium">Points</th>
+                <th className="text-center py-3 px-4 text-textMuted font-medium">Exact</th>
+                <th className="text-center py-3 px-4 text-textMuted font-medium">Results</th>
+                <th className="text-center py-3 px-4 text-textMuted font-medium">Predictions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard?.map((entry, index) => {
+                const rank = offset + index + 1;
 
-            {entries.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">🏆</div>
-                <p className="text-textMuted">
-                  {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` : 'No predictions scored yet'}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+                return (
+                  <tr
+                    key={entry.user_id}
+                    className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${
+                      entry.user_id === user.id ? 'bg-primary/10' : ''
+                    }`}
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center w-8">
+                        {rank === 1 && <span className="text-2xl">🥇</span>}
+                        {rank === 2 && <span className="text-2xl">🥈</span>}
+                        {rank === 3 && <span className="text-2xl">🥉</span>}
+                        {rank > 3 && <span className="text-textMuted">{rank}</span>}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={entry.avatar_url || '/default-avatar.png'}
+                          alt={entry.username}
+                          className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
+                        />
+                        <div className="flex flex-col">
+                          <span className={`font-medium ${entry.user_id === user.id ? 'text-primary' : ''}`}>
+                            {entry.username}
+                          </span>
+                          {entry.user_id === user.id && (
+                            <span className="text-xs text-primary">You</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-xl font-bold text-primary">{entry.total_points}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-warning font-medium">{entry.exact_scores}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-textMuted">{entry.correct_results}</span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="text-textMuted">{entry.total_predictions}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-        {totalPages > 1 && !loading && (
+          {(!leaderboard || leaderboard.length === 0) && (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">🏆</div>
+              <p className="text-textMuted">No predictions yet</p>
+              <p className="text-textMuted text-sm">Be the first to make a prediction!</p>
+            </div>
+          )}
+        </div>
+
+        {totalPages > 1 && (
           <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Leaderboard pages">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="btn-secondary px-4 py-2 text-sm"
+            <Link
+              href={pageUrl(currentPage - 1)}
+              aria-disabled={currentPage === 1}
+              className={`btn-secondary px-4 py-2 text-sm ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
             >
               Previous
-            </button>
-            {getVisiblePages(currentPage, totalPages).map((page, i) => (
+            </Link>
+
+            {visiblePages.map((page, index) => (
               page === 'ellipsis' ? (
-                <span key={`ellipsis-${i}`} className="px-2 text-textMuted">...</span>
+                <span key={`ellipsis-${index}`} className="px-2 text-textMuted">
+                  ...
+                </span>
               ) : (
-                <button
+                <Link
                   key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  href={pageUrl(page)}
+                  aria-current={page === currentPage ? 'page' : undefined}
+                  className={`min-w-10 rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors ${
                     page === currentPage
                       ? 'border-primary bg-primary text-white'
                       : 'border-border bg-surface hover:bg-surfaceLight text-text'
                   }`}
                 >
                   {page}
-                </button>
+                </Link>
               )
             ))}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="btn-secondary px-4 py-2 text-sm"
+
+            <Link
+              href={pageUrl(currentPage + 1)}
+              aria-disabled={currentPage === totalPages}
+              className={`btn-secondary px-4 py-2 text-sm ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
             >
               Next
-            </button>
+            </Link>
+
             <span className="w-full text-center text-sm text-textMuted sm:w-auto sm:pl-2">
-              {totalCount} players
+              {totalUsers} players
             </span>
           </nav>
         )}

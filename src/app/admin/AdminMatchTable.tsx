@@ -13,7 +13,6 @@ interface Match {
   away_score: number | null;
   is_locked: boolean;
   result_entered: boolean;
-  week_number: number | null;
 }
 
 function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => void; onSave: () => void }) {
@@ -23,7 +22,6 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     home_flag: match.home_flag || '',
     away_flag: match.away_flag || '',
     group_stage: match.group_stage || '',
-    week_number: match.week_number ?? '',
     kickoff_at: match.kickoff_at.slice(0, 16),
   });
   const [saving, setSaving] = useState(false);
@@ -41,7 +39,6 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
     fd.set('home_flag', form.home_flag);
     fd.set('away_flag', form.away_flag);
     fd.set('group_stage', form.group_stage);
-    if (form.week_number) fd.set('week_number', String(form.week_number));
     fd.set('kickoff_at', new Date(form.kickoff_at).toISOString());
 
     const res = await fetch(`/api/admin/matches/${match.id}`, {
@@ -85,10 +82,6 @@ function EditModal({ match, onClose, onSave }: { match: Match; onClose: () => vo
           <div>
             <label className="block text-xs font-medium mb-1 text-textMuted">Group / Stage</label>
             <input className="input w-full" value={form.group_stage} onChange={e => setForm(p => ({ ...p, group_stage: e.target.value }))} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1 text-textMuted">Week Number (1-38)</label>
-            <input type="number" min="1" max="38" className="input w-full" value={form.week_number} onChange={e => setForm(p => ({ ...p, week_number: e.target.value }))} placeholder="Auto from kickoff date" />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1 text-textMuted">Kickoff</label>
@@ -158,7 +151,6 @@ export default function AdminMatchTable({ matches }: AdminMatchTableProps) {
           <thead>
             <tr className="border-b border-border">
               <th className="text-left py-3 px-4 text-textMuted font-medium">Match</th>
-              <th className="text-left py-3 px-4 text-textMuted font-medium">Week</th>
               <th className="text-left py-3 px-4 text-textMuted font-medium">Stage</th>
               <th className="text-left py-3 px-4 text-textMuted font-medium">Kickoff</th>
               <th className="text-left py-3 px-4 text-textMuted font-medium">Result</th>
@@ -180,11 +172,6 @@ export default function AdminMatchTable({ matches }: AdminMatchTableProps) {
                     <span className="font-medium">{match.away_team}</span>
                     <span>{match.away_flag || '🏳️'}</span>
                   </div>
-                </td>
-                <td className="py-3 px-4 text-sm">
-                  {match.week_number
-                    ? <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium">Wk {match.week_number}</span>
-                    : <span className="text-textMuted">-</span>}
                 </td>
                 <td className="py-3 px-4 text-textMuted text-sm">{match.group_stage || '-'}</td>
                 <td className="py-3 px-4 text-textMuted text-sm">

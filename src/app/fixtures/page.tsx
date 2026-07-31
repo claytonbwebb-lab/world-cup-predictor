@@ -3,29 +3,17 @@ import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Season start date: Tuesday 2026-08-11 (00:00)
-const SEASON_START = new Date('2026-08-11T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekLabel(weekNumber: number): string {
-  return `Week ${weekNumber}`;
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Fixtures", "item": "https://www.playpredictwin.com/fixtures" },
+  ],
+};
 
 interface Match {
   id: string;
@@ -39,7 +27,6 @@ interface Match {
   away_score: number | null;
   is_locked: boolean;
   result_entered: boolean;
-  week_number: number | null;
 }
 
 interface Prediction {
@@ -58,27 +45,17 @@ export default function FixturesPage() {
   const [savedMatch, setSavedMatch] = useState<string | null>(null);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
-  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => { load(); }, [selectedWeek]);
+  useEffect(() => { load(); }, []);
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
-    let query = supabase
-      .from('matches')
-      .select('*')
-      .order('kickoff_at', { ascending: true });
-
-    if (selectedWeek !== 'all') {
-      query = query.eq('week_number', selectedWeek);
-    }
-
-    const { data: matchData } = await query;
+    const { data: matchData } = await supabase
+      .from('matches').select('*').order('kickoff_at', { ascending: true });
 
     const { data: predData } = await supabase
       .from('predictions').select('*').eq('user_id', user.id);
@@ -145,15 +122,6 @@ export default function FixturesPage() {
     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 
-  // Build week options for selector
-  const MAX_WEEKS = 38;
-  const weekOptions: { value: number | 'all'; label: string }[] = [
-    { value: 'all', label: `All Fixtures (${matches.length} matches)` },
-  ];
-  for (let w = currentWeek; w >= 1; w--) {
-    weekOptions.push({ value: w, label: `${getWeekLabel(w)} — ${getWeekRange(w)}` });
-  }
-
   function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
     return (
       <div className="flex flex-col items-center gap-1">
@@ -179,14 +147,7 @@ export default function FixturesPage() {
       <div className="card">
         {/* Meta row */}
         <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
-          <div className="flex items-center gap-2">
-            {match.week_number && (
-              <span className="font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                Week {match.week_number}
-              </span>
-            )}
-            <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
-          </div>
+          <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
           <div className="flex items-center gap-2">
             <span>{fmtDate(match.kickoff_at)}</span>
             {isLocked && !match.result_entered && (
@@ -198,13 +159,15 @@ export default function FixturesPage() {
           </div>
         </div>
 
-        {/* Score row */}
+        {/* Score row — Sky Super 6 style */}
         <div className="flex items-center justify-between gap-2">
+          {/* Home team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
             <span className="text-4xl">{match.home_flag}</span>
             <span className="font-bold text-sm text-center leading-tight">{match.home_team}</span>
           </div>
 
+          {/* Score / steppers */}
           <div className="flex items-center gap-3 shrink-0">
             {match.result_entered ? (
               <div className="flex items-center gap-3">
@@ -227,6 +190,7 @@ export default function FixturesPage() {
             )}
           </div>
 
+          {/* Away team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
             <span className="text-4xl">{match.away_flag}</span>
             <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
@@ -270,39 +234,9 @@ export default function FixturesPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
-        {/* Header with week selector */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
-          
-          {/* Week selector */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <label className="text-sm text-textMuted font-medium">Show:</label>
-            <select
-              value={String(selectedWeek)}
-              onChange={e => setSelectedWeek(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="input py-2 text-sm max-w-xs"
-            >
-              {weekOptions.map(opt => (
-                <option key={String(opt.value)} value={String(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            
-            {selectedWeek !== 'all' && (
-              <span className="text-xs text-primary font-medium bg-primary/10 px-3 py-1 rounded-full">
-                Week {selectedWeek} · {getWeekRange(selectedWeek)}
-              </span>
-            )}
-
-            {selectedWeek === 'all' && matches.length > 0 && (
-              <span className="text-xs text-textMuted">
-                Current week is {getWeekLabel(currentWeek)}
-              </span>
-            )}
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold mb-6">Fixtures & Predictions</h1>
 
         {loading ? (
           <div className="text-center py-16 text-textMuted">Loading fixtures...</div>
@@ -341,10 +275,7 @@ export default function FixturesPage() {
             {matches.length === 0 && (
               <div className="card text-center py-12">
                 <div className="text-4xl mb-4">📅</div>
-                <p className="text-textMuted">No fixtures{selectedWeek !== 'all' ? ` for Week ${selectedWeek}` : ''} yet</p>
-                {selectedWeek === 'all' && (
-                  <p className="text-textMuted text-sm mt-1">Check back soon!</p>
-                )}
+                <p className="text-textMuted">No fixtures yet</p>
               </div>
             )}
           </div>
