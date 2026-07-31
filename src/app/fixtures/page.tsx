@@ -59,7 +59,7 @@ export default function FixturesPage() {
   const [savedMatch, setSavedMatch] = useState<string | null>(null);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
   const router = useRouter();
   const supabase = createClient();
@@ -69,6 +69,15 @@ export default function FixturesPage() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
+
+    // Fetch distinct week numbers from matches
+    const { data: weekData } = await supabase
+      .from('matches')
+      .select('week_number')
+      .not('week_number', 'is', null)
+      .order('week_number', { ascending: false });
+    const weeks = [...new Set((weekData || []).map((m: { week_number: number }) => m.week_number))].sort((a, b) => b - a);
+    setAvailableWeeks(weeks);
 
     let query = supabase
       .from('matches')
@@ -147,11 +156,10 @@ export default function FixturesPage() {
   });
 
   // Build week options for selector
-  const MAX_WEEKS = 38;
   const weekOptions: { value: number | 'all'; label: string }[] = [
     { value: 'all', label: `All Fixtures (${matches.length} matches)` },
   ];
-  for (let w = currentWeek; w >= 1; w--) {
+  for (const w of availableWeeks) {
     weekOptions.push({ value: w, label: `${getWeekLabel(w)} — ${getWeekRange(w)}` });
   }
 
@@ -299,7 +307,7 @@ export default function FixturesPage() {
 
             {selectedWeek === 'all' && matches.length > 0 && (
               <span className="text-xs text-textMuted">
-                Current week is {getWeekLabel(currentWeek)}
+                {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''} · {getWeekLabel(availableWeeks[0] ?? 1)} is latest
               </span>
             )}
           </div>

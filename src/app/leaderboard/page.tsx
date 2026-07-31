@@ -48,8 +48,8 @@ function getVisiblePages(currentPage: number, totalPages: number) {
 
 export default function LeaderboardPage() {
   const [mode, setMode] = useState<'season' | 'week'>('week');
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
-  const [selectedWeek, setSelectedWeek] = useState(getWeekNumber());
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,6 +74,19 @@ export default function LeaderboardPage() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
+
+    // Fetch distinct week numbers from matches
+    const { data: weekData } = await supabase
+      .from('matches')
+      .select('week_number')
+      .not('week_number', 'is', null)
+      .eq('result_entered', true)
+      .order('week_number', { ascending: false });
+    const weeks = [...new Set((weekData || []).map((m: { week_number: number }) => m.week_number))].sort((a, b) => b - a);
+    setAvailableWeeks(weeks);
+    if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
+      setSelectedWeek(weeks[0]);
+    }
 
     if (mode === 'season') {
       await loadSeasonLeaderboard(user.id);
@@ -188,7 +201,7 @@ export default function LeaderboardPage() {
 
   // Build week selector options
   const weekOptions = [];
-  for (let w = currentWeek; w >= 1; w--) {
+  for (const w of availableWeeks) {
     weekOptions.push({ value: w, label: `Week ${w} — ${getWeekRange(w)}` });
   }
 
