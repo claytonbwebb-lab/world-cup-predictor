@@ -78,6 +78,7 @@ export default function NavBar() {
   const baseLinks: NavLink[] = [
     { href: '/',         label: 'Home' },
     { href: '/fixtures', label: 'Fixtures' },
+    { href: '/results',  label: 'Results' },
   ];
 
   const leaderboardDropdownItems: DropdownItem[] = [
