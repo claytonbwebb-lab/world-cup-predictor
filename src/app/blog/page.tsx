@@ -1,4 +1,4 @@
-import PublicNav from '@/components/PublicNav';
+import NavBar from "@/components/NavBar";;
 import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
+      <NavBar />
       <main className="max-w-5xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black mb-3">Prediction Blog</h1>

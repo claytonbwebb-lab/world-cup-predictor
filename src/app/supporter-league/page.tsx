@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { findTeam } from '@/lib/teams';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import PublicNav from '@/components/PublicNav';
+import NavBar from "@/components/NavBar";;
 
 export const runtime = 'edge';
 
@@ -64,7 +64,7 @@ export default async function SupporterLeaguePage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <PublicNav />
+      <NavBar />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-bg to-secondary/10 border-b border-border">
