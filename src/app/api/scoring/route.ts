@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
+    // Fetch Double Up picks for this match (user_id → match_id)
+    const { data: doubleUpRows } = await supabase
+      .from('double_up_picks')
+      .select('user_id, match_id')
+      .eq('match_id', match_id);
+
+    const doubleUpMatchIds = new Set((doubleUpRows || []).map(r => r.user_id));
+
     // Use service role client to bypass RLS so admin can score other users' predictions
     const adminClient = getServiceClient();
 
@@ -41,6 +49,8 @@ export async function POST(request: NextRequest) {
       const isExactScore =
         prediction.home_prediction === home_score &&
         prediction.away_prediction === away_score;
+
+      const isDoubleUp = doubleUpMatchIds.has(prediction.user_id);
 
       let actualResult: 'home' | 'draw' | 'away';
       if (home_score > away_score) actualResult = 'home';
@@ -57,6 +67,9 @@ export async function POST(request: NextRequest) {
       let points = 0;
       if (isExactScore) points = 3;
       else if (isCorrectResult) points = 1;
+
+      // Apply Double Up multiplier
+      if (points > 0 && isDoubleUp) points = points * 2;
 
       return {
         id: prediction.id,

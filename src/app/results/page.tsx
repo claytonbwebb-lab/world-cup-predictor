@@ -40,6 +40,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
+  const [doubleUpMatchIds, setDoubleUpMatchIds] = useState<Set<string>>(new Set());
   const supabase = createClient();
 
   useEffect(() => { load(); }, [selectedWeek]);
@@ -68,6 +69,22 @@ export default function ResultsPage() {
     }
 
     const { data: matchData } = await query;
+
+    // Fetch user's Double Up picks for the selected week
+    let doubleUpIds = new Set<string>();
+    if (selectedWeek !== 'all') {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: picks } = await supabase
+          .from('double_up_picks')
+          .select('match_id')
+          .eq('user_id', user.id)
+          .eq('week_number', selectedWeek);
+        doubleUpIds = new Set((picks || []).map(p => p.match_id));
+      }
+    }
+    setDoubleUpMatchIds(doubleUpIds);
+
     setMatches(matchData || []);
     setLoading(false);
   }
@@ -143,6 +160,11 @@ export default function ResultsPage() {
                       </span>
                     )}
                     <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
+                    {doubleUpMatchIds.has(match.id) && (
+                      <span className="font-medium bg-yellow-400/15 text-yellow-400 px-2 py-0.5 rounded-full">
+                        ⭐ Double Up
+                      </span>
+                    )}
                   </div>
                   <span>{fmtDate(match.kickoff_at)}</span>
                 </div>
