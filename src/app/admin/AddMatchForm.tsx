@@ -106,7 +106,7 @@ export default function AddMatchForm() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Week Number (1–38)</label>
+          <label className="block text-sm font-medium mb-2">Week Number (1–38, auto-filled from kickoff)</label>
           <input
             type="number"
             min="1"
@@ -114,7 +114,7 @@ export default function AddMatchForm() {
             value={weekNumber}
             onChange={(e) => setWeekNumber(e.target.value)}
             className="input w-full"
-            placeholder="e.g. 1"
+            placeholder="Auto-calculated from kickoff"
           />
         </div>
         <div className="min-w-0">

@@ -2,6 +2,16 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
 
+// Season starts Tuesday 2026-08-11 — same logic as DB get_week_number()
+const SEASON_START = new Date('2026-08-11T00:00:00Z');
+
+function computeWeekNumber(kickoffAt: string): number {
+  const kickoff = new Date(kickoffAt);
+  const diffMs = kickoff.getTime() - SEASON_START.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(1, 1 + Math.floor(diffDays / 7));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const isAdmin = await requireAdmin();
@@ -19,7 +29,7 @@ export async function POST(request: NextRequest) {
     const group_stage = formData.get('group_stage') as string;
     const kickoff_at = formData.get('kickoff_at') as string;
     const week_number_str = formData.get('week_number') as string;
-    const week_number = week_number_str ? parseInt(week_number_str) : null;
+    const week_number = week_number_str ? parseInt(week_number_str) : computeWeekNumber(kickoff_at);
 
     if (!home_team || !away_team || !kickoff_at) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
