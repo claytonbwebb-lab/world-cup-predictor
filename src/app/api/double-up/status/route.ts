@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 }
 
 function getWeekNumber(date: Date): number {
-  const SEASON_START = new Date('2026-08-11T00:00:00Z');
+  const SEASON_START = new Date('2026-07-14T00:00:00Z');
   const diffMs = date.getTime() - SEASON_START.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   return Math.max(1, 1 + Math.floor(diffDays / 7));

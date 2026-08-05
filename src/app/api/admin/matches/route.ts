@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
 
 // Season starts Tuesday 2026-08-11 — same logic as DB get_week_number()
-const SEASON_START = new Date('2026-08-11T00:00:00Z');
+const SEASON_START = new Date('2026-07-14T00:00:00Z');
 
 function computeWeekNumber(kickoffAt: string): number {
   const kickoff = new Date(kickoffAt);

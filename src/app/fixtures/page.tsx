@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import TeamBadge from '@/components/TeamBadge';
 
 // Season start date: Tuesday 2026-08-11 (00:00)
-const SEASON_START = new Date('2026-08-11T00:00:00Z');
+const SEASON_START = new Date('2026-07-14T00:00:00Z');
 
 function getWeekNumber(date: Date = new Date()): number {
   const diffMs = date.getTime() - SEASON_START.getTime();
