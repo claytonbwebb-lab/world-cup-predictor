@@ -24,7 +24,7 @@ export function getWeekDropdownLabel(weekNumber: number): string {
   const currentWeek = getWeekNumber(new Date());
   const nextWeek = currentWeek + 1;
   if (weekNumber === currentWeek) {
-    return `Week ${weekNumber} — ${getWeekRange(weekNumber)}`;
+    return `This Week — ${getWeekRange(weekNumber)}`;
   }
   if (weekNumber === nextWeek) {
     return `Next Week — ${getWeekRange(weekNumber)}`;
