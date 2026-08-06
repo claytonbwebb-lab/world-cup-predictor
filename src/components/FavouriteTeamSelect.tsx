@@ -24,6 +24,7 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
   const leagues = [
     'Premier League', 'Championship', 'League One', 'League Two',
     'Scottish Premiership', 'Scottish Championship', 'Scottish League One', 'Scottish League Two',
+    'Non-League',
   ] as const;
 
   const filtered = ALL_TEAMS.filter((t) =>

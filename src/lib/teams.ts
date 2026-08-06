@@ -1,6 +1,7 @@
 export type League =
   | 'Premier League' | 'Championship' | 'League One' | 'League Two'
-  | 'Scottish Premiership' | 'Scottish Championship' | 'Scottish League One' | 'Scottish League Two';
+  | 'Scottish Premiership' | 'Scottish Championship' | 'Scottish League One' | 'Scottish League Two'
+  | 'Non-League';
 
 export interface TeamBadge {
   name: string;
@@ -142,6 +143,9 @@ export const ALL_TEAMS: TeamBadge[] = [
   { name: "Annan Athletic", badge: "/badges/annan_athletic.png", league: "Scottish League Two" },
   { name: "Elgin City", badge: "/badges/elgin_city.png", league: "Scottish League Two" },
   { name: "Forfar Athletic", badge: "/badges/forfar_athletic.png", league: "Scottish League Two" },
+
+  // Non-League
+  { name: "FC United of Manchester", badge: "/badges/fc_united.png", league: "Non-League" },
 ];
 
 export const PREMIER_LEAGUE_TEAMS = ALL_TEAMS.filter(t => t.league === "Premier League");
