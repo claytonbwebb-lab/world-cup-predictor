@@ -4,23 +4,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 
-// Season start: Tuesday 2026-08-11 00:00 UTC
-const SEASON_START = new Date('2026-07-14T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+import { SEASON_START, getWeekRange, getWeekDropdownLabel } from '@/lib/weeks';
 
 const PAGE_SIZE = 25;
 
@@ -73,7 +57,7 @@ export default function LeaderboardPage() {
   async function loadLeaderboard() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    const currentUserId = user?.id ?? null;
 
     // Fetch distinct week numbers from matches
     const { data: weekData } = await supabase
@@ -89,14 +73,14 @@ export default function LeaderboardPage() {
     }
 
     if (mode === 'season') {
-      await loadSeasonLeaderboard(user.id);
+      await loadSeasonLeaderboard(currentUserId);
     } else {
-      await loadWeeklyLeaderboard(user.id, selectedWeek);
+      await loadWeeklyLeaderboard(currentUserId, selectedWeek);
     }
     setLoading(false);
   }
 
-  async function loadSeasonLeaderboard(currentUserId: string) {
+  async function loadSeasonLeaderboard(currentUserId: string | null) {
     const { data: allUsers } = await supabase
       .from('profiles')
       .select('id, username, avatar_url')
@@ -133,12 +117,12 @@ export default function LeaderboardPage() {
     setEntries(enriched.slice(offset, offset + PAGE_SIZE));
     setTotalCount(enriched.length);
     setCurrentPage(page);
-    const rank = enriched.findIndex(e => e.user_id === currentUserId);
+    const rank = currentUserId ? enriched.findIndex(e => e.user_id === currentUserId) : -1;
     setUserRank(rank >= 0 ? rank + 1 : null);
-    setUserEntry(enriched.find(e => e.user_id === currentUserId) || null);
+    setUserEntry(currentUserId ? enriched.find(e => e.user_id === currentUserId) || null : null);
   }
 
-  async function loadWeeklyLeaderboard(currentUserId: string, weekNum: number) {
+  async function loadWeeklyLeaderboard(currentUserId: string | null, weekNum: number) {
     const { data: allUsers } = await supabase
       .from('profiles')
       .select('id, username, avatar_url')
@@ -192,9 +176,9 @@ export default function LeaderboardPage() {
     setEntries(enriched.slice(offset, offset + PAGE_SIZE));
     setTotalCount(enriched.length);
     setCurrentPage(page);
-    const rank = enriched.findIndex(e => e.user_id === currentUserId);
+    const rank = currentUserId ? enriched.findIndex(e => e.user_id === currentUserId) : -1;
     setUserRank(rank >= 0 ? rank + 1 : null);
-    setUserEntry(enriched.find(e => e.user_id === currentUserId) || null);
+    setUserEntry(currentUserId ? enriched.find(e => e.user_id === currentUserId) || null : null);
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -202,7 +186,7 @@ export default function LeaderboardPage() {
   // Build week selector options
   const weekOptions = [];
   for (const w of availableWeeks) {
-    weekOptions.push({ value: w, label: `Week ${w} — ${getWeekRange(w)}` });
+    weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
   }
 
   return (
@@ -212,20 +196,6 @@ export default function LeaderboardPage() {
         <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
           <span>🥇</span> Leaderboard
         </h1>
-
-        {/* Prizes banner */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {[
-            { pos: '🥇 1st', prize: '£250', bg: 'from-yellow-500/20 to-yellow-600/5 border-yellow-500/40 text-yellow-400' },
-            { pos: '🥈 2nd', prize: '£100', bg: 'from-gray-400/10 to-gray-500/5 border-gray-400/30 text-gray-300' },
-            { pos: '🥉 3rd', prize: '£50', bg: 'from-orange-600/10 to-orange-700/5 border-orange-600/30 text-orange-400' },
-          ].map(p => (
-            <div key={p.pos} className={`flex items-center gap-2 border rounded-xl px-5 py-2 bg-gradient-to-r ${p.bg}`}>
-              <span className="font-bold text-sm">{p.pos}</span>
-              <span className="font-black text-lg">{p.prize}</span>
-            </div>
-          ))}
-        </div>
 
         {/* Mode toggle */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">

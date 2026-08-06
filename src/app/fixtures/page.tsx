@@ -7,27 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import TeamBadge from '@/components/TeamBadge';
 
-// Season start date: Tuesday 2026-08-11 (00:00)
-const SEASON_START = new Date('2026-07-14T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekLabel(weekNumber: number): string {
-  return `Week ${weekNumber}`;
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+import { SEASON_START, getWeekNumber, getWeekRange, getWeekLabel } from '@/lib/weeks';
 
 interface Match {
   id: string;
@@ -62,6 +42,9 @@ export default function FixturesPage() {
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
+  const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
+  const [doubleUpLocked, setDoubleUpLocked] = useState(false);
+  const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -71,10 +54,11 @@ export default function FixturesPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
-    // Fetch distinct week numbers from matches
+    // Fetch distinct week numbers from upcoming/locked matches (no completed)
     const { data: weekData } = await supabase
       .from('matches')
       .select('week_number')
+      .not('result_entered', 'eq', true)
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
@@ -83,6 +67,7 @@ export default function FixturesPage() {
     let query = supabase
       .from('matches')
       .select('*')
+      .not('result_entered', 'eq', true)
       .order('kickoff_at', { ascending: true });
 
     if (selectedWeek !== 'all') {
@@ -99,6 +84,31 @@ export default function FixturesPage() {
     for (const m of matchData || []) {
       const p = predMap.get(m.id);
       initInputs[m.id] = { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
+    }
+
+    // Load Double Up state if a specific week is selected
+    if (selectedWeek !== 'all') {
+      const weekNum = selectedWeek as number;
+      const { data: duPick } = await supabase
+        .from('double_up_picks')
+        .select('match_id')
+        .eq('user_id', user.id)
+        .eq('week_number', weekNum)
+        .maybeSingle();
+      setDoubleUpPick(duPick?.match_id || null);
+
+      // Check if locked
+      const { data: weekMatches } = await supabase
+        .from('matches')
+        .select('kickoff_at')
+        .eq('week_number', weekNum)
+        .order('kickoff_at', { ascending: true })
+        .limit(1);
+      const firstKickoff = weekMatches?.[0]?.kickoff_at ? new Date(weekMatches[0].kickoff_at) : null;
+      setDoubleUpLocked(firstKickoff ? new Date() >= firstKickoff : false);
+    } else {
+      setDoubleUpPick(null);
+      setDoubleUpLocked(false);
     }
 
     setMatches(matchData || []);
@@ -147,22 +157,48 @@ export default function FixturesPage() {
     }
   }
 
+  async function toggleDoubleUp(matchId: string) {
+    if (doubleUpLocked || togglingDoubleUp) return;
+    setTogglingDoubleUp(true);
+    const newPick = doubleUpPick === matchId ? null : matchId;
+    try {
+      await fetch('/api/double-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchId: newPick, weekNumber: selectedWeek }),
+      });
+      setDoubleUpPick(newPick);
+    } catch {
+      // silent fail
+    }
+    setTogglingDoubleUp(false);
+  }
+
   const now = new Date();
-  const upcoming  = matches.filter(m => !m.result_entered && !m.is_locked && new Date(m.kickoff_at) > now);
-  const locked    = matches.filter(m => !m.result_entered && (m.is_locked || new Date(m.kickoff_at) <= now));
-  const completed = matches.filter(m => m.result_entered);
+  const upcoming  = matches.filter(m => !m.is_locked && new Date(m.kickoff_at) > now);
+  const locked    = matches.filter(m => m.is_locked || new Date(m.kickoff_at) <= now);
 
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 
-  // Build week options for selector
+  // Build week options for selector — position-based labels for fixtures
+  // (use calendar-based getWeekDropdownLabel from lib/weeks for results/leaderboard)
   const weekOptions: { value: number | 'all'; label: string }[] = [
     { value: 'all', label: `All Fixtures (${matches.length} matches)` },
   ];
-  for (const w of availableWeeks) {
-    weekOptions.push({ value: w, label: `${getWeekLabel(w)} — ${getWeekRange(w)}` });
-  }
+  const sortedWeeks = [...availableWeeks].sort((a, b) => b - a); // desc
+  sortedWeeks.forEach((w, i) => {
+    let label: string;
+    if (i === 0) {
+      label = `${getWeekLabel(w)} — ${getWeekRange(w)}`;
+    } else if (i === 1) {
+      label = `Next Week — ${getWeekRange(w)}`;
+    } else {
+      label = getWeekRange(w);
+    }
+    weekOptions.push({ value: w, label });
+  });
 
   function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
     return (
@@ -184,26 +220,21 @@ export default function FixturesPage() {
     const pred = predictions.get(match.id);
     const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
     const vals = inputs[match.id] || { home: 0, away: 0 };
+    const hasPredicted = predictions.has(match.id);
+    const isDoubleUp = doubleUpPick === match.id;
+    const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== 'all' && !doubleUpLocked;
 
     return (
       <div className="card">
         {/* Meta row */}
         <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
           <div className="flex items-center gap-2">
-            {match.week_number && (
-              <span className="font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                Week {match.week_number}
-              </span>
-            )}
             <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
           </div>
           <div className="flex items-center gap-2">
             <span>{fmtDate(match.kickoff_at)}</span>
-            {isLocked && !match.result_entered && (
+            {isLocked && (
               <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Locked</span>
-            )}
-            {match.result_entered && (
-              <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">Final</span>
             )}
           </div>
         </div>
@@ -216,13 +247,7 @@ export default function FixturesPage() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            {match.result_entered ? (
-              <div className="flex items-center gap-3">
-                <span className="text-4xl font-black text-primary">{match.home_score}</span>
-                <span className="text-textMuted font-bold">v</span>
-                <span className="text-4xl font-black text-primary">{match.away_score}</span>
-              </div>
-            ) : isLocked ? (
+            {isLocked ? (
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-black text-textMuted">{pred ? pred.home_prediction : '?'}</span>
                 <span className="text-textMuted font-bold text-sm">v</span>
@@ -243,36 +268,47 @@ export default function FixturesPage() {
           </div>
         </div>
 
-        {/* Points if scored */}
-        {match.result_entered && pred?.scored_at && (
-          <div className="mt-3 text-center text-sm py-2 bg-surfaceLight rounded-lg">
-            <span className="text-textMuted">Your prediction: {pred.home_prediction}–{pred.away_prediction} · </span>
-            <span className={pred.points_awarded > 0 ? 'text-primary font-bold' : 'text-textMuted'}>
-              {pred.points_awarded > 0 ? `+${pred.points_awarded} pts` : '0 pts'}
-            </span>
-          </div>
-        )}
-        {isLocked && !match.result_entered && pred && (
-          <div className="mt-3 text-center text-sm text-textMuted py-1">
-            Your prediction: {pred.home_prediction}–{pred.away_prediction}
-          </div>
-        )}
-        {isLocked && !match.result_entered && !pred && (
-          <div className="mt-3 text-center text-sm text-textMuted/40 py-1">No prediction made</div>
-        )}
-        {!isLocked && !match.result_entered && onSave && (
-          <div className="mt-3 flex items-center justify-end gap-3">
-            {justSaved && (
-              <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
-            )}
+        {/* Double Up toggle + save row */}
+        <div className="mt-3 flex items-center justify-between gap-3">
+          {/* Double Up — bottom-left */}
+          {canDoubleUp && (
             <button
-              onClick={() => onSave(match.id)}
-              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+              type="button"
+              disabled={togglingDoubleUp}
+              onClick={() => toggleDoubleUp(match.id)}
+              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 transition-all ${
+                isDoubleUp
+                  ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
+                  : 'border-surfaceLight bg-surfaceLight/50 text-textMuted hover:border-yellow-400/40'
+              }`}
             >
-              💾 Save prediction
+              <span>{isDoubleUp ? '⭐' : '☆'}</span>
+              {isDoubleUp ? 'Double Up!' : 'Double Up'}
             </button>
-          </div>
-        )}
+          )}
+          {hasPredicted && (isLocked || doubleUpLocked) && isDoubleUp && (
+            <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 border-yellow-400/30 bg-yellow-400/10 text-yellow-400">
+              ⭐ Double Up locked
+            </span>
+          )}
+          {/* Spacer if no double up shown */}
+          {(!canDoubleUp && !(hasPredicted && isDoubleUp)) && <div />}
+
+          {/* Save button — right side */}
+          {!isLocked && onSave && (
+            <div className="flex items-center gap-3">
+              {justSaved && (
+                <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
+              )}
+              <button
+                onClick={() => onSave(match.id)}
+                className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                💾 Save
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -281,10 +317,10 @@ export default function FixturesPage() {
     <div className="min-h-screen bg-background">
       <NavBar />
       <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
-        {/* Header with week selector */}
+        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
-          
+
           {/* Week selector */}
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm text-textMuted font-medium">Show:</label>
@@ -299,20 +335,35 @@ export default function FixturesPage() {
                 </option>
               ))}
             </select>
-            
+
             {selectedWeek !== 'all' && (
-              <span className="text-xs text-primary font-medium bg-primary/10 px-3 py-1 rounded-full">
-                Week {selectedWeek} · {getWeekRange(selectedWeek)}
+              <span className="text-xs text-textMuted">
+                {getWeekLabel(selectedWeek as number)} — {getWeekRange(selectedWeek as number)}
               </span>
             )}
 
             {selectedWeek === 'all' && matches.length > 0 && (
               <span className="text-xs text-textMuted">
-                {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''} · {getWeekLabel(availableWeeks[0] ?? 1)} is latest
+                {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''}
               </span>
             )}
           </div>
         </div>
+
+        {/* Double Up explainer — only when a specific week is selected */}
+        {selectedWeek !== 'all' && !loading && matches.length > 0 && (
+          <div className="mb-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">⚡</span>
+              <div>
+                <p className="text-sm font-semibold text-yellow-400 mb-1">Double Up — 2× your points!</p>
+                <p className="text-xs text-textMuted leading-relaxed">
+                  After saving your predictions, mark one match as your Double Up. If your prediction is correct: 1pt → 2pt, 3pt → 6pt. You can change it until the first match kicks off.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-16 text-textMuted">Loading fixtures...</div>
@@ -338,27 +389,17 @@ export default function FixturesPage() {
                 </div>
               </section>
             )}
-            {completed.length > 0 && (
-              <section>
-                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-green-400 uppercase tracking-wide">
-                  <span>✅</span> Completed
-                </h2>
-                <div className="space-y-3">
-                  {completed.map(m => <MatchCard key={m.id} match={m} />)}
-                </div>
-              </section>
-            )}
             {matches.length === 0 && (
               <div className="card text-center py-12">
                 <div className="text-4xl mb-4">📅</div>
-                <p className="text-textMuted">No fixtures{selectedWeek !== 'all' ? ` for Week ${selectedWeek}` : ''} yet</p>
+                <p className="text-textMuted">No fixtures{selectedWeek !== 'all' ? ` for ${getWeekRange(selectedWeek as number)}` : ''} yet</p>
                 {selectedWeek === 'all' && (
                   <p className="text-textMuted text-sm mt-1">Check back soon!</p>
                 )}
               </div>
             )}
 
-            {/* Double Up — only when a specific week is selected */}
+            {/* Double Up standalone panel — fallback if no predictions yet */}
             {selectedWeek !== 'all' && matches.length > 0 && !loading && (
               <DoubleUpPicker
                 weekNumber={selectedWeek as number}

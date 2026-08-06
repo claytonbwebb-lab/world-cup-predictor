@@ -79,6 +79,7 @@ export default function NavBar() {
     { href: '/',         label: 'Home' },
     { href: '/fixtures', label: 'Fixtures' },
     { href: '/results',  label: 'Results' },
+    { href: '/prizes',   label: 'Prizes' },
   ];
 
   const leaderboardDropdownItems: DropdownItem[] = [
@@ -101,8 +102,26 @@ export default function NavBar() {
     { href: '/auth/logout', label: 'Sign Out' },
   ];
 
-  const navLinks = loggedIn ? loggedInLinks : loggedOutLinks;
   const isOnLeaderboard = path === '/leaderboard' || path === '/supporter-league' || path === '/leagues';
+
+  // Desktop nav: links split around Leaderboards dropdown
+  const linksBeforeLB: NavLink[] = [
+    { href: '/',         label: 'Home' },
+    { href: '/fixtures', label: 'Fixtures' },
+    { href: '/results',  label: 'Results' },
+    { href: '/prizes',   label: 'Prizes' },
+  ];
+  const linksAfterLB: NavLink[] = loggedIn
+    ? [
+        { href: '/profile',    label: 'Profile' },
+        { href: '/auth/logout', label: 'Sign Out' },
+      ]
+    : [
+        { href: '/blog',       label: 'Blog' },
+        { href: '/partners',  label: 'Partners' },
+        { href: '/auth/signup', label: 'Sign Up' },
+        { href: '/auth/login',  label: 'Login' },
+      ];
 
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-50">
@@ -158,8 +177,8 @@ export default function NavBar() {
           <div className="flex items-center justify-end gap-4">
             <nav className="hidden sm:flex items-center gap-1 text-sm">
 
-              {/* Base links */}
-              {navLinks.map(l => (
+              {/* Links before Leaderboards */}
+              {linksBeforeLB.map(l => (
                 <Link
                   key={l.href}
                   href={l.href}
@@ -169,7 +188,7 @@ export default function NavBar() {
                 </Link>
               ))}
 
-              {/* Leaderboards dropdown — always visible, items vary by auth */}
+              {/* Leaderboards dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setLeaderboardOpen(o => !o)}
@@ -197,6 +216,17 @@ export default function NavBar() {
                 )}
               </div>
 
+              {/* Links after Leaderboards */}
+              {linksAfterLB.map(l => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`px-3 py-2 rounded-lg ${path === l.href ? active : inactive}`}
+                >
+                  {l.label}
+                </Link>
+              ))}
+
             </nav>
           </div>
         </div>
@@ -205,8 +235,14 @@ export default function NavBar() {
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="sm:hidden border-t border-border px-4 py-3 flex flex-col gap-1">
-          {/* Base links */}
-          {navLinks.map(l => (
+
+          {/* Links before Leaderboards */}
+          {[
+            { href: '/',         label: 'Home' },
+            { href: '/fixtures', label: 'Fixtures' },
+            { href: '/results',  label: 'Results' },
+            { href: '/prizes',   label: 'Prizes' },
+          ].map(l => (
             <Link
               key={l.href}
               href={l.href}
@@ -217,18 +253,45 @@ export default function NavBar() {
             </Link>
           ))}
 
-          {/* Leaderboards section */}
-          <div className="pt-2 pb-1">
-            <span className="text-xs text-textMuted uppercase tracking-wider px-1">Leaderboards</span>
-          </div>
-          {leaderboardDropdownItems.map(item => (
+          {/* Leaderboards section — logged in only */}
+          {loggedIn && (
+            <>
+              <div className="pt-2 pb-1">
+                <span className="text-xs text-textMuted uppercase tracking-wider px-1">Leaderboards</span>
+              </div>
+              {leaderboardDropdownItems.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`py-2 pl-3 ${path === item.href ? active : inactive}`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
+
+          {/* Links after Leaderboards */}
+          {(loggedIn
+            ? [
+                { href: '/profile',    label: 'Profile' },
+                { href: '/auth/logout', label: 'Sign Out' },
+              ]
+            : [
+                { href: '/blog',        label: 'Blog' },
+                { href: '/partners',   label: 'Partners' },
+                { href: '/auth/signup', label: 'Sign Up' },
+                { href: '/auth/login',  label: 'Login' },
+              ]
+          ).map(l => (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`py-2 pl-3 ${path === item.href ? active : inactive}`}
+              key={l.href}
+              href={l.href}
+              className={`py-2.5 ${path === l.href ? active : inactive}`}
               onClick={() => setMobileOpen(false)}
             >
-              {item.label}
+              {l.label}
             </Link>
           ))}
         </div>

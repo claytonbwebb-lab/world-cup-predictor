@@ -106,7 +106,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           and prove you've got what it takes to be a football pundit.
         </p>
         <ul className="flex flex-wrap justify-center gap-4 text-sm">
-          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard', 'Win prizes'].map(item => (
+          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard', 'Win cash prizes'].map(item => (
             <li key={item} className="flex items-center gap-2 text-textMuted bg-surface/50 px-4 py-2 rounded-full">
               <span className="text-primary">✓</span> {item}
             </li>

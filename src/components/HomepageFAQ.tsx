@@ -5,7 +5,7 @@ import { useState } from 'react';
 const faqs = [
   {
     q: 'Is it free to play?',
-    a: 'Yes — creating an account and competing in leagues is completely free. Prizes are funded by our partners who you can find linked on the homepage.',
+    a: 'Yes — creating an account and competing in leagues is completely free.',
   },
   {
     q: 'When does the Premier League 2026/27 season start?',

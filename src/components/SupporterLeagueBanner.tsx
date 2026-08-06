@@ -30,18 +30,21 @@ export default function SupporterLeagueBanner({ hasFavouriteTeam }: SupporterLea
 
   return (
     <>
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-xl p-5 mb-4">
-        <div className="flex items-center gap-3 mb-2">
+      <Link
+        href="/supporter-league"
+        className="block bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-xl p-5 mb-4 hover:border-primary/40 transition-colors"
+      >
+        <div className="flex items-center gap-3">
           <span className="text-2xl">🏆</span>
           <div>
             <h3 className="font-bold text-textPrimary">Join the Supporter League</h3>
             <p className="text-sm text-textMuted">
-              Every point you earn counts for your club. Select your favourite club to get involved.
+              Every point you earn counts for your club. Select your favourite club to get started.
             </p>
           </div>
         </div>
-        <p className="text-primary text-sm font-medium">Pick your club below to get started →</p>
-      </div>
+        <span className="text-primary text-sm font-medium mt-1 block">Join the Supporter League →</span>
+      </Link>
       <FavouriteTeamPrompt />
     </>
   );

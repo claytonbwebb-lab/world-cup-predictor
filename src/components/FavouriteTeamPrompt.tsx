@@ -20,9 +20,6 @@ export default function FavouriteTeamPrompt({ onComplete }: FavouriteTeamPromptP
     setSaving(true);
     setError('');
 
-    const supabase = createClient();
-    const { error: apiError } = await supabase.auth.getUser();
-
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
@@ -38,6 +35,12 @@ export default function FavouriteTeamPrompt({ onComplete }: FavouriteTeamPromptP
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleSkip() {
+    // Dismiss without saving — prompt will reappear on next login
+    setDone(true);
+    onComplete?.();
   }
 
   if (done) return null;
@@ -74,9 +77,13 @@ export default function FavouriteTeamPrompt({ onComplete }: FavouriteTeamPromptP
             {saving ? 'Saving...' : 'Join the Supporter League →'}
           </button>
 
-          <p className="text-textMuted text-xs text-center">
-            You can skip for now and select your club later from your account settings.
-          </p>
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="w-full text-center text-textMuted text-sm hover:text-text transition-colors py-1"
+          >
+            Skip for now — you can set this in your profile later
+          </button>
         </form>
       </div>
     </div>

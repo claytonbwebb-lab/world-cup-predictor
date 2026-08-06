@@ -5,22 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import TeamBadge from '@/components/TeamBadge';
-
-// Season start date: Tuesday 2026-08-11 (00:00)
-const SEASON_START = new Date('2026-07-14T00:00:00Z');
-
-function getWeekLabel(weekNumber: number): string {
-  return `Week ${weekNumber}`;
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+import { SEASON_START, getWeekLabel, getWeekRange, getWeekDropdownLabel } from '@/lib/weeks';
 
 interface Match {
   id: string;
@@ -98,14 +83,14 @@ export default function ResultsPage() {
     { value: 'all', label: `All Results (${matches.length} matches)` },
   ];
   for (const w of availableWeeks) {
-    weekOptions.push({ value: w, label: `${getWeekLabel(w)} — ${getWeekRange(w)}` });
+    weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
   }
 
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -130,7 +115,7 @@ export default function ResultsPage() {
           </select>
           {selectedWeek === 'all' && matches.length > 0 && availableWeeks.length > 0 && (
             <span className="text-sm text-textMuted">
-              {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''} · {getWeekLabel(availableWeeks[0])} is latest
+              {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''} · {getWeekLabel(availableWeeks[0] as number)} is latest
             </span>
           )}
           {selectedWeek !== 'all' && (
@@ -154,11 +139,6 @@ export default function ResultsPage() {
                 {/* Meta row */}
                 <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
                   <div className="flex items-center gap-2">
-                    {match.week_number && (
-                      <span className="font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                        Week {match.week_number}
-                      </span>
-                    )}
                     <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
                     {doubleUpMatchIds.has(match.id) && (
                       <span className="font-medium bg-yellow-400/15 text-yellow-400 px-2 py-0.5 rounded-full">

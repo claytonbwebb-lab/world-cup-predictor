@@ -80,7 +80,7 @@ export default async function SupporterLeaguePage() {
             fans of each club and you&apos;ve got the Supporter League. See which club&apos;s fans are
             the best predictors.
           </p>
-          <Link href="/signup" className="btn-primary inline-flex items-center gap-2">
+          <Link href="/auth/signup" className="btn-primary inline-flex items-center gap-2">
             Join the competition → <span className="text-sm opacity-70">It&apos;s free</span>
           </Link>
         </div>
@@ -115,7 +115,7 @@ export default async function SupporterLeaguePage() {
           <div className="bg-surface border border-border rounded-xl p-12 text-center">
             <div className="text-4xl mb-3">⚽</div>
             <p className="text-textMuted">
-              No clubs have supporters yet. <Link href="/signup" className="text-primary">Sign up</Link> and pick your club to be the first!
+              No clubs have supporters yet. <Link href="/auth/signup" className="text-primary">Sign up</Link> and pick your club to be the first!
             </p>
           </div>
         ) : (
@@ -177,7 +177,7 @@ export default async function SupporterLeaguePage() {
 
         <div className="mt-4 text-center text-sm text-textMuted">
           Points update after each match week.{' '}
-          <Link href="/signup" className="text-primary">Sign up</Link> to join the Supporter League.
+          <Link href="/auth/signup" className="text-primary">Sign up</Link> to join the Supporter League.
         </div>
       </section>
 

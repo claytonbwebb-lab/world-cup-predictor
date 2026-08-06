@@ -14,6 +14,11 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [activeLeague, setActiveLeague] = useState<string>('Premier League');
+  const [requestEmail, setRequestEmail] = useState('');
+  const [requestTeam, setRequestTeam] = useState('');
+  const [requestSending, setRequestSending] = useState(false);
+  const [requestMessage, setRequestMessage] = useState('');
+  const [requestError, setRequestError] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
   const leagues = ['Premier League', 'Championship', 'League One', 'League Two'] as const;
@@ -27,6 +32,14 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
     : filtered.filter((t) => t.league === activeLeague);
 
   useEffect(() => {
+    if (query && displayed.length === 0) {
+      setRequestTeam(query);
+      setRequestMessage('');
+      setRequestError('');
+    }
+  }, [query, displayed.length]);
+
+  useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -37,6 +50,30 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
   }, []);
 
   const selected = ALL_TEAMS.find((t) => t.name.toLowerCase() === value.toLowerCase());
+
+  async function handleRequestTeam(e: React.FormEvent) {
+    e.preventDefault();
+    setRequestSending(true);
+    setRequestMessage('');
+    setRequestError('');
+
+    try {
+      const res = await fetch('/api/team-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: requestEmail, team: requestTeam }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Could not send request');
+      setRequestMessage('Thanks — we’ll review it and let you know.');
+      setRequestEmail('');
+      setRequestTeam('');
+    } catch (err: any) {
+      setRequestError(err.message || 'Could not send request');
+    } finally {
+      setRequestSending(false);
+    }
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -78,7 +115,37 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
           {query ? (
             <ul className="max-h-80 overflow-y-auto py-1">
               {displayed.length === 0 && (
-                <li className="px-4 py-2 text-textMuted text-sm">No clubs found</li>
+                <li className="px-4 py-3">
+                  <p className="text-textMuted text-sm mb-3">No clubs found.</p>
+                  <form onSubmit={handleRequestTeam} className="space-y-2 rounded-lg border border-border bg-surfaceLight/50 p-3">
+                    <p className="text-sm font-medium text-textPrimary">Want us to add your team?</p>
+                    <input
+                      type="text"
+                      value={requestTeam}
+                      onChange={(e) => setRequestTeam(e.target.value)}
+                      placeholder="Team name"
+                      className="input w-full text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <input
+                      type="email"
+                      value={requestEmail}
+                      onChange={(e) => setRequestEmail(e.target.value)}
+                      placeholder="Your email"
+                      className="input w-full text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    {requestError && <p className="text-red-400 text-xs">{requestError}</p>}
+                    {requestMessage && <p className="text-green-400 text-xs">{requestMessage}</p>}
+                    <button
+                      type="submit"
+                      disabled={requestSending}
+                      className="btn-secondary w-full text-sm py-2"
+                    >
+                      {requestSending ? 'Sending...' : 'Request this team'}
+                    </button>
+                  </form>
+                </li>
               )}
               {displayed.map((team) => (
                 <li key={team.name}>

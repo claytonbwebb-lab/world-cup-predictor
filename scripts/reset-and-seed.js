@@ -43,7 +43,36 @@ const TEAMS = [
   'West Ham United', 'Wolverhampton',
 ];
 
-const FLAG = '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
+// Club badge URLs (served from /public/badges in Next.js)
+const BADGES = {
+  'Manchester United':   '/badges/manchester_united.png',
+  'Manchester City':     '/badges/manchester_city.png',
+  'Liverpool':           '/badges/liverpool.png',
+  'Arsenal':             '/badges/arsenal.png',
+  'Chelsea':             '/badges/chelsea.png',
+  'Tottenham Hotspur':   '/badges/tottenham_hotspur.png',
+  'Wolverhampton':       '/badges/wolverhampton.png',
+  'Fulham':              '/badges/fulham.png',
+  'Brighton':            '/badges/brighton.png',
+  'Aston Villa':         '/badges/aston_villa.png',
+  'Everton':             '/badges/everton.png',
+  'AFC Bournemouth':     '/badges/bournemouth.png',
+  'Newcastle United':    '/badges/newcastle_united.png',
+  'Southampton':         '/badges/southampton.png',
+  'Nottingham Forest':   '/badges/nottingham_forest.png',
+  'Crystal Palace':      '/badges/crystal_palace.png',
+  'West Ham United':     '/badges/west_ham_united.png',
+  'Leicester City':      '/badges/leicester_city.png',
+  'Ipswich Town':        '/badges/ipswich_town.png',
+  'Brentford':           '/badges/brentford.png',
+};
+
+const FLAG = ''; // not used — badge URLs are set per-team below
+
+// Get badge URL for a team (returns England flag as fallback for unknown teams)
+function badge(team) {
+  return BADGES[team] || '';
+}
 
 // Test user IDs (deterministic UUIDs for consistency)
 const TEST_USERS = [
@@ -193,8 +222,8 @@ async function run() {
       const { data, error } = await supabase.from('matches').insert({
         home_team: m.home,
         away_team: m.away,
-        home_flag: FLAG,
-        away_flag: FLAG,
+        home_flag: badge(m.home),
+        away_flag: badge(m.away),
         group_stage: week.label,
         kickoff_at: kickoffAt,
         home_score: m.homeScore,

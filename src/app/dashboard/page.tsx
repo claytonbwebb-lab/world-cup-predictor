@@ -192,8 +192,10 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* Supporter League Banner */}
-        <SupporterLeagueBanner hasFavouriteTeam={!!profile?.favourite_team} />
+        {/* Supporter League prompt — only when no favourite team set */}
+        {!profile?.favourite_team && (
+          <SupporterLeagueBanner hasFavouriteTeam={false} />
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upcoming Fixtures */}
