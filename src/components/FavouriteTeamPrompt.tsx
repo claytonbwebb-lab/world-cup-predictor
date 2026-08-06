@@ -47,7 +47,15 @@ export default function FavouriteTeamPrompt({ onComplete }: FavouriteTeamPromptP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-2xl">
+      <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-2xl relative">
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="absolute top-4 right-4 text-textMuted hover:text-text transition-colors text-xl leading-none p-1"
+          aria-label="Skip for now"
+        >
+          ✕
+        </button>
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-textPrimary mb-2">
             ⚽ Pick your club
@@ -77,13 +85,7 @@ export default function FavouriteTeamPrompt({ onComplete }: FavouriteTeamPromptP
             {saving ? 'Saving...' : 'Join the Supporter League →'}
           </button>
 
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="w-full text-center text-textMuted text-sm hover:text-text transition-colors py-1"
-          >
-            Skip for now — you can set this in your profile later
-          </button>
+
         </form>
       </div>
     </div>
