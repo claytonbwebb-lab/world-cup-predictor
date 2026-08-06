@@ -17,7 +17,6 @@ export default function AddMatchForm() {
   const [homeBadge, setHomeBadge] = useState('');
   const [awayBadge, setAwayBadge] = useState('');
   const [groupStage, setGroupStage] = useState('');
-  const [weekNumber, setWeekNumber] = useState('');
   const [kickoffAt, setKickoffAt] = useState('');
 
   function handleTeamChange(name: string, teamName: string, badge: string) {
@@ -51,7 +50,6 @@ export default function AddMatchForm() {
       fd.set('home_flag', homeBadge);
       fd.set('away_flag', awayBadge);
       fd.set('group_stage', groupStage);
-      fd.set('week_number', weekNumber);
       fd.set('kickoff_at', kickoffUtc);
 
       const res = await fetch('/api/admin/matches', {
@@ -94,7 +92,7 @@ export default function AddMatchForm() {
       </div>
 
       {/* Stage + week + kickoff */}
-      <div className="grid md:grid-cols-3 gap-4 min-w-0">
+      <div className="grid md:grid-cols-2 gap-4 min-w-0">
         <div>
           <label className="block text-sm font-medium mb-2">Gameweek / Stage</label>
           <input
@@ -103,18 +101,6 @@ export default function AddMatchForm() {
             onChange={(e) => setGroupStage(e.target.value)}
             className="input w-full"
             placeholder="GW1, GW2, Quarter-final, etc."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Week Number (1–38, auto-filled from kickoff)</label>
-          <input
-            type="number"
-            min="1"
-            max="38"
-            value={weekNumber}
-            onChange={(e) => setWeekNumber(e.target.value)}
-            className="input w-full"
-            placeholder="Auto-calculated from kickoff"
           />
         </div>
         <div className="min-w-0">
