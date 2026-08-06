@@ -1,7 +1,11 @@
+export type League =
+  | 'Premier League' | 'Championship' | 'League One' | 'League Two'
+  | 'Scottish Premiership' | 'Scottish Championship' | 'Scottish League One' | 'Scottish League Two';
+
 export interface TeamBadge {
   name: string;
   badge: string;
-  league: 'Premier League' | 'Championship' | 'League One' | 'League Two';
+  league: League;
   shortName?: string;
 }
 
@@ -103,6 +107,41 @@ export const ALL_TEAMS: TeamBadge[] = [
   { name: "Wrexham", badge: "/badges/wrexham.png", league: "League Two" },
   { name: "Yeovil Town", badge: "/badges/yeovil_town.png", league: "League Two" },
   { name: "York City", badge: "/badges/york_city.png", league: "League Two" },
+
+  // Scottish Premiership
+  { name: "Celtic", badge: "/badges/celtic.png", league: "Scottish Premiership" },
+  { name: "Rangers", badge: "/badges/rangers.png", league: "Scottish Premiership" },
+  { name: "Aberdeen", badge: "/badges/aberdeen.png", league: "Scottish Premiership" },
+  { name: "Heart of Midlothian", badge: "/badges/hearts.png", league: "Scottish Premiership", shortName: "Hearts" },
+  { name: "Hibernian", badge: "/badges/hibernian.png", league: "Scottish Premiership", shortName: "Hibs" },
+  { name: "Motherwell", badge: "/badges/motherwell.png", league: "Scottish Premiership" },
+  { name: "St Johnstone", badge: "/badges/st_johnstone.png", league: "Scottish Premiership" },
+  { name: "Dundee United", badge: "/badges/dundee_united.png", league: "Scottish Premiership" },
+  { name: "Ross County", badge: "/badges/ross_county.png", league: "Scottish Premiership" },
+  { name: "St Mirren", badge: "/badges/st_mirren.png", league: "Scottish Premiership" },
+  { name: "Kilmarnock", badge: "/badges/kilmarnock.png", league: "Scottish Premiership" },
+  { name: "Livingston", badge: "/badges/livingston.png", league: "Scottish Premiership" },
+
+  // Scottish Championship
+  { name: "Dundee FC", badge: "/badges/dundee_fc.png", league: "Scottish Championship" },
+  { name: "Greenock Morton", badge: "/badges/greenock_morton.png", league: "Scottish Championship" },
+  { name: "Partick Thistle", badge: "/badges/partick_thistle.png", league: "Scottish Championship" },
+  { name: "Queen's Park", badge: "/badges/queens_park.png", league: "Scottish Championship" },
+  { name: "Raith Rovers", badge: "/badges/raith_rovers.png", league: "Scottish Championship" },
+  { name: "Falkirk", badge: "/badges/falkirk.png", league: "Scottish Championship" },
+  { name: "Ayr United", badge: "/badges/ayr_united.png", league: "Scottish Championship" },
+  { name: "Hamilton Academical", badge: "/badges/hamilton_academical.png", league: "Scottish Championship", shortName: "Hamilton" },
+
+  // Scottish League One
+  { name: "Cove Rangers", badge: "/badges/cove_rangers.png", league: "Scottish League One" },
+  { name: "Montrose", badge: "/badges/montrose.png", league: "Scottish League One" },
+  { name: "Stirling Albion", badge: "/badges/stirling_albion.png", league: "Scottish League One" },
+  { name: "Dumbarton", badge: "/badges/dumbarton.png", league: "Scottish League One" },
+
+  // Scottish League Two
+  { name: "Annan Athletic", badge: "/badges/annan_athletic.png", league: "Scottish League Two" },
+  { name: "Elgin City", badge: "/badges/elgin_city.png", league: "Scottish League Two" },
+  { name: "Forfar Athletic", badge: "/badges/forfar_athletic.png", league: "Scottish League Two" },
 ];
 
 export const PREMIER_LEAGUE_TEAMS = ALL_TEAMS.filter(t => t.league === "Premier League");

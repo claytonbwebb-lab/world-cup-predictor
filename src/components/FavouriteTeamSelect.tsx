@@ -21,7 +21,10 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
   const [requestError, setRequestError] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
-  const leagues = ['Premier League', 'Championship', 'League One', 'League Two'] as const;
+  const leagues = [
+    'Premier League', 'Championship', 'League One', 'League Two',
+    'Scottish Premiership', 'Scottish Championship', 'Scottish League One', 'Scottish League Two',
+  ] as const;
 
   const filtered = ALL_TEAMS.filter((t) =>
     t.name.toLowerCase().includes(query.toLowerCase())
@@ -165,19 +168,26 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
             </ul>
           ) : (
             <>
-              <div className="flex border-b border-border">
+              <div className="flex border-b border-border overflow-x-auto">
                 {leagues.map((league) => (
                   <button
                     key={league}
                     type="button"
                     onClick={() => setActiveLeague(league)}
-                    className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                    className={`flex-shrink-0 px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap ${
                       activeLeague === league
                         ? 'text-primary border-b-2 border-primary'
                         : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    {league.replace('League ', 'L')}
+                    {league
+                      .replace('League ', 'L')
+                      .replace('Scottish Premiership', 'Scottish PL')
+                      .replace('Scottish Championship', 'Scottish Champ')
+                      .replace('Scottish League One', 'Scot L1')
+                      .replace('Scottish League Two', 'Scot L2')
+                      .replace('Premier League', 'Premier L')
+                      .replace('Championship', 'Champ')}
                   </button>
                 ))}
               </div>
