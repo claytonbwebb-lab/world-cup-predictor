@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import TeamBadge from '@/components/TeamBadge';
 
-import { SEASON_START, getWeekNumber, getWeekRange, getWeekLabel } from '@/lib/weeks';
+import { SEASON_START, getWeekNumber, getWeekRange, getWeekLabel, getWeekDropdownLabel } from '@/lib/weeks';
 
 interface Match {
   id: string;
@@ -187,16 +187,8 @@ export default function FixturesPage() {
     { value: 'all', label: `All Fixtures (${matches.length} matches)` },
   ];
   const sortedWeeks = [...availableWeeks].sort((a, b) => b - a); // desc
-  sortedWeeks.forEach((w, i) => {
-    let label: string;
-    if (i === 0) {
-      label = `${getWeekLabel(w)} — ${getWeekRange(w)}`;
-    } else if (i === 1) {
-      label = `Next Week — ${getWeekRange(w)}`;
-    } else {
-      label = getWeekRange(w);
-    }
-    weekOptions.push({ value: w, label });
+  sortedWeeks.forEach((w) => {
+    weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
   });
 
   function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -337,7 +329,7 @@ export default function FixturesPage() {
 
             {selectedWeek !== 'all' && (
               <span className="text-xs text-textMuted">
-                {getWeekLabel(selectedWeek as number)} — {getWeekRange(selectedWeek as number)}
+                {getWeekDropdownLabel(selectedWeek as number)}
               </span>
             )}
 
