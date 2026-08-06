@@ -1,7 +1,6 @@
 'use client';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
-import DoubleUpPicker from '@/components/DoubleUpPicker';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -399,13 +398,6 @@ export default function FixturesPage() {
               </div>
             )}
 
-            {/* Double Up standalone panel — fallback if no predictions yet */}
-            {selectedWeek !== 'all' && matches.length > 0 && !loading && (
-              <DoubleUpPicker
-                weekNumber={selectedWeek as number}
-                matches={matches.filter(m => predictions.has(m.id))}
-              />
-            )}
           </div>
         )}
       </main>
