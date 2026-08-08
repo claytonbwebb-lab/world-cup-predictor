@@ -14,6 +14,28 @@ CREATE TABLE IF NOT EXISTS double_up_picks (
 CREATE INDEX IF NOT EXISTS idx_double_up_picks_user_week ON double_up_picks(user_id, week_number);
 CREATE INDEX IF NOT EXISTS idx_double_up_picks_match ON double_up_picks(match_id);
 
+-- Enable RLS
+ALTER TABLE double_up_picks ENABLE ROW LEVEL SECURITY;
+
+-- Policies: users can only read/insert/update their own picks
+DROP POLICY IF EXISTS "Users can read own double up picks" ON double_up_picks;
+CREATE POLICY "Users can read own double up picks" ON double_up_picks FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own double up picks" ON double_up_picks;
+CREATE POLICY "Users can insert own double up picks" ON double_up_picks FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own double up picks" ON double_up_picks;
+CREATE POLICY "Users can update own double up picks" ON double_up_picks FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own double up picks" ON double_up_picks;
+CREATE POLICY "Users can delete own double up picks" ON double_up_picks FOR DELETE USING (auth.uid() = user_id);
+
+-- Admin can read all double up picks (for scoring)
+DROP POLICY IF EXISTS "Admins can read all double up picks" ON double_up_picks;
+CREATE POLICY "Admins can read all double up picks" ON double_up_picks FOR SELECT USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+);
+
 -- Helper: check if Double Up is locked for a given week
 -- (first match kickoff has passed)
 CREATE OR REPLACE FUNCTION is_double_up_locked(p_week_number INTEGER)

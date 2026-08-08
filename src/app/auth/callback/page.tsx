@@ -26,8 +26,28 @@ function CallbackContent() {
 
       setStatus('success');
 
-      // Join code: check URL param first (works across browsers/devices),
-      // fall back to localStorage (same-browser flow)
+      // Check for pending VIP join code first (higher priority than regular league join)
+      const vipCode =
+        typeof localStorage !== 'undefined' ? localStorage.getItem('pending_vip_join') : null;
+
+      if (vipCode) {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem('pending_vip_join');
+        setStatus('joining_league');
+        try {
+          const response = await fetch('/api/vip-league/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: vipCode }),
+          });
+          // Always redirect to VIP page after trying to join (already_member is fine)
+          router.replace('/vip-league');
+        } catch {
+          router.replace('/vip-league');
+        }
+        return true;
+      }
+
+      // Regular league join code
       const joinCode =
         searchParams.get('join') ||
         (typeof localStorage !== 'undefined' ? localStorage.getItem('pendingJoinLeagueCode') : null);

@@ -1,11 +1,24 @@
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import TeamBadge from '@/components/TeamBadge';
 import SupporterLeagueBanner from '@/components/SupporterLeagueBanner';
+import { getWeekNumber } from '@/lib/weeks';
+
+interface DoubleUpPick {
+  match?: {
+    id: string;
+    home_team: string;
+    away_team: string;
+    home_flag: string;
+    away_flag: string;
+    kickoff_at: string;
+  };
+}
 
 const NotificationBanner = dynamic(() => import('@/components/NotificationBanner'), { ssr: false });
 
@@ -105,6 +118,19 @@ export default async function Dashboard() {
     .order('kickoff_at', { ascending: true })
     .limit(5);
 
+  // Fetch user's current double-up pick for this week (use service role to bypass RLS)
+  const currentWeek = getWeekNumber(new Date());
+  const serviceClient = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: doubleUpPick } = await serviceClient
+    .from('double_up_picks')
+    .select('match:matches(*)')
+    .eq('user_id', user.id)
+    .eq('week_number', currentWeek)
+    .single();
+
   // Fetch user's recent predictions with results
   const { data: recentPredictions } = await supabase
     .from('predictions')
@@ -116,6 +142,18 @@ export default async function Dashboard() {
     .not('scored_at', 'is', null)
     .order('scored_at', { ascending: false })
     .limit(5);
+
+  // Fetch user's double-up picks for the scored matches so we can show the badge
+  const scoredMatchIds = (recentPredictions || []).map((p: any) => p.match_id);
+  let doubleUpMatchIds = new Set<string>();
+  if (scoredMatchIds.length > 0) {
+    const { data: duPicks } = await serviceClient
+      .from('double_up_picks')
+      .select('match_id')
+      .eq('user_id', user.id)
+      .in('match_id', scoredMatchIds);
+    doubleUpMatchIds = new Set((duPicks || []).map((p: any) => p.match_id));
+  }
 
   // Fetch user stats
   const { data: stats } = await supabase
@@ -191,6 +229,32 @@ export default async function Dashboard() {
             <p className="text-3xl font-bold">{userRank > 0 ? userRank : '-'}</p>
           </div>
         </div>
+
+        {/* Current Double Up pick */}
+        {(() => {
+          const pick = doubleUpPick as unknown as DoubleUpPick;
+          if (!pick?.match) return null;
+          return (
+            <div className="card mb-8 border-yellow-400/30 bg-yellow-400/5">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">⚡</span>
+                <div>
+                  <p className="text-sm font-semibold text-yellow-400">Your Double Up pick this week</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <TeamBadge value={pick.match.home_flag} size="sm" />
+                    <span className="text-sm font-medium">{pick.match.home_team}</span>
+                    <span className="text-xs text-textMuted">vs</span>
+                    <TeamBadge value={pick.match.away_flag} size="sm" />
+                    <span className="text-sm font-medium">{pick.match.away_team}</span>
+                  </div>
+                </div>
+                <Link href="/fixtures" className="ml-auto text-sm text-primary hover:underline shrink-0">
+                  Change →
+                </Link>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Supporter League prompt — only when no favourite team set */}
         {!profile?.favourite_team && (
@@ -278,6 +342,9 @@ export default async function Dashboard() {
                         {pred.is_exact_score && (
                           <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded">EXACT</span>
                         )}
+                        {doubleUpMatchIds.has(pred.match_id) && (
+                          <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded">DOUBLE UP</span>
+                        )}
                         <span className="text-xs font-bold text-primary">+{pred.points_awarded}</span>
                       </div>
                     </div>
@@ -326,6 +393,9 @@ export default async function Dashboard() {
                         <div className="flex flex-col items-end gap-0.5">
                           {pred.is_exact_score && (
                             <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
+                          )}
+                          {doubleUpMatchIds.has(pred.match_id) && (
+                            <span className="text-xs bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded">DOUBLE UP</span>
                           )}
                           <span className="font-bold text-primary">+{pred.points_awarded}</span>
                         </div>

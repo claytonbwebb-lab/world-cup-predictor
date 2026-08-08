@@ -31,6 +31,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'League not found' }, { status: 404 });
     }
 
+    // Block VIP leagues — they must be joined via the VIP page flow
+    if ((league as any).is_vip) {
+      return NextResponse.json({ error: 'This league cannot be joined from this page' }, { status: 403 });
+    }
+
     // Check if already a member
     const { data: existingMember } = await supabase
       .from('league_members')

@@ -1,5 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+
+function getServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,13 +41,18 @@ export async function GET(request: NextRequest) {
 
     const isLocked = firstMatch ? new Date(firstMatch.kickoff_at) <= new Date() : true;
 
-    // Get user's current pick
-    const { data: pick } = await supabase
+    // Get user's current pick — use service role to bypass missing RLS policy
+    const adminClient = getServiceClient();
+    const { data: pick, error: duError } = await adminClient
       .from('double_up_picks')
       .select('match_id')
       .eq('user_id', user.id)
       .eq('week_number', wk)
-      .single();
+      .maybeSingle();
+
+    if (duError) {
+      console.error('Double-up GET error:', duError.message);
+    }
 
     return NextResponse.json({
       matchId: pick?.match_id ?? null,
@@ -63,11 +76,22 @@ export async function POST(request: NextRequest) {
 
     const { matchId, weekNumber } = await request.json();
 
-    if (!matchId || !weekNumber) {
-      return NextResponse.json({ error: 'matchId and weekNumber are required' }, { status: 400 });
+    if (!weekNumber) {
+      return NextResponse.json({ error: 'weekNumber is required' }, { status: 400 });
     }
 
     const wk = parseInt(weekNumber);
+
+    // Handle clear (matchId is null)
+    if (!matchId) {
+      const adminClient = getServiceClient();
+      await adminClient
+        .from('double_up_picks')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('week_number', wk);
+      return NextResponse.json({ success: true, pick: null });
+    }
 
     // 1. Check the match exists and belongs to the right week
     const { data: match } = await supabase
@@ -102,8 +126,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Double Up is locked for this week' }, { status: 403 });
     }
 
-    // 4. Upsert the pick
-    const { data, error } = await supabase
+    // 4. Upsert the pick — use service role to bypass missing RLS policy
+    const adminClient = getServiceClient();
+    const { data, error } = await adminClient
       .from('double_up_picks')
       .upsert(
         {

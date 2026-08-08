@@ -40,16 +40,29 @@ export default function FixturesPage() {
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
+  // Default to current week so users see their own week's fixtures immediately
+  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>(getWeekNumber(new Date()));
   const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
   const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => { load(); }, [selectedWeek]);
+  // Always reload on mount (handles navigating away and back)
+  useEffect(() => { load(); }, []);
 
-  async function load() {
+  // Reload when selected week changes
+  useEffect(() => { load(selectedWeek); }, [selectedWeek]);
+
+  // Auto-refresh every 30s to detect kickoff passing / admin changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      load(selectedWeek);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [selectedWeek]);
+
+  async function load(weekOverride?: number | 'all') {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
@@ -63,14 +76,16 @@ export default function FixturesPage() {
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
 
+    // Fixtures page only shows unscored matches (results page shows scored ones)
     let query = supabase
       .from('matches')
       .select('*')
       .not('result_entered', 'eq', true)
       .order('kickoff_at', { ascending: true });
 
-    if (selectedWeek !== 'all') {
-      query = query.eq('week_number', selectedWeek);
+    const qWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
+    if (qWeek !== 'all') {
+      query = query.eq('week_number', qWeek as number);
     }
 
     const { data: matchData } = await query;
@@ -85,26 +100,18 @@ export default function FixturesPage() {
       initInputs[m.id] = { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
     }
 
-    // Load Double Up state if a specific week is selected
-    if (selectedWeek !== 'all') {
-      const weekNum = selectedWeek as number;
-      const { data: duPick } = await supabase
-        .from('double_up_picks')
-        .select('match_id')
-        .eq('user_id', user.id)
-        .eq('week_number', weekNum)
-        .maybeSingle();
-      setDoubleUpPick(duPick?.match_id || null);
+    // Load Double Up state for the week being viewed
+    const activeWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
+    if (activeWeek !== 'all') {
+      const weekNum = activeWeek as number;
 
-      // Check if locked
-      const { data: weekMatches } = await supabase
-        .from('matches')
-        .select('kickoff_at')
-        .eq('week_number', weekNum)
-        .order('kickoff_at', { ascending: true })
-        .limit(1);
-      const firstKickoff = weekMatches?.[0]?.kickoff_at ? new Date(weekMatches[0].kickoff_at) : null;
-      setDoubleUpLocked(firstKickoff ? new Date() >= firstKickoff : false);
+      // Always read double-up via API (bypasses RLS)
+      const duRes = await fetch(`/api/double-up?weekNumber=${weekNum}`);
+      if (duRes.ok) {
+        const duData = await duRes.json();
+        setDoubleUpPick(duData.matchId);
+        setDoubleUpLocked(duData.isLocked);
+      }
     } else {
       setDoubleUpPick(null);
       setDoubleUpLocked(false);
@@ -133,7 +140,7 @@ export default function FixturesPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
-    load();
+    load(selectedWeek);
   }
 
   async function saveMatch(matchId: string) {
@@ -149,7 +156,7 @@ export default function FixturesPage() {
     if (res.ok) {
       setSavedMatch(matchId);
       setTimeout(() => setSavedMatch(null), 3000);
-      await load();
+      await load(selectedWeek);
     } else {
       const err = await res.json();
       alert('Failed: ' + (err.error || 'Unknown error'));
@@ -159,16 +166,26 @@ export default function FixturesPage() {
   async function toggleDoubleUp(matchId: string) {
     if (doubleUpLocked || togglingDoubleUp) return;
     setTogglingDoubleUp(true);
+    const previousPick = doubleUpPick;
     const newPick = doubleUpPick === matchId ? null : matchId;
     try {
-      await fetch('/api/double-up', {
+      const res = await fetch('/api/double-up', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ matchId: newPick, weekNumber: selectedWeek }),
       });
-      setDoubleUpPick(newPick);
-    } catch {
-      // silent fail
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Double-up toggle failed:', err.error || res.statusText);
+        // Revert optimistic update on failure
+        setDoubleUpPick(previousPick);
+        alert(err.error || 'Failed to set Double Up. Did you save your prediction first?');
+      } else {
+        setDoubleUpPick(newPick);
+      }
+    } catch (e) {
+      console.error('Double-up toggle network error:', e);
+      setDoubleUpPick(previousPick);
     }
     setTogglingDoubleUp(false);
   }

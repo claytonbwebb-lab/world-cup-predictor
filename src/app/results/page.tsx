@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import TeamBadge from '@/components/TeamBadge';
-import { SEASON_START, getWeekLabel, getWeekRange, getWeekDropdownLabel } from '@/lib/weeks';
+import { SEASON_START, getWeekLabel, getWeekRange, getWeekDropdownLabel, getWeekNumber } from '@/lib/weeks';
 
 interface Match {
   id: string;
@@ -24,11 +24,20 @@ export default function ResultsPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>('all');
+  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>(getWeekNumber(new Date()));
   const [doubleUpMatchIds, setDoubleUpMatchIds] = useState<Set<string>>(new Set());
+  const [predictions, setPredictions] = useState<Map<string, any>>(new Map());
   const supabase = createClient();
 
   useEffect(() => { load(); }, [selectedWeek]);
+
+  // Auto-refresh every 30s to detect new scores / admin changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      load();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [selectedWeek]);
 
   async function load() {
     setLoading(true);
@@ -55,20 +64,34 @@ export default function ResultsPage() {
 
     const { data: matchData } = await query;
 
-    // Fetch user's Double Up picks for the selected week
+    // Fetch user's predictions and Double Up picks for the selected week
     let doubleUpIds = new Set<string>();
-    if (selectedWeek !== 'all') {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: picks } = await supabase
-          .from('double_up_picks')
-          .select('match_id')
+    const predMap = new Map<string, any>();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      if (selectedWeek !== 'all') {
+        // Read double-up via API (bypasses RLS)
+        const duRes = await fetch(`/api/double-up?weekNumber=${selectedWeek}`);
+        if (duRes.ok) {
+          const duData = await duRes.json();
+          if (duData.matchId) doubleUpIds = new Set([duData.matchId]);
+        }
+      }
+      // Fetch predictions for all scored matches (for any week view)
+      const scoredMatchIds = (matchData || []).map((m: any) => m.id);
+      if (scoredMatchIds.length > 0) {
+        const { data: predData } = await supabase
+          .from('predictions')
+          .select('*')
           .eq('user_id', user.id)
-          .eq('week_number', selectedWeek);
-        doubleUpIds = new Set((picks || []).map(p => p.match_id));
+          .in('match_id', scoredMatchIds);
+        for (const p of predData || []) {
+          predMap.set(p.match_id, p);
+        }
       }
     }
     setDoubleUpMatchIds(doubleUpIds);
+    setPredictions(predMap);
 
     setMatches(matchData || []);
     setLoading(false);
@@ -167,6 +190,41 @@ export default function ResultsPage() {
                     <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
                   </div>
                 </div>
+
+                {/* Prediction + points row */}
+                {(() => {
+                  const pred = predictions.get(match.id);
+                  if (!pred) return null;
+                  const isExact = pred.is_exact_score;
+                  const isCorrect = pred.is_correct_result;
+                  const isDouble = doubleUpMatchIds.has(match.id);
+                  const pts = pred.points_awarded || 0;
+                  return (
+                    <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-center gap-3">
+                      <div className="text-center">
+                        <div className="text-[10px] text-textMuted uppercase tracking-wider mb-0.5">You predicted</div>
+                        <span className="text-sm font-medium">{pred.home_prediction} – {pred.away_prediction}</span>
+                      </div>
+                      <div className="text-center">
+                        {isExact && (
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-medium">Exact!</span>
+                        )}
+                        {isCorrect && !isExact && (
+                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-medium">Correct result</span>
+                        )}
+                        {!isCorrect && !isExact && (
+                          <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-medium">Wrong</span>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[10px] text-textMuted uppercase tracking-wider mb-0.5">Points</div>
+                        <span className={`text-sm font-bold ${isDouble ? 'text-yellow-400' : 'text-primary'}`}>
+                          +{pts} {isDouble && '⭐'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
