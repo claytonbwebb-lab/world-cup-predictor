@@ -7,6 +7,45 @@ const PROTECTED_ROUTES = ['/dashboard', '/fixtures', '/leaderboard', '/leagues']
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ─── Maintenance Mode ───────────────────────────────────────────────────────
+  const maintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const bypassPass = process.env.NEXT_PUBLIC_MAINTENANCE_BYPASS_PASS;
+
+  if (maintenanceMode && bypassPass) {
+    const MAINTENANCE_BYPASS_PATHS = ['/maintenance', '/_next', '/favicon', '/api/maintenance-bypass'];
+    const isMaintenanceBypassPath = MAINTENANCE_BYPASS_PATHS.some(p => pathname.startsWith(p));
+
+    if (!isMaintenanceBypassPath) {
+      const bypassCookie = request.cookies.get('x-maint-bypass')?.value;
+      const bypassQuery = request.nextUrl.searchParams.get('__maint_bypass');
+
+      if (bypassQuery) {
+        if (bypassQuery === bypassPass) {
+          const cleanUrl = new URL(request.url);
+          cleanUrl.searchParams.delete('__maint_bypass');
+          const response = NextResponse.redirect(cleanUrl);
+          response.cookies.set('x-maint-bypass', bypassPass, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24,
+            path: '/',
+          });
+          return response;
+        } else {
+          const cleanUrl = new URL(request.url);
+          cleanUrl.searchParams.delete('__maint_bypass');
+          return NextResponse.redirect(cleanUrl);
+        }
+      }
+
+      if (bypassCookie !== bypassPass) {
+        return NextResponse.redirect(new URL('/maintenance', request.url));
+      }
+    }
+  }
+  // ─── End Maintenance Mode ───────────────────────────────────────────────────
+
   // Public routes
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'));
   if (isPublicRoute) {
@@ -44,10 +83,8 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/auth/login', request.url);
-    // Pass full path + query so ?join=CODE survives the redirect
     const fullPath = pathname + (request.nextUrl.search || '');
     redirectUrl.searchParams.set('redirect', pathname);
-    // Hoist join param to top-level so login/signup pages can store it
     const joinCode = request.nextUrl.searchParams.get('join');
     if (joinCode) redirectUrl.searchParams.set('join', joinCode);
     return NextResponse.redirect(redirectUrl);
