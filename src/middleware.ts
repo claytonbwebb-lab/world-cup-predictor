@@ -13,6 +13,12 @@ export async function middleware(request: NextRequest) {
   const maintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
   const bypassPass = process.env.NEXT_PUBLIC_MAINTENANCE_BYPASS_PASS;
 
+  // DEBUG header to check what's being read at runtime
+  const debugResponse = NextResponse.next({ request: { headers: request.headers } });
+  debugResponse.headers.set('x-debug-maint', String(maintenanceMode));
+  debugResponse.headers.set('x-debug-bypass-pass', bypassPass ?? 'NONE');
+  debugResponse.headers.set('x-debug-all-env', JSON.stringify(Object.keys(process.env).filter(k => k.includes('MAINTENANCE'))));
+
   if (maintenanceMode && bypassPass) {
     // Paths that bypass maintenance entirely
     const MAINTENANCE_BYPASS_PATHS = ['/maintenance', '/_next', '/favicon', '/api/maintenance-bypass'];
