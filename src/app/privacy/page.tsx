@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import NavBar from '@/components/PublicNav';
+import NavBar from "@/components/NavBar";;
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Play Predict Win',
-  description: 'Privacy policy for Play Predict Win — FIFA World Cup 2026 prediction league.',
+  description: 'Privacy policy for Play Predict Win — Premier League 2026/27 prediction league.',
 };
 
 export default function PrivacyPage() {

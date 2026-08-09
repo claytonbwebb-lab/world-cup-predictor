@@ -3,18 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-
-const links = [
-  { href: '/dashboard',   label: 'Dashboard' },
-  { href: '/fixtures',    label: 'Fixtures' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/leagues',     label: 'Leagues' },
-  { href: '/partners',    label: 'Partners' },
-  { href: '/blog',        label: 'Blog' },
-  { href: '/profile',     label: 'Profile' },
-  { href: '/auth/logout', label: 'Sign Out' },
-];
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 const socialLinks = [
   {
@@ -46,30 +36,106 @@ const socialLinks = [
   },
 ];
 
+// ── Nav link types ──────────────────────────────────────────────
+interface NavLink {
+  href: string;
+  label: string;
+}
+interface DropdownItem {
+  href: string;
+  label: string;
+}
+
 export default function NavBar() {
   const path = usePathname();
-  const [open, setOpen] = useState(false);
+  const supabase = createClient();
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null); // null = loading
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setLoggedIn(!!data.user);
+    });
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setLeaderboardOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   const active = 'text-primary font-semibold';
   const inactive = 'text-textMuted hover:text-text transition-colors whitespace-nowrap';
 
+  // ── Link sets ─────────────────────────────────────────────────
+  const baseLinks: NavLink[] = [
+    { href: '/',         label: 'Home' },
+    { href: '/fixtures', label: 'Fixtures' },
+    { href: '/results',  label: 'Results' },
+    { href: '/prizes',   label: 'Prizes' },
+  ];
+
+  const leaderboardDropdownItems: DropdownItem[] = [
+    { href: '/leaderboard',       label: 'Global Leaderboard' },
+    { href: '/supporter-league', label: 'Supporter League' },
+    { href: '/leagues',          label: 'Mini-Leagues' },
+  ];
+
+  const loggedOutLinks: NavLink[] = [
+    ...baseLinks,
+    { href: '/blog',      label: 'Blog' },
+    { href: '/partners',  label: 'Partners' },
+    { href: '/auth/signup', label: 'Sign Up' },
+    { href: '/auth/login',  label: 'Login' },
+  ];
+
+  const loggedInLinks: NavLink[] = [
+    ...baseLinks,
+    { href: '/profile',    label: 'Profile' },
+    { href: '/auth/logout', label: 'Sign Out' },
+  ];
+
+  const isOnLeaderboard = path === '/leaderboard' || path === '/supporter-league' || path === '/leagues';
+
+  // Desktop nav: links split around Leaderboards dropdown
+  const linksBeforeLB: NavLink[] = [
+    { href: '/',         label: 'Home' },
+    { href: '/fixtures', label: 'Fixtures' },
+    { href: '/results',  label: 'Results' },
+    { href: '/prizes',   label: 'Prizes' },
+  ];
+  const linksAfterLB: NavLink[] = loggedIn
+    ? [
+        { href: '/profile',    label: 'Profile' },
+        { href: '/auth/logout', label: 'Sign Out' },
+      ]
+    : [
+        { href: '/blog',       label: 'Blog' },
+        { href: '/partners',  label: 'Partners' },
+        { href: '/auth/signup', label: 'Sign Up' },
+        { href: '/auth/login',  label: 'Login' },
+      ];
+
   return (
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-50">
-
-      {/* ── Main bar ── */}
       <div className="max-w-6xl mx-auto px-4 py-3">
-
-        {/* Three-column grid: [left] [logo] [right] */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
           {/* LEFT — mobile burger / social icons on desktop */}
           <div className="flex items-center gap-3">
-            {/* Mobile burger */}
             <button
               className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
-              onClick={() => setOpen(o => !o)}
+              onClick={() => setMobileOpen(o => !o)}
               aria-label="Toggle menu"
             >
-              {open ? (
+              {mobileOpen ? (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -79,7 +145,6 @@ export default function NavBar() {
                 </svg>
               )}
             </button>
-            {/* Social icons on desktop */}
             <div className="hidden sm:flex items-center gap-3">
               {socialLinks.map(s => (
                 <a
@@ -96,7 +161,7 @@ export default function NavBar() {
             </div>
           </div>
 
-          {/* CENTRE — logo image, always centred */}
+          {/* CENTRE — logo */}
           <Link href="/" className="flex items-center justify-center">
             <Image
               src="/images/logos/logo3.jpg"
@@ -108,28 +173,123 @@ export default function NavBar() {
             />
           </Link>
 
-          {/* RIGHT — desktop nav / invisible spacer on mobile */}
+          {/* RIGHT — desktop nav */}
           <div className="flex items-center justify-end gap-4">
-            <nav className="hidden sm:flex items-center gap-4 text-sm">
-              {links.map(l => (
-                <Link key={l.href} href={l.href} className={path === l.href ? active : inactive}>
+            <nav className="hidden sm:flex items-center gap-1 text-sm">
+
+              {/* Links before Leaderboards */}
+              {linksBeforeLB.map(l => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`px-3 py-2 rounded-lg ${path === l.href ? active : inactive}`}
+                >
                   {l.label}
                 </Link>
               ))}
+
+              {/* Leaderboards dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setLeaderboardOpen(o => !o)}
+                  className={`px-3 py-2 rounded-lg flex items-center gap-1 ${isOnLeaderboard ? active : inactive}`}
+                >
+                  Leaderboards
+                  <svg className={`w-3 h-3 transition-transform ${leaderboardOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </button>
+
+                {leaderboardOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-surface border border-border rounded-xl shadow-xl py-2 z-50">
+                    {leaderboardDropdownItems.map(item => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setLeaderboardOpen(false)}
+                        className={`block px-4 py-2.5 text-sm ${path === item.href ? 'text-primary font-semibold' : 'text-textMuted hover:text-text hover:bg-surfaceLight'} transition-colors`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Links after Leaderboards */}
+              {linksAfterLB.map(l => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`px-3 py-2 rounded-lg ${path === l.href ? active : inactive}`}
+                >
+                  {l.label}
+                </Link>
+              ))}
+
             </nav>
           </div>
         </div>
       </div>
 
-      {/* ── Mobile dropdown ── */}
-      {open && (
+      {/* Mobile dropdown */}
+      {mobileOpen && (
         <div className="sm:hidden border-t border-border px-4 py-3 flex flex-col gap-1">
-          {links.map(l => (
+
+          {/* Links before Leaderboards */}
+          {[
+            { href: '/',         label: 'Home' },
+            { href: '/fixtures', label: 'Fixtures' },
+            { href: '/results',  label: 'Results' },
+            { href: '/prizes',   label: 'Prizes' },
+          ].map(l => (
             <Link
               key={l.href}
               href={l.href}
-              className={`py-2 ${path === l.href ? active : inactive}`}
-              onClick={() => setOpen(false)}
+              className={`py-2.5 ${path === l.href ? active : inactive}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              {l.label}
+            </Link>
+          ))}
+
+          {/* Leaderboards section — logged in only */}
+          {loggedIn && (
+            <>
+              <div className="pt-2 pb-1">
+                <span className="text-xs text-textMuted uppercase tracking-wider px-1">Leaderboards</span>
+              </div>
+              {leaderboardDropdownItems.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`py-2 pl-3 ${path === item.href ? active : inactive}`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </>
+          )}
+
+          {/* Links after Leaderboards */}
+          {(loggedIn
+            ? [
+                { href: '/profile',    label: 'Profile' },
+                { href: '/auth/logout', label: 'Sign Out' },
+              ]
+            : [
+                { href: '/blog',        label: 'Blog' },
+                { href: '/partners',   label: 'Partners' },
+                { href: '/auth/signup', label: 'Sign Up' },
+                { href: '/auth/login',  label: 'Login' },
+              ]
+          ).map(l => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`py-2.5 ${path === l.href ? active : inactive}`}
+              onClick={() => setMobileOpen(false)}
             >
               {l.label}
             </Link>

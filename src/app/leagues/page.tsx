@@ -53,8 +53,16 @@ export default function LeaguesPage() {
           body: JSON.stringify({ code: joinCode }),
         });
         const data = await res.json();
-        if (data.error) setError(data.error);
-        else setSuccess('Joined league successfully!');
+        if (!res.ok) {
+          if (res.status === 403) {
+            // VIP league — redirect to the VIP page
+            router.push(`/vip-league?join=${encodeURIComponent(joinCode)}`);
+            return;
+          }
+          setError(data.error);
+        } else {
+          setSuccess('Joined league successfully!');
+        }
         window.history.replaceState({}, '', '/leagues');
         loadLeagues();
       } else {
@@ -86,6 +94,7 @@ export default function LeaguesPage() {
       .from('leagues')
       .select('*')
       .eq('is_public', true)
+      .eq('is_vip', false)
       .neq('created_by', user.id)
       .not('id', 'in', `(${myLeagueIds.map(id => `"${id}"`).join(',')})`);
 

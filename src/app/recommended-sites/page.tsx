@@ -12,7 +12,7 @@ const categories = [
     emoji: '🎯',
     description: 'AI-powered match predictions, win probabilities, and consensus forecasts from the community.',
     sites: [
-      { name: 'PlayPredictWin', url: 'https://playpredictwin.com', desc: 'Your prediction league for World Cup 2026', featured: true },
+      { name: 'PlayPredictWin', url: 'https://playpredictwin.com', desc: 'Your prediction league for Premier League 2026/27', featured: true },
       { name: 'FootyTipsters', url: 'https://footytipsters.com', desc: 'Verified tipsters with trackable records' },
       { name: 'Betegy', url: '#', desc: 'AI-powered match predictions using machine learning' },
     ],
@@ -118,7 +118,7 @@ const categories = [
     emoji: '🕹️',
     description: 'Football quizzes, prediction games, trivia, and interactive challenges.',
     sites: [
-      { name: 'PlayPredictWin', url: 'https://playpredictwin.com', desc: 'World Cup prediction league', featured: true },
+      { name: 'PlayPredictWin', url: 'https://playpredictwin.com', desc: 'Premier League prediction league', featured: true },
       { name: 'Sporcle Football Quizzes', url: '#', desc: 'Football trivia and knowledge quizzes' },
     ],
   },

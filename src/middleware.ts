@@ -2,16 +2,25 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_ROUTES = ['/', '/auth/login', '/auth/signup', '/admin/login', '/api/admin/login'];
-const PROTECTED_ROUTES = ['/dashboard', '/fixtures', '/leaderboard', '/leagues'];
+const PROTECTED_ROUTES = ['/dashboard', '/fixtures', '/leagues'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ─── Maintenance Mode ───────────────────────────────────────────────────────
+  // Use NEXT_PUBLIC_* vars — these are the only env vars accessible to Vercel Edge middleware
+  // (server-only vars like MAINTENANCE_BYPASS_PASS are not available at the edge)
   const maintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
   const bypassPass = process.env.NEXT_PUBLIC_MAINTENANCE_BYPASS_PASS;
 
+  // DEBUG header to check what's being read at runtime
+  const debugResponse = NextResponse.next({ request: { headers: request.headers } });
+  debugResponse.headers.set('x-debug-maint', String(maintenanceMode));
+  debugResponse.headers.set('x-debug-bypass-pass', bypassPass ?? 'NONE');
+  debugResponse.headers.set('x-debug-all-env', JSON.stringify(Object.keys(process.env).filter(k => k.includes('MAINTENANCE'))));
+
   if (maintenanceMode && bypassPass) {
+    // Paths that bypass maintenance entirely
     const MAINTENANCE_BYPASS_PATHS = ['/maintenance', '/_next', '/favicon', '/api/maintenance-bypass'];
     const isMaintenanceBypassPath = MAINTENANCE_BYPASS_PATHS.some(p => pathname.startsWith(p));
 
@@ -19,6 +28,7 @@ export async function middleware(request: NextRequest) {
       const bypassCookie = request.cookies.get('x-maint-bypass')?.value;
       const bypassQuery = request.nextUrl.searchParams.get('__maint_bypass');
 
+      // If ?__maint_bypass=password present, validate + set cookie + redirect clean
       if (bypassQuery) {
         if (bypassQuery === bypassPass) {
           const cleanUrl = new URL(request.url);
@@ -28,17 +38,20 @@ export async function middleware(request: NextRequest) {
             httpOnly: true,
             secure: true,
             sameSite: 'lax',
-            maxAge: 60 * 60 * 24,
+            maxAge: 60 * 60 * 24, // 24 hours
             path: '/',
           });
           return response;
         } else {
+          // Wrong password — strip the param and show maintenance page
           const cleanUrl = new URL(request.url);
           cleanUrl.searchParams.delete('__maint_bypass');
-          return NextResponse.redirect(cleanUrl);
+          const response = NextResponse.redirect(cleanUrl);
+          return response;
         }
       }
 
+      // Check cookie
       if (bypassCookie !== bypassPass) {
         return NextResponse.redirect(new URL('/maintenance', request.url));
       }

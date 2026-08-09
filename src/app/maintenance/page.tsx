@@ -27,7 +27,7 @@ export default function MaintenancePage() {
               — with new exciting features for the 2026/27 season.
             </p>
             <p className="text-textMuted text-sm leading-relaxed">
-              Should only be a few minutes. Thanks for your patience!
+              We&rsquo;ll have it back up as soon as possible.
             </p>
           </div>
         </div>

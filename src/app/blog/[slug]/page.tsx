@@ -1,6 +1,6 @@
 import { blogPosts } from '@/lib/blog-data';
 import Footer from '@/components/Footer';
-import PublicNav from '@/components/PublicNav';
+import NavBar from "@/components/NavBar";;
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -47,7 +47,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
+      <NavBar />
       <main className="max-w-3xl mx-auto px-4 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-textMuted mb-6">

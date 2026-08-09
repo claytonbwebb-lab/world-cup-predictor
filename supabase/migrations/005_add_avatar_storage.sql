@@ -20,8 +20,7 @@ DROP POLICY IF EXISTS "Avatars are publicly readable" ON storage.objects;
 CREATE POLICY "Avatars are publicly readable"
   ON storage.objects
   FOR SELECT
-  USING (bucket_id = 'avatars')
-  WITH CHECK (bucket_id = 'avatars');
+  USING (bucket_id = 'avatars');
 
 -- ── Upload policy: auth users can upload only to their own path ───────────────
 -- Path must be: user-{userId}/avatar.{jpg|png|webp|gif}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'worldcup2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'premierleague2026';
 
 export async function POST(request: NextRequest) {
   const { password } = await request.json();

@@ -5,11 +5,11 @@ import { useState } from 'react';
 const faqs = [
   {
     q: 'Is it free to play?',
-    a: 'Yes — creating an account and competing in leagues is completely free. Prizes are funded by our partners who you can find linked on the homepage.',
+    a: 'Yes — creating an account and competing in leagues is completely free.',
   },
   {
-    q: 'When does the World Cup start?',
-    a: 'The 2026 FIFA World Cup kicks off on 11 June 2026 in the USA, Canada, and Mexico. The final is on 19 July 2026 in New Jersey.',
+    q: 'When does the Premier League 2026/27 season start?',
+    a: 'The 2026/27 Premier League season kicks off on 15 August 2026. The final gameweek is scheduled for May 2027.',
   },
   {
     q: 'How do points work?',

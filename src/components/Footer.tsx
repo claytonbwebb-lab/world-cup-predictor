@@ -77,7 +77,7 @@ export default function Footer() {
               style={{ maxHeight: '48px' }}
             />
             <p className="text-textMuted text-sm mb-4">
-              The World Cup 2026 prediction league. Compete with friends, predict every score, climb the leaderboard.
+              The Premier League 2026/27 prediction league. Compete with friends, predict every score, climb the leaderboard.
             </p>
             <div className="flex gap-3">
               {socialLinks.map(s => (
@@ -154,7 +154,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-border mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-textMuted">
-          <span>World Cup 2026 Prediction League</span>
+          <span>Premier League 2026/27 Prediction League</span>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-text transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-text transition-colors">Terms</Link>

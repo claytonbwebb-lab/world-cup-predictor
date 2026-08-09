@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { type Metadata } from 'next';
 import AdminMatchTable from './AdminMatchTable';
 import AddMatchForm from './AddMatchForm';
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -23,11 +24,26 @@ export default async function AdminPage() {
     redirect('/dashboard');
   }
 
-  // Fetch all matches
-  const { data: matches } = await supabase
+  // Await searchParams to get week filter
+  const sp = await searchParams ?? {};
+  const selectedWeek = sp.week ? Number(sp.week) : null;
+
+  // Fetch all matches (to build week list)
+  const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
     .order('kickoff_at', { ascending: true });
+
+  // Build distinct sorted week list
+  const allWeeks = Array.from(new Set((allMatches || [])
+    .map(m => m.week_number)
+    .filter(w => w !== null)
+  )).sort((a, b) => b - a);
+
+  // Filter matches by week if selected
+  const matches = selectedWeek
+    ? (allMatches || []).filter(m => m.week_number === selectedWeek)
+    : (allMatches || []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,8 +81,11 @@ export default async function AdminPage() {
 
         {/* Matches Management */}
         <div className="card">
-          <h2 className="text-xl font-bold mb-4">Manage Matches</h2>
-          <AdminMatchTable matches={matches || []} />
+          <AdminMatchTable
+            matches={matches}
+            availableWeeks={allWeeks as number[]}
+            selectedWeek={selectedWeek}
+          />
         </div>
       </main>
     </div>

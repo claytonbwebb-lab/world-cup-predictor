@@ -8,7 +8,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Play Predict Win | Football Prediction League',
-  description: 'Predict World Cup matches and compete with friends',
+  description: 'Predict Premier League matches and compete with friends',
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
     { rel: 'icon', url: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Play Predict Win',
-    description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
+    description: 'Predict every Premier League 2026/27 scoreline. Compete with your mates. Climb the leaderboard.',
     url: 'https://www.playpredictwin.com',
     siteName: 'Play Predict Win',
     locale: 'en_GB',
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Play Predict Win — World Cup 2026 Prediction League',
+        alt: 'Play Predict Win — Premier League 2026/27 Prediction League',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Play Predict Win',
-    description: 'Predict every World Cup 2026 scoreline. Compete with your mates. Climb the leaderboard.',
+    description: 'Predict every Premier League 2026/27 scoreline. Compete with your mates. Climb the leaderboard.',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.json',
@@ -67,10 +67,10 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Event",
-              "name": "FIFA World Cup 2026",
-              "description": "Predict every match scoreline in the FIFA World Cup 2026 and compete with friends on Play Predict Win.",
-              "startDate": "2026-06-11",
-              "endDate": "2026-07-19",
+              "name": "Premier League 2026/27",
+              "description": "Predict every Premier League 2026/27 scoreline and compete with friends on Play Predict Win.",
+              "startDate": "2026-08-15",
+              "endDate": "2027-05-24",
               "eventStatus": "https://schema.org/EventScheduled",
               "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
               "location": {

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Countdown from '@/components/Countdown';
 import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
@@ -27,8 +28,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         {/* Background image with overlay */}
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1637203727700-9d86c74904d6?q=80&w=1920&auto=format&fit=crop"
-            alt="World Cup stadium at night with floodlights"
+            src="https://images.unsplash.com/photo-1766934824997-f99bbcad64f3?q=80&w=1920&auto=format&fit=crop"
+            alt="Premier League football on a grassy pitch with goalposts"
             fill
             priority
             className="object-cover"
@@ -50,8 +51,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
           {/* Badge */}
           <div className="inline-flex flex-col items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-5 py-2 text-primary text-sm font-medium mb-8">
-            <span>World Cup 2026</span>
-            <span className="text-xs opacity-70">USA · Canada · Mexico</span>
+            <span>Premier League 2026/27</span>
+            <span className="text-xs opacity-70">August 2026 — May 2027</span>
           </div>
 
           {/* Brand name */}
@@ -105,7 +106,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           and prove you've got what it takes to be a football pundit.
         </p>
         <ul className="flex flex-wrap justify-center gap-4 text-sm">
-          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard', 'Win prizes'].map(item => (
+          {['Predict before kickoff', 'Lock in your scores', 'Watch points roll in', 'Climb the leaderboard', 'Win cash prizes'].map(item => (
             <li key={item} className="flex items-center gap-2 text-textMuted bg-surface/50 px-4 py-2 rounded-full">
               <span className="text-primary">✓</span> {item}
             </li>
@@ -176,19 +177,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-2xl font-bold text-center mb-2">Our Partners</h2>
           <p className="text-textMuted text-center mb-10 text-sm">Supported by brands that love football</p>
-          {/* Featured partner — Thrill Casino */}
-          <div className="flex justify-center mb-10">
-            <a href="https://thrillcasino.io/tdxofefoh" target="_blank" rel="noopener noreferrer sponsored"
-              className="flex items-center justify-center bg-white/5 border border-primary/30 rounded-2xl px-10 py-6 hover:border-primary/60 hover:bg-white/10 transition-all group">
-              <div className="text-center">
-                <div className="text-xs text-primary font-bold uppercase tracking-widest mb-3 opacity-70">Featured Partner</div>
-                <Image src="/images/partners/thrill.svg" alt="Thrill Casino" width={260} height={104}
-                  className="object-contain max-h-[72px] group-hover:opacity-90 transition-opacity" />
-              </div>
-            </a>
-          </div>
-
-          {/* Other partners */}
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
             {[
               { name: '90s Football', href: '/90sfootball', src: '/images/partners/90sfootball.png', alt: '90s Football' },
@@ -213,6 +201,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         </div>
       </section>
 
+      {/* ── Supporter League ── */}
+      <section className="border-t border-border py-16">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-gradient-to-br from-primary/10 via-surface to-secondary/10 border border-primary/20 rounded-2xl p-8 md:p-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-4">
+              🏆 New Feature
+            </div>
+            <h2 className="text-3xl font-black mb-3">Introducing the Supporter League</h2>
+            <p className="text-textMuted text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+              Your prediction points don&apos;t just count for you — they count for your club. Pick your
+              favourite team from all 92 clubs in the football league and join the Supporter League.
+              See which club&apos;s fans are the best predictors.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/auth/signup"
+                className="btn-primary px-8 py-3 rounded-xl font-bold">
+                Join the Supporter League →
+              </Link>
+              <Link href="/supporter-league"
+                className="btn-secondary px-8 py-3 rounded-xl font-bold">
+                View Standings
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="relative overflow-hidden border-t border-border bg-surface/30">
         <div className="absolute inset-0 pointer-events-none"
@@ -221,7 +236,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           <div className="text-5xl mb-6 text-primary">★</div>
           <h2 className="text-4xl font-black mb-4">Ready to Play?</h2>
           <p className="text-textMuted text-lg mb-8">
-            The 2026 World Cup is live! Make your predictions for every match.
+            The 2026/27 Premier League season kicks off on 15 August. Get your predictions in early.
           </p>
           <Link href="/auth/signup"
             className="btn-primary px-12 py-4 rounded-xl text-lg font-bold inline-block shadow-lg shadow-primary/20">
@@ -230,13 +245,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         </div>
       </section>
 
+      {/* ── Countdown ── */}
+      <section className="border-t border-border py-16 text-center">
+        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
+        <Countdown />
+      </section>
+
       {/* ── Blog ── */}
       <section className="border-t border-border py-20">
         <div className="max-w-5xl mx-auto px-6">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-black">From the Blog</h2>
-              <p className="text-textMuted text-sm mt-1">Prediction tips & World Cup guides</p>
+              <p className="text-textMuted text-sm mt-1">Prediction tips & Premier League guides</p>
             </div>
             <Link href="/blog" className="text-primary text-sm font-medium hover:underline">
               View all →

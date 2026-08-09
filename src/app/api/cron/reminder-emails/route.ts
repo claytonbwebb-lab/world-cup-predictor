@@ -177,8 +177,8 @@ export async function POST(request: Request) {
     const totalCount = tomorrowMatches.length;
 
     const subject = predictedCount === 0
-      ? "World Cup predictions due — you haven't predicted any matches for tomorrow!"
-      : `World Cup predictions reminder — ${predictedCount}/${totalCount} matches predicted`;
+      ? "Premier League predictions due — you haven't predicted any matches for tomorrow!"
+      : `Premier League predictions reminder — ${predictedCount}/${totalCount} matches predicted`;
 
     if (dryRun) {
       console.log(`[reminder-emails] 🧪 DRY RUN — would send to ${user.email}`);
@@ -343,7 +343,7 @@ function buildEmailHtml(predictedCount: number, totalCount: number, matchesListH
     </div>
 
     <div style="text-align:center;padding:20px 0 8px;font-size:12px;color:#475569;">
-      © Play Predict Win · World Cup 2026<br/>
+      © Play Predict Win · Premier League 2026/27<br/>
       <a href="https://playpredictwin.com/dashboard" style="color:#475569;text-decoration:underline;">Manage preferences</a>
     </div>
 

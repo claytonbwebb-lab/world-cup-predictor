@@ -6,6 +6,7 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { isIOS, isStandalone } from '@/utils/pwa';
+import FavouriteTeamSelect from '@/components/FavouriteTeamSelect';
 
 const DEFAULT_AVATAR = '/default-avatar.png';
 
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState('');
+  const [favouriteTeam, setFavouriteTeam] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -43,7 +45,7 @@ export default function ProfilePage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username, avatar_url, marketing_consent')
+      .select('username, avatar_url, marketing_consent, favourite_team')
       .eq('id', user.id)
       .single();
 
@@ -52,6 +54,7 @@ export default function ProfilePage() {
       setUsername(profile.username || '');
       setAvatarPreview(profile.avatar_url || null);
       setMarketingConsent(profile.marketing_consent || false);
+      setFavouriteTeam(profile.favourite_team || '');
     }
     setLoading(false);
   }
@@ -256,6 +259,42 @@ export default function ProfilePage() {
                 {saving ? 'Saving...' : 'Save'}
               </button>
             </form>
+          </div>
+
+          {/* Favourite Club */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Favourite Club</h2>
+            <p className="text-textMuted text-sm mb-4">
+              Select the club you want to support in the{' '}
+              <a href="/supporter-league" className="text-primary hover:underline">Supporter League</a>.
+              You can change it at any time.
+            </p>
+            <FavouriteTeamSelect
+              value={favouriteTeam}
+              onChange={async (team) => {
+                setFavouriteTeam(team);
+                setSaving(true);
+                setError('');
+                setSuccess('');
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ favourite_team: team })
+                  .eq('id', user.id);
+                if (error) {
+                  setError('Failed to save: ' + error.message);
+                  setFavouriteTeam(profile?.favourite_team || '');
+                } else {
+                  setSuccess(team ? `Supporting ${team}!` : 'Club removed.');
+                  setProfile((p: any) => ({ ...p, favourite_team: team }));
+                }
+                setSaving(false);
+              }}
+            />
+            {favouriteTeam && (
+              <p className="text-primary text-sm mt-2">
+                ❤️ You&apos;re supporting {favouriteTeam} — <a href="/supporter-league" className="underline hover:no-underline">view the Supporter League</a>
+              </p>
+            )}
           </div>
 
           {/* Email */}

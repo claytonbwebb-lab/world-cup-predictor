@@ -34,13 +34,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    // Use service role client to bypass RLS so admin can score other users' predictions
+    // Use service role client (bypasses RLS) to find double-up picks for this match
     const adminClient = getServiceClient();
+
+    const { data: doubleUpRows, error: duError } = await adminClient
+      .from('double_up_picks')
+      .select('user_id, match_id')
+      .eq('match_id', match_id);
+
+    if (duError) {
+      console.error('Double-up fetch error:', duError.message);
+    }
+
+    console.log(`Scoring match ${match_id}: found ${(doubleUpRows || []).length} double-up picks for users:`, (doubleUpRows || []).map(r => r.user_id));
+
+    const doubleUpMatchIds = new Set((doubleUpRows || []).map(r => r.user_id));
 
     const updates = (predictions || []).map((prediction) => {
       const isExactScore =
         prediction.home_prediction === home_score &&
         prediction.away_prediction === away_score;
+
+      const isDoubleUp = doubleUpMatchIds.has(prediction.user_id);
+
+      console.log(`Prediction ${prediction.id} user=${prediction.user_id} home=${prediction.home_prediction}-${prediction.away_prediction} actual=${home_score}-${away_score} isExact=${isExactScore} isDoubleUp=${isDoubleUp}`);
 
       let actualResult: 'home' | 'draw' | 'away';
       if (home_score > away_score) actualResult = 'home';
@@ -57,6 +74,9 @@ export async function POST(request: NextRequest) {
       let points = 0;
       if (isExactScore) points = 3;
       else if (isCorrectResult) points = 1;
+
+      // Apply Double Up multiplier
+      if (points > 0 && isDoubleUp) points = points * 2;
 
       return {
         id: prediction.id,

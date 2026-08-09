@@ -18,8 +18,19 @@ export type Match = {
   away_score: number | null;
   is_locked: boolean;
   result_entered: boolean;
+  week_number: number | null; // null for legacy matches
   created_at: string;
   updated_at: string;
+};
+
+export type Week = {
+  id: string;
+  week_number: number;
+  label: string;
+  season: string;
+  starts_at: string;
+  ends_at: string;
+  created_at: string;
 };
 
 export type Prediction = {
@@ -73,6 +84,12 @@ export type LeaderboardEntry = {
   exact_scores: number;
   correct_results: number;
   total_predictions: number;
+  avatar_url?: string | null;
+};
+
+export type WeeklyLeaderboardEntry = LeaderboardEntry & {
+  week_number?: number;
+  week_label?: string;
 };
 
 export type UserStats = {

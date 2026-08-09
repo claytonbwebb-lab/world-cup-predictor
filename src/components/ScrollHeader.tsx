@@ -6,7 +6,6 @@ import Image from 'next/image';
 
 export default function ScrollHeader() {
   const [visible, setVisible] = useState(false);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 60);
@@ -23,24 +22,8 @@ export default function ScrollHeader() {
         {/* Three-column grid: [left] [logo] [right] — logo is always mathematically centred */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
-          {/* LEFT — mobile burger on mobile, social icons on desktop */}
+          {/* LEFT — social icons on desktop only. Mobile uses NavBar's burger. */}
           <div className="flex items-center gap-3">
-            {/* Mobile burger */}
-            <button
-              className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
-              onClick={() => setOpen(o => !o)}
-              aria-label="Toggle menu"
-            >
-              {open ? (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
             {/* Social icons on desktop */}
             <div className="hidden sm:flex items-center gap-3">
               <a href="https://x.com/playpredictwin" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter"
@@ -76,7 +59,8 @@ export default function ScrollHeader() {
             />
           </Link>
 
-          {/* RIGHT — auth buttons on desktop, burger on mobile */}
+          {/* RIGHT — auth buttons on desktop only. Mobile uses the NavBar burger.
+            NavBar is sticky and always visible, so ScrollHeader doesn't need a mobile burger. */}
           <div className="flex items-center justify-end gap-2">
             {/* Desktop */}
             <Link href="/auth/login"
@@ -87,43 +71,12 @@ export default function ScrollHeader() {
               className="hidden sm:inline btn-primary px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap">
               Join the League
             </Link>
-
-            {/* Mobile burger */}
-            <button
-              className="sm:hidden p-2 text-textMuted hover:text-text transition-colors"
-              onClick={() => setOpen(o => !o)}
-              aria-label="Toggle menu"
-            >
-              {open ? (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
           </div>
 
         </div>
       </div>
 
-      {/* Mobile dropdown */}
-      {open && (
-        <div className="sm:hidden border-t border-border px-4 py-3 flex flex-col gap-2">
-          <Link href="/auth/login"
-            className="py-2 text-textMuted hover:text-text transition-colors font-medium"
-            onClick={() => setOpen(false)}>
-            Sign In
-          </Link>
-          <Link href="/auth/signup"
-            className="py-2 btn-primary px-4 rounded-lg font-bold text-center"
-            onClick={() => setOpen(false)}>
-            Join the League
-          </Link>
-        </div>
-      )}
+
     </header>
   );
 }

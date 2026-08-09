@@ -1,4 +1,4 @@
-import PublicNav from '@/components/PublicNav';
+import NavBar from "@/components/NavBar";;
 import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Link from 'next/link';
@@ -6,11 +6,11 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Football Prediction Blog | World Cup 2026 Tips & Guides',
-  description: 'Expert football prediction guides, World Cup 2026 strategy tips, and match analysis to help you win your prediction league.',
+  title: 'Football Prediction Blog | Premier League 2026/27 Tips & Guides',
+  description: 'Expert football prediction guides, Premier League 2026/27 strategy tips, and match analysis to help you win your prediction league.',
   openGraph: {
-    title: 'Football Prediction Blog | World Cup 2026 Tips & Guides',
-    description: 'Expert football prediction guides and World Cup 2026 strategy tips to help you win your prediction league.',
+    title: 'Football Prediction Blog | Premier League 2026/27 Tips & Guides',
+    description: 'Expert football prediction guides and Premier League 2026/27 strategy tips to help you win your prediction league.',
     type: 'website',
   },
 };
@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
+      <NavBar />
       <main className="max-w-5xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black mb-3">Prediction Blog</h1>
-          <p className="text-textMuted text-lg">World Cup guides, prediction strategy, and match analysis</p>
+          <p className="text-textMuted text-lg">Premier League guides, prediction strategy, and match analysis</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
