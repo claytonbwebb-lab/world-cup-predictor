@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-const KICKOFF = new Date('2026-06-11T13:00:00Z').getTime();
+const KICKOFF = new Date('2026-08-12T19:00:00Z').getTime();
 
 function pad(n: number) {
   return String(n).padStart(2, '0');
@@ -33,20 +33,28 @@ export default function Countdown() {
   if (!timeLeft) return null;
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 mt-10">
-      {[
-        { val: pad(timeLeft.d), label: 'Days' },
-        { val: pad(timeLeft.h), label: 'Hours' },
-        { val: pad(timeLeft.m), label: 'Mins' },
-        { val: pad(timeLeft.s), label: 'Secs' },
-      ].map(({ val, label }) => (
-        <div key={label} className="flex flex-col items-center">
-          <div className="bg-surface/80 border border-primary/30 rounded-xl px-4 py-3 text-center min-w-[72px]">
-            <span className="text-3xl font-black text-primary tabular-nums">{val}</span>
+    <>
+      {/* Match label */}
+      <div className="mb-6">
+        <p className="text-primary font-bold text-lg">Paris Saint-Germain vs Aston Villa</p>
+        <p className="text-textMuted text-sm mt-0.5">UEFA Super Cup &middot; Wednesday 12 August &middot; 8pm UK</p>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-6 mt-4">
+        {[
+          { val: pad(timeLeft.d), label: 'Days' },
+          { val: pad(timeLeft.h), label: 'Hours' },
+          { val: pad(timeLeft.m), label: 'Mins' },
+          { val: pad(timeLeft.s), label: 'Secs' },
+        ].map(({ val, label }) => (
+          <div key={label} className="flex flex-col items-center">
+            <div className="bg-surface/80 border border-primary/30 rounded-xl px-4 py-3 text-center min-w-[72px]">
+              <span className="text-3xl font-black text-primary tabular-nums">{val}</span>
+            </div>
+            <span className="text-xs text-textMuted uppercase tracking-widest mt-1">{label}</span>
           </div>
-          <span className="text-xs text-textMuted uppercase tracking-widest mt-1">{label}</span>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

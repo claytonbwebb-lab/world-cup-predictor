@@ -1,7 +1,7 @@
 export type League =
   | 'Premier League' | 'Championship' | 'League One' | 'League Two'
   | 'Scottish Premiership' | 'Scottish Championship' | 'Scottish League One' | 'Scottish League Two'
-  | 'Non-League';
+  | 'Non-League' | 'European';
 
 export interface TeamBadge {
   name: string;
@@ -19,38 +19,38 @@ export const ALL_TEAMS: TeamBadge[] = [
   { name: "Brighton", badge: "/badges/brighton.png", league: "Premier League" },
   { name: "Chelsea", badge: "/badges/chelsea.png", league: "Premier League" },
   { name: "Crystal Palace", badge: "/badges/crystal_palace.png", league: "Premier League" },
+  { name: "Coventry City", badge: "/badges/coventry_city.png", league: "Premier League" },
   { name: "Everton", badge: "/badges/everton.png", league: "Premier League" },
   { name: "Fulham", badge: "/badges/fulham.png", league: "Premier League" },
+  { name: "Hull City", badge: "/badges/hull_city.png", league: "Premier League" },
+  { name: "Ipswich Town", badge: "/badges/ipswich_town.png", league: "Premier League" },
+  { name: "Leicester City", badge: "/badges/leicester_city.png", league: "Premier League" },
+  { name: "Leeds United", badge: "/badges/leeds_united.png", league: "Premier League" },
   { name: "Liverpool", badge: "/badges/liverpool.png", league: "Premier League" },
   { name: "Manchester City", badge: "/badges/manchester_city.png", league: "Premier League" },
   { name: "Manchester United", badge: "/badges/manchester_united.png", league: "Premier League" },
   { name: "Newcastle United", badge: "/badges/newcastle_united.png", league: "Premier League" },
   { name: "Nottingham Forest", badge: "/badges/nottingham_forest.png", league: "Premier League" },
   { name: "Southampton", badge: "/badges/southampton.png", league: "Premier League" },
+  { name: "Sunderland", badge: "/badges/sunderland.png", league: "Premier League" },
   { name: "Tottenham Hotspur", badge: "/badges/tottenham_hotspur.png", league: "Premier League" },
-  { name: "West Ham United", badge: "/badges/west_ham_united.png", league: "Premier League" },
-  { name: "Wolverhampton", badge: "/badges/wolverhampton.png", league: "Premier League" },
-  { name: "Ipswich Town", badge: "/badges/ipswich_town.png", league: "Premier League" },
-  { name: "Leicester City", badge: "/badges/leicester_city.png", league: "Premier League" },
 
   // Championship
   { name: "Burnley", badge: "/badges/burnley.png", league: "Championship" },
+  { name: "West Ham United", badge: "/badges/west_ham_united.png", league: "Championship" },
+  { name: "Wolverhampton Wanderers", badge: "/badges/wolverhampton.png", league: "Championship" },
   { name: "Sheffield United", badge: "/badges/sheffield_united.png", league: "Championship" },
-  { name: "Sunderland", badge: "/badges/sunderland.png", league: "Championship" },
   { name: "Bristol City", badge: "/badges/bristol_city.png", league: "Championship" },
   { name: "West Bromwich Albion", badge: "/badges/west_bromwich_albion.png", league: "Championship" },
   { name: "Middlesbrough", badge: "/badges/middlesbrough.png", league: "Championship" },
   { name: "Swansea City", badge: "/badges/swansea_city.png", league: "Championship" },
   { name: "Millwall", badge: "/badges/millwall.png", league: "Championship" },
-  { name: "Leeds United", badge: "/badges/leeds_united.png", league: "Championship" },
   { name: "Preston North End", badge: "/badges/preston_north_end.png", league: "Championship" },
-  { name: "Coventry City", badge: "/badges/coventry_city.png", league: "Championship" },
   { name: "Cardiff City", badge: "/badges/cardiff_city.png", league: "Championship" },
   { name: "Norwich City", badge: "/badges/norwich_city.png", league: "Championship" },
   { name: "Watford", badge: "/badges/watford.png", league: "Championship" },
   { name: "Stoke City", badge: "/badges/stoke_city.png", league: "Championship" },
   { name: "Birmingham City", badge: "/badges/birmingham_city.png", league: "Championship" },
-  { name: "Hull City", badge: "/badges/hull_city.png", league: "Championship" },
   { name: "Derby County", badge: "/badges/derby_county.png", league: "Championship" },
   { name: "Luton Town", badge: "/badges/luton_town.png", league: "Championship" },
   { name: "Portsmouth", badge: "/badges/portsmouth.png", league: "Championship" },
@@ -146,6 +146,9 @@ export const ALL_TEAMS: TeamBadge[] = [
 
   // Non-League
   { name: "FC United of Manchester", badge: "/badges/fc_united.png", league: "Non-League" },
+
+  // European (Super Cup, friendlies, etc.)
+  { name: "Paris Saint-Germain", badge: "/badges/paris_saint_germain.png", league: "European" },
 ];
 
 export const PREMIER_LEAGUE_TEAMS = ALL_TEAMS.filter(t => t.league === "Premier League");

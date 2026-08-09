@@ -339,15 +339,15 @@ export default async function Dashboard() {
                         <TeamBadge value={pred.match.away_flag} size="sm" />
                         <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
                       </div>
-                      {/* Points */}
+                      {/* Tags + Points — stacked vertically, anchored right */}
                       <div className="shrink-0 flex flex-col items-end gap-0.5">
                         {pred.is_exact_score && (
-                          <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded">EXACT</span>
+                          <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded whitespace-nowrap">EXACT</span>
                         )}
                         {doubleUpMatchIds.has(pred.match_id) && (
-                          <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded">DOUBLE UP</span>
+                          <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded whitespace-nowrap">DOUBLE UP</span>
                         )}
-                        <span className="text-xs font-bold text-primary">+{pred.points_awarded}</span>
+                        <span className="text-xs font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
                       </div>
                     </div>
                   ))}
@@ -363,46 +363,54 @@ export default async function Dashboard() {
                     <div className="text-right pl-2">Pts</div>
                   </div>
                   <div className="space-y-2">
-                    {recentPredictions.map((pred: any) => (
+                    {recentPredictions.map((pred: any) => {
+                      const matchDate = pred.match.kickoff_at
+                        ? new Date(pred.match.kickoff_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                        : null;
+                      return (
                       <div
                         key={pred.id}
-                        className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
+                        className="grid grid-cols-[1fr_5rem_5rem_1fr_minmax(6rem,auto)] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                       >
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="text-right">
-                            <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.home_team, true)}</div>
-                          </div>
-                          <TeamBadge value={pred.match.home_flag} size="sm" />
+                        {/* Home team — badge over name, like fixtures */}
+                        <div className="flex flex-col items-center gap-1">
+                          <TeamBadge value={pred.match.home_flag} size="md" />
+                          <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.home_team, true)}</span>
+                          {matchDate && <span className="text-[9px] text-textMuted">{matchDate}</span>}
                         </div>
+
                         <div className="w-[5rem] text-center">
-                          <div className="text-xs text-textMuted/60 mb-0.5">Predicted</div>
+                          <div className="text-[10px] text-textMuted/60 mb-0.5">Predicted</div>
                           <div className="text-sm font-medium">
                             {pred.home_prediction} - {pred.away_prediction}
                           </div>
                         </div>
                         <div className="w-[5rem] text-center">
-                          <div className="text-xs text-textMuted/60 mb-0.5">Actual</div>
+                          <div className="text-[10px] text-textMuted/60 mb-0.5">Actual</div>
                           <div className="text-sm font-bold text-primary">
                             {pred.match.home_score} - {pred.match.away_score}
                           </div>
                         </div>
-                        <div className="flex items-center justify-start gap-2">
-                          <TeamBadge value={pred.match.away_flag} size="sm" />
-                          <div className="text-left">
-                            <div className="text-sm font-medium leading-tight">{getTeamName(pred.match.away_team, true)}</div>
-                          </div>
+
+                        {/* Away team — badge over name, like fixtures */}
+                        <div className="flex flex-col items-center gap-1">
+                          <TeamBadge value={pred.match.away_flag} size="md" />
+                          <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.away_team, true)}</span>
                         </div>
+
+                        {/* Tags + Points — stacked vertically, anchored right */}
                         <div className="flex flex-col items-end gap-0.5">
                           {pred.is_exact_score && (
-                            <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">EXACT</span>
+                            <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded whitespace-nowrap">EXACT</span>
                           )}
                           {doubleUpMatchIds.has(pred.match_id) && (
-                            <span className="text-xs bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded">DOUBLE UP</span>
+                            <span className="text-xs bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded whitespace-nowrap">DOUBLE UP</span>
                           )}
-                          <span className="font-bold text-primary">+{pred.points_awarded}</span>
+                          <span className="font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </>

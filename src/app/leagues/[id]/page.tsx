@@ -247,7 +247,7 @@ export default function LeagueLeaderboardPage() {
         )}
 
         {/* Leaderboard Table */}
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           {loading ? (
             <div className="text-center py-12 text-textMuted">Loading...</div>
           ) : members.length === 0 ? (
@@ -292,8 +292,8 @@ export default function LeagueLeaderboardPage() {
                           alt={member.username}
                           className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
                         />
-                        <div className="flex flex-col">
-                          <span className={`font-medium ${member.user_id === currentUserId ? 'text-primary' : ''}`}>
+                        <div className="flex flex-col min-w-0">
+                          <span className={`font-medium truncate max-w-[120px] ${member.user_id === currentUserId ? 'text-primary' : ''}`}>
                             {member.username}
                           </span>
                           {member.user_id === currentUserId && (

@@ -86,7 +86,7 @@ export async function POST(request: Request) {
   const tomorrowMatchIds = tomorrowMatches.map((m) => m.id);
   console.log(`[reminder-emails] ${tomorrowMatches.length} matches tomorrow`);
 
-  // ── Step 2: Find all users with an email address ──
+  // ── Step 2: Find all users with an email address who haven't opted out of reminders ──
   const { data: users, error: usersError } = await fetchAllRows<{
     id: string;
     username: string | null;
@@ -97,6 +97,7 @@ export async function POST(request: Request) {
       .select('id, username, email')
       .not('email', 'is', null)
       .neq('email', '')
+      .eq('reminder_emails_opt_out', false)
   );
 
   if (usersError) {
@@ -186,7 +187,7 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const html = buildEmailHtml(predictedCount, totalCount, matchesListHtml);
+    const html = buildEmailHtml(predictedCount, totalCount, matchesListHtml, user.id);
     toSend.push({ userId: user.id, email: user.email, subject, html });
   }
 
@@ -292,7 +293,11 @@ export async function POST(request: Request) {
   });
 }
 
-function buildEmailHtml(predictedCount: number, totalCount: number, matchesListHtml: string): string {
+function buildEmailHtml(predictedCount: number, totalCount: number, matchesListHtml: string, userId?: string): string {
+  const unsubscribeUrl = userId
+    ? `https://playpredictwin.com/profile?unsubscribe_reminders=1&uid=${userId}`
+    : 'https://playpredictwin.com/profile';
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -344,7 +349,7 @@ function buildEmailHtml(predictedCount: number, totalCount: number, matchesListH
 
     <div style="text-align:center;padding:20px 0 8px;font-size:12px;color:#475569;">
       © Play Predict Win · Premier League 2026/27<br/>
-      <a href="https://playpredictwin.com/dashboard" style="color:#475569;text-decoration:underline;">Manage preferences</a>
+      <a href="${unsubscribeUrl}" style="color:#475569;text-decoration:underline;">Unsubscribe from match reminders</a>
     </div>
 
   </div>

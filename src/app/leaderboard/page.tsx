@@ -274,7 +274,7 @@ export default function LeaderboardPage() {
         {loading ? (
           <div className="text-center py-16 text-textMuted">Loading...</div>
         ) : (
-          <div className="card overflow-hidden">
+          <div className="card overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -312,8 +312,8 @@ export default function LeaderboardPage() {
                             alt={entry.username}
                             className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
                           />
-                          <div className="flex flex-col">
-                            <span className={`font-medium ${entry.user_id === userId ? 'text-primary' : ''}`}>
+                          <div className="flex flex-col min-w-0">
+                            <span className={`font-medium truncate max-w-[120px] ${entry.user_id === userId ? 'text-primary' : ''}`}>
                               {entry.username}
                             </span>
                             {entry.user_id === userId && (

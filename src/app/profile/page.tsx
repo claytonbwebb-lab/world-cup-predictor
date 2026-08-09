@@ -26,6 +26,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [reminderOptOut, setReminderOptOut] = useState(false);
 
   const { isSupported, isSubscribed, permission, subscribe, unsubscribe, loading: pushLoading } = usePushNotifications();
 
@@ -33,6 +34,27 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadProfile();
+
+    // Handle one-click unsubscribe link from reminder emails
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('unsubscribe_reminders') === '1') {
+      const uid = params.get('uid');
+      // If user is logged in and matches the uid in the link, opt them out silently
+      if (uid) {
+        supabase
+          .from('profiles')
+          .update({ reminder_emails_opt_out: true })
+          .eq('id', uid)
+          .then(({ error }) => {
+            if (!error) {
+              setReminderOptOut(true);
+              setSuccess('Reminder emails disabled — you won\'t receive these emails again.');
+            }
+          });
+      }
+      // Clean the URL without refreshing
+      window.history.replaceState({}, '', '/profile');
+    }
   }, []);
 
   async function loadProfile() {
@@ -45,7 +67,7 @@ export default function ProfilePage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username, avatar_url, marketing_consent, favourite_team')
+      .select('username, avatar_url, marketing_consent, favourite_team, reminder_emails_opt_out')
       .eq('id', user.id)
       .single();
 
@@ -54,6 +76,7 @@ export default function ProfilePage() {
       setUsername(profile.username || '');
       setAvatarPreview(profile.avatar_url || null);
       setMarketingConsent(profile.marketing_consent || false);
+      setReminderOptOut(profile.reminder_emails_opt_out || false);
       setFavouriteTeam(profile.favourite_team || '');
     }
     setLoading(false);
@@ -368,6 +391,43 @@ export default function ProfilePage() {
               />
               <label htmlFor="marketing_consent" className="text-sm text-textMuted leading-snug">
                 I would like to receive marketing emails from Play Predict Win about special offers, football content, and updates. I understand I can unsubscribe at any time.
+              </label>
+            </div>
+          </div>
+
+          {/* Match Reminder Emails */}
+          <div className="card">
+            <h2 className="text-lg font-bold mb-1">Match Reminder Emails</h2>
+            <p className="text-textMuted text-sm mb-4">Get reminded when you haven&apos;t predicted upcoming matches. You can opt out below.</p>
+            <div className="flex items-start gap-3 bg-background/50 border border-border rounded-lg p-4">
+              <input
+                type="checkbox"
+                id="reminder_opt_out"
+                checked={!reminderOptOut}
+                onChange={async (e) => {
+                  const checked = e.target.checked;
+                  const optedOut = !checked;
+                  setReminderOptOut(optedOut);
+                  setSaving(true);
+                  setError('');
+                  setSuccess('');
+                  const { error } = await supabase
+                    .from('profiles')
+                    .update({ reminder_emails_opt_out: optedOut })
+                    .eq('id', user.id);
+                  if (error) {
+                    setError('Failed to save preference: ' + error.message);
+                    setReminderOptOut(!optedOut);
+                  } else {
+                    setSuccess(optedOut ? 'Reminder emails disabled.' : 'Reminder emails enabled.');
+                  }
+                  setSaving(false);
+                }}
+                disabled={saving}
+                className="mt-0.5 accent-primary shrink-0"
+              />
+              <label htmlFor="reminder_opt_out" className="text-sm text-textMuted leading-snug">
+                Send me reminder emails when I haven&apos;t predicted upcoming matches. Unchecking this will stop all match prediction reminders.
               </label>
             </div>
           </div>
