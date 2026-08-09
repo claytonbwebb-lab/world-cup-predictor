@@ -8,8 +8,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ─── Maintenance Mode ───────────────────────────────────────────────────────
-  const maintenanceMode = process.env.MAINTENANCE_MODE === 'true';
-  const bypassPass = process.env.MAINTENANCE_BYPASS_PASS;
+  // Use NEXT_PUBLIC_* vars — these are the only env vars accessible to Vercel Edge middleware
+  // (server-only vars like MAINTENANCE_BYPASS_PASS are not available at the edge)
+  const maintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const bypassPass = process.env.NEXT_PUBLIC_MAINTENANCE_BYPASS_PASS;
 
   if (maintenanceMode && bypassPass) {
     // Paths that bypass maintenance entirely
