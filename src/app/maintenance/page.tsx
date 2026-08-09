@@ -30,16 +30,6 @@ export default function MaintenancePage() {
               Should only be a few minutes. Thanks for your patience!
             </p>
           </div>
-
-          <div className="pt-2 border-t border-border">
-            <p className="text-xs text-textMuted">
-              If you&rsquo;re seeing this and you&rsquo;re an admin, visit this page with
-              your bypass password as a query param:{' '}
-              <code className="bg-surfaceLight px-1.5 py-0.5 rounded text-text text-xs">
-                ?__maint_bypass=YOURPASSWORD
-              </code>
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
