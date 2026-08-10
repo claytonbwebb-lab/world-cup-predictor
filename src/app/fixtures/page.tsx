@@ -39,6 +39,7 @@ export default function FixturesPage() {
   const [savedMatch, setSavedMatch] = useState<string | null>(null);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number>(-1); // -1 = compute on first load
   const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
@@ -335,12 +336,22 @@ export default function FixturesPage() {
       <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1">Fixtures & Predictions</h1>
-          {selectedWeek !== -1 && (
-            <p className="text-sm text-textMuted font-medium">
-              {getWeekDropdownLabel(selectedWeek)}
-            </p>
-          )}
+          <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
+
+          {/* Week selector — no 'all' option, just individual weeks */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="text-sm text-textMuted font-medium">Week:</label>
+            <select
+              value={String(selectedWeek !== -1 ? selectedWeek : '')}
+              onChange={e => setSelectedWeek(Number(e.target.value))}
+              className="input py-2 text-sm max-w-xs"
+            >
+              {selectedWeek === -1 && <option value="">Loading...</option>}
+              {availableWeeks.sort((a, b) => b - a).map(w => (
+                <option key={w} value={String(w)}>{getWeekDropdownLabel(w)}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Double Up explainer */}
@@ -386,7 +397,7 @@ export default function FixturesPage() {
               <div className="card text-center py-12">
                 <div className="text-4xl mb-4">📅</div>
                 <p className="text-textMuted">No fixtures{selectedWeek !== -1 ? ` for ${getWeekRange(selectedWeek)}` : ''} yet</p>
-                {selectedWeek === -1 && (
+                {selectedWeek !== -1 && (
                   <p className="text-textMuted text-sm mt-1">Check back soon!</p>
                 )}
               </div>
