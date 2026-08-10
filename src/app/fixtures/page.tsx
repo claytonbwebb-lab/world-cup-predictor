@@ -39,20 +39,24 @@ export default function FixturesPage() {
   const [savedMatch, setSavedMatch] = useState<string | null>(null);
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
-  // Default to current week so users see their own week's fixtures immediately
-  const [selectedWeek, setSelectedWeek] = useState<number | 'all'>(getWeekNumber(new Date()));
+  const [selectedWeek, setSelectedWeek] = useState<number>(-1); // -1 = compute on first load
   const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
   const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  // Always reload on mount (handles navigating away and back)
-  useEffect(() => { load(); }, []);
+  // Auto-default to this week → next week → earliest week on first load
+  useEffect(() => {
+    if (selectedWeek !== -1) return; // already set
+    load(); // first load — will compute and set the default week
+  }, []);
 
-  // Reload when selected week changes
-  useEffect(() => { load(selectedWeek); }, [selectedWeek]);
+  // Reload when selected week changes (excluding initial -1)
+  useEffect(() => {
+    if (selectedWeek === -1) return;
+    load(selectedWeek);
+  }, [selectedWeek]);
 
   // Auto-refresh every 30s to detect kickoff passing / admin changes
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function FixturesPage() {
     return () => clearInterval(interval);
   }, [selectedWeek]);
 
-  async function load(weekOverride?: number | 'all') {
+  async function load(weekOverride?: number) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
@@ -73,8 +77,7 @@ export default function FixturesPage() {
       .not('result_entered', 'eq', true)
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
-    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
-    setAvailableWeeks(weeks);
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b); // asc for default logic
 
     // Fixtures page only shows unscored matches (results page shows scored ones)
     let query = supabase
@@ -84,7 +87,18 @@ export default function FixturesPage() {
       .order('kickoff_at', { ascending: true });
 
     const qWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
-    if (qWeek !== 'all') {
+
+    // First load: compute the default week (this week → next week → earliest)
+    if (weekOverride === undefined && selectedWeek === -1 && weeks.length > 0) {
+      const now = new Date();
+      const thisWeek = getWeekNumber(now);
+      // Find this week, next week, or fall back to earliest
+      const defaultWeek = weeks.find(w => w === thisWeek)
+        || weeks.find(w => w > thisWeek)
+        || weeks[0];
+      setSelectedWeek(defaultWeek);
+      query = query.eq('week_number', defaultWeek);
+    } else if (qWeek !== -1) {
       query = query.eq('week_number', qWeek as number);
     }
 
@@ -102,7 +116,7 @@ export default function FixturesPage() {
 
     // Load Double Up state for the week being viewed
     const activeWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
-    if (activeWeek !== 'all') {
+    if (activeWeek !== -1) {
       const weekNum = activeWeek as number;
 
       // Always read double-up via API (bypasses RLS)
@@ -200,13 +214,7 @@ export default function FixturesPage() {
 
   // Build week options for selector — position-based labels for fixtures
   // (use calendar-based getWeekDropdownLabel from lib/weeks for results/leaderboard)
-  const weekOptions: { value: number | 'all'; label: string }[] = [
-    { value: 'all', label: `All Fixtures (${matches.length} matches)` },
-  ];
-  const sortedWeeks = [...availableWeeks].sort((a, b) => b - a); // desc
-  sortedWeeks.forEach((w) => {
-    weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
-  });
+
 
   function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
     return (
@@ -230,7 +238,7 @@ export default function FixturesPage() {
     const vals = inputs[match.id] || { home: 0, away: 0 };
     const hasPredicted = predictions.has(match.id);
     const isDoubleUp = doubleUpPick === match.id;
-    const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== 'all' && !doubleUpLocked;
+    const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== -1 && !doubleUpLocked;
 
     return (
       <div className="card">
@@ -327,39 +335,16 @@ export default function FixturesPage() {
       <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
-
-          {/* Week selector */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <label className="text-sm text-textMuted font-medium">Show:</label>
-            <select
-              value={String(selectedWeek)}
-              onChange={e => setSelectedWeek(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="input py-2 text-sm max-w-xs"
-            >
-              {weekOptions.map(opt => (
-                <option key={String(opt.value)} value={String(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            {selectedWeek !== 'all' && (
-              <span className="text-xs text-textMuted">
-                {getWeekDropdownLabel(selectedWeek as number)}
-              </span>
-            )}
-
-            {selectedWeek === 'all' && matches.length > 0 && (
-              <span className="text-xs text-textMuted">
-                {availableWeeks.length} week{availableWeeks.length !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold mb-1">Fixtures & Predictions</h1>
+          {selectedWeek !== -1 && (
+            <p className="text-sm text-textMuted font-medium">
+              {getWeekDropdownLabel(selectedWeek)}
+            </p>
+          )}
         </div>
 
-        {/* Double Up explainer — only when a specific week is selected */}
-        {selectedWeek !== 'all' && !loading && matches.length > 0 && (
+        {/* Double Up explainer */}
+        {selectedWeek !== -1 && !loading && matches.length > 0 && (
           <div className="mb-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-xl">
             <div className="flex items-start gap-3">
               <span className="text-xl mt-0.5">⚡</span>
@@ -400,8 +385,8 @@ export default function FixturesPage() {
             {matches.length === 0 && (
               <div className="card text-center py-12">
                 <div className="text-4xl mb-4">📅</div>
-                <p className="text-textMuted">No fixtures{selectedWeek !== 'all' ? ` for ${getWeekRange(selectedWeek as number)}` : ''} yet</p>
-                {selectedWeek === 'all' && (
+                <p className="text-textMuted">No fixtures{selectedWeek !== -1 ? ` for ${getWeekRange(selectedWeek)}` : ''} yet</p>
+                {selectedWeek === -1 && (
                   <p className="text-textMuted text-sm mt-1">Check back soon!</p>
                 )}
               </div>
