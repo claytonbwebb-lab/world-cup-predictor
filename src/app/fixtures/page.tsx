@@ -78,7 +78,8 @@ export default function FixturesPage() {
       .not('result_entered', 'eq', true)
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
-    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b); // asc for default logic
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b); // asc
+    setAvailableWeeks(weeks);
 
     // Fixtures page only shows unscored matches (results page shows scored ones)
     let query = supabase
@@ -93,10 +94,9 @@ export default function FixturesPage() {
     if (weekOverride === undefined && selectedWeek === -1 && weeks.length > 0) {
       const now = new Date();
       const thisWeek = getWeekNumber(now);
-      // Find this week, next week, or fall back to earliest
-      const defaultWeek = weeks.find(w => w === thisWeek)
-        || weeks.find(w => w > thisWeek)
-        || weeks[0];
+      // Find this week, or fall back to the earliest available
+      const defaultWeek = weeks.includes(thisWeek) ? thisWeek
+        : weeks.find(w => w > thisWeek) ?? weeks[0];
       setSelectedWeek(defaultWeek);
       query = query.eq('week_number', defaultWeek);
     } else if (qWeek !== -1) {
