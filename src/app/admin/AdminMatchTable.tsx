@@ -400,20 +400,14 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                       {/* Teams */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          {/* Home — badge left-pinned, team name fills right */}
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div className="w-6 shrink-0 flex items-center justify-center">
-                              <TeamBadge value={match.home_flag} size="sm" />
-                            </div>
+                          <div className="flex items-center gap-2">
+                            <TeamBadge value={match.home_flag} size="sm" />
                             <span className="font-medium text-text truncate">{match.home_team}</span>
                           </div>
                           <span className="text-textMuted text-xs shrink-0">v</span>
-                          {/* Away — team name fills left, badge right-pinned */}
-                          <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+                          <div className="flex items-center gap-2">
+                            <TeamBadge value={match.away_flag} size="sm" />
                             <span className="font-medium text-text truncate">{match.away_team}</span>
-                            <div className="w-6 shrink-0 flex items-center justify-center">
-                              <TeamBadge value={match.away_flag} size="sm" />
-                            </div>
                           </div>
                         </div>
                       </td>
