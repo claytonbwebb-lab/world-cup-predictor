@@ -399,12 +399,16 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                       </td>
                       {/* Teams */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <TeamBadge value={match.home_flag} size="sm" />
-                          <span className="font-medium text-text">{match.home_team}</span>
-                          <span className="text-textMuted text-xs">v</span>
-                          <TeamBadge value={match.away_flag} size="sm" />
-                          <span className="font-medium text-text">{match.away_team}</span>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <TeamBadge value={match.home_flag} size="sm" />
+                            <span className="font-medium text-text truncate">{match.home_team}</span>
+                          </div>
+                          <span className="text-textMuted text-xs shrink-0">v</span>
+                          <div className="flex items-center gap-2 min-w-0 justify-end">
+                            <TeamBadge value={match.away_flag} size="sm" />
+                            <span className="font-medium text-text truncate">{match.away_team}</span>
+                          </div>
                         </div>
                       </td>
                       {/* Score */}
