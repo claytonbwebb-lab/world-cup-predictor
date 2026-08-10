@@ -102,7 +102,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       <section className="max-w-4xl mx-auto px-6 py-24 text-center">
         <h2 className="text-4xl md:text-5xl font-black mb-6">Every Match. Every Score.</h2>
         <p className="text-textMuted text-lg mb-8 leading-relaxed max-w-xl mx-auto">
-          From opening day to the final whistle, predict the exact score for every Premier League match 
+          From the group stages to the final in New Jersey, predict the exact score for every match 
           and prove you've got what it takes to be a football pundit.
         </p>
         <ul className="flex flex-wrap justify-center gap-4 text-sm">
@@ -135,7 +135,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             {[
               { step: '01', title: 'Sign Up', desc: 'Create a free account and setup a private league with your mates, or select a public leaderboard to join.' },
               { step: '02', title: 'Submit Predictions', desc: 'Pick the exact scoreline for every match before kickoff. Predictions lock the moment the whistle blows.' },
-              { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Use your Double Up on one match each week — nail it and those points double!' },
+              { step: '03', title: 'Earn Points', desc: 'Exact score = 3 pts. Correct result = 1 pt. Watch yourself climb the leaderboard as results come in.' },
             ].map(item => (
               <div key={item.step} className="card border-primary/40 hover:border-primary/60 transition-colors">
                 <div className="text-6xl font-black text-primary mb-2">{item.step}</div>
@@ -153,7 +153,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <h2 className="text-3xl font-bold text-center mb-2">Scoring System</h2>
         <p className="text-textMuted text-center mb-12">Simple, fair, and rewarding for the bold</p>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <div className="card border-primary/40 text-center">
             <div className="text-5xl font-black text-primary mb-2">3</div>
             <div className="text-sm font-bold uppercase tracking-widest text-primary mb-2">Points</div>
@@ -168,11 +168,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <div className="text-5xl font-black text-textMuted mb-2">0</div>
             <div className="text-sm font-bold uppercase tracking-widest text-textMuted mb-2">Points</div>
             <div className="text-textMuted text-sm">Wrong result — back to the drawing board</div>
-          </div>
-          <div className="card border-yellow-400/40 text-center bg-yellow-400/5">
-            <div className="text-4xl font-black text-yellow-400 mb-2">⚡ DOUBLE UP</div>
-            <div className="text-sm font-bold uppercase tracking-widest text-yellow-400 mb-2">2× Points</div>
-            <div className="text-textMuted text-sm">Pick one match per week — get it right and your points for that match double!</div>
           </div>
         </div>
       </section>
