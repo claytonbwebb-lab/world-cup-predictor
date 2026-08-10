@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { type Metadata } from 'next';
 import AdminMatchTable from './AdminMatchTable';
 import AddMatchForm from './AddMatchForm';
+import NavBar from '@/components/NavBar';
 
 export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
   const supabase = await createClient();
@@ -47,26 +48,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-surface">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-xl font-bold flex items-center gap-2">
-              <span>🏆</span>
-              <span>Play Predict Win</span>
-            </Link>
-            <span className="bg-red-500/20 text-red-500 px-3 py-1 rounded text-sm font-medium">
-              Admin Panel
-            </span>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-textMuted hover:text-text">Dashboard</Link>
-            <Link href="/fixtures" className="text-textMuted hover:text-text">Fixtures</Link>
-            <Link href="/leaderboard" className="text-textMuted hover:text-text">Leaderboard</Link>
-            <Link href="/" className="text-textMuted hover:text-text">Back to Home</Link>
-          </nav>
-        </div>
-      </header>
+      <NavBar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">

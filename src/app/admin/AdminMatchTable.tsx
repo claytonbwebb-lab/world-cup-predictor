@@ -399,13 +399,13 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                       </td>
                       {/* Teams */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
+                        <div className="grid grid-cols-[160px_12px_160px] items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
                             <TeamBadge value={match.home_flag} size="sm" />
                             <span className="font-medium text-text truncate">{match.home_team}</span>
                           </div>
-                          <span className="text-textMuted text-xs shrink-0">v</span>
-                          <div className="flex items-center gap-2">
+                          <span className="text-textMuted text-xs text-center">v</span>
+                          <div className="flex items-center gap-2 min-w-0">
                             <TeamBadge value={match.away_flag} size="sm" />
                             <span className="font-medium text-text truncate">{match.away_team}</span>
                           </div>
@@ -420,7 +420,7 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                         )}
                       </td>
                       {/* Status */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
                         {match.week_number !== null && (
                           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium mr-1">{getWeekDropdownLabel(match.week_number).split(' — ')[0]}</span>
                         )}
