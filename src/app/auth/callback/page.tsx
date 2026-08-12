@@ -12,11 +12,23 @@ function CallbackContent() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Handle password reset flow
+    // Handle password reset flow — token must be exchanged for a session via verifyOtp
     const type = searchParams.get('type');
-    if (type === 'recovery') {
-      setStatus('success');
-      setTimeout(() => router.replace('/auth/reset-password'), 500);
+    const recoveryToken = searchParams.get('token');
+    const email = searchParams.get('email');
+    if (type === 'recovery' && recoveryToken) {
+      const { error } = await supabase.auth.verifyOtp({
+        type: 'recovery',
+        token: recoveryToken,
+        email: email || '',
+      });
+      if (error) {
+        setStatus('error');
+        setTimeout(() => router.replace('/auth/login'), 3000);
+      } else {
+        setStatus('success');
+        setTimeout(() => router.replace('/auth/reset-password'), 800);
+      }
       return;
     }
 
