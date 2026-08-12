@@ -1,28 +1,18 @@
 'use client';
 import Footer from '@/components/Footer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import NavBar from '@/components/NavBar';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-
-// Season start: Tuesday 2026-08-11 00:00 UTC
-const SEASON_START = new Date('2026-07-14T00:00:00Z');
-
-function getWeekNumber(date: Date = new Date()): number {
-  const diffMs = date.getTime() - SEASON_START.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, 1 + Math.floor(diffDays / 7));
-}
-
-function getWeekRange(weekNumber: number): string {
-  const start = new Date(SEASON_START);
-  start.setDate(start.getDate() + (weekNumber - 1) * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${fmt(start)} – ${fmt(end)}`;
-}
+import {
+  SEASON_MONTHS,
+  getWeekNumber,
+  getWeekRange,
+  getWeekDropdownLabel,
+  getMonthStart,
+  getMonthEnd,
+} from '@/lib/weeks';
 
 interface MemberEntry {
   user_id: string;
@@ -42,20 +32,45 @@ export default function LeagueLeaderboardPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [mode, setMode] = useState<'season' | 'week'>('week');
+
+  // View mode: season / week / month
+  const [mode, setMode] = useState<'season' | 'week' | 'month'>('week');
+
+  // Week state
   const [currentWeek, setCurrentWeek] = useState(getWeekNumber());
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
+
+  // Month state
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState(0);
+
   const supabase = createClient();
 
+  const loadAvailableWeeks = useCallback(async () => {
+    const { data } = await supabase
+      .from('matches')
+      .select('week_number')
+      .not('week_number', 'is', null)
+      .eq('result_entered', true)
+      .order('week_number', { ascending: false });
+    const weeks = Array.from(new Set((data || []).map((m: any) => m.week_number))).sort((a, b) => b - a);
+    setAvailableWeeks(weeks);
+    if (weeks.length > 0 && !weeks.includes(selectedWeek)) {
+      setSelectedWeek(weeks[0]);
+    }
+  }, [supabase, selectedWeek]);
+
+  useEffect(() => { loadAvailableWeeks(); }, [loadAvailableWeeks]);
+
   useEffect(() => { loadLeagueData(); }, [leagueId]);
+
   useEffect(() => {
     if (league) computeMemberScores();
-  }, [mode, selectedWeek, league]);
+  }, [mode, selectedWeek, selectedMonthIdx, league]);
 
   async function loadLeagueData() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
     setCurrentUserId(user.id);
 
     const { data: leagueData } = await supabase
@@ -67,7 +82,6 @@ export default function LeagueLeaderboardPage() {
     if (!leagueData) return;
     setLeague(leagueData);
 
-    // Check membership
     const { data: membership } = await supabase
       .from('league_members')
       .select('*')
@@ -92,12 +106,23 @@ export default function LeagueLeaderboardPage() {
     let matchIds: string[] = [];
 
     if (mode === 'week') {
-      const { data: weekMatches } = await supabase
+      const { data } = await supabase
         .from('matches')
         .select('id')
         .eq('week_number', selectedWeek)
         .eq('result_entered', true);
-      matchIds = (weekMatches || []).map(m => m.id);
+      matchIds = (data || []).map((m: any) => m.id);
+    } else if (mode === 'month') {
+      const sm = SEASON_MONTHS[selectedMonthIdx];
+      const monthStart = getMonthStart(sm.year, sm.month).toISOString();
+      const monthEnd   = getMonthEnd(sm.year, sm.month).toISOString();
+      const { data } = await supabase
+        .from('matches')
+        .select('id')
+        .gte('kickoff_at', monthStart)
+        .lte('kickoff_at', monthEnd)
+        .eq('result_entered', true);
+      matchIds = (data || []).map((m: any) => m.id);
     }
     // For 'season' mode, matchIds stays empty = all scored predictions
 
@@ -114,7 +139,7 @@ export default function LeagueLeaderboardPage() {
         .eq('user_id', m.user_id)
         .not('scored_at', 'is', null);
 
-      if (mode === 'week' && matchIds.length > 0) {
+      if (mode !== 'season' && matchIds.length > 0) {
         query = query.in('match_id', matchIds);
       }
 
@@ -150,12 +175,9 @@ export default function LeagueLeaderboardPage() {
   }
 
   const myIndex = members.findIndex(m => m.user_id === currentUserId);
+  const currentMonth = SEASON_MONTHS[selectedMonthIdx];
 
-  // Build week options
-  const weekOptions = [];
-  for (let w = currentWeek; w >= 1; w--) {
-    weekOptions.push({ value: w, label: `Week ${w} — ${getWeekRange(w)}` });
-  }
+  const modeLabel = mode === 'week' ? `Week ${selectedWeek}` : mode === 'month' ? currentMonth.label : 'Season';
 
   return (
     <div className="min-h-screen bg-background">
@@ -177,7 +199,7 @@ export default function LeagueLeaderboardPage() {
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex bg-surfaceLight rounded-xl p-1 gap-1">
             <button
-              onClick={() => setMode('week')}
+              onClick={() => { setMode('week'); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
               }`}
@@ -185,7 +207,15 @@ export default function LeagueLeaderboardPage() {
               🗓️ Weekly
             </button>
             <button
-              onClick={() => setMode('season')}
+              onClick={() => { setMode('month'); setSelectedMonthIdx(0); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
+              }`}
+            >
+              📅 Monthly
+            </button>
+            <button
+              onClick={() => { setMode('season'); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
               }`}
@@ -202,8 +232,23 @@ export default function LeagueLeaderboardPage() {
                 onChange={e => setSelectedWeek(Number(e.target.value))}
                 className="input py-1.5 text-sm"
               >
-                {weekOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                {availableWeeks.map(w => (
+                  <option key={w} value={w}>{getWeekDropdownLabel(w)}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {mode === 'month' && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-textMuted">Month:</label>
+              <select
+                value={selectedMonthIdx}
+                onChange={e => setSelectedMonthIdx(Number(e.target.value))}
+                className="input py-1.5 text-sm"
+              >
+                {SEASON_MONTHS.map((sm, i) => (
+                  <option key={i} value={i}>{sm.label}</option>
                 ))}
               </select>
             </div>
@@ -211,6 +256,9 @@ export default function LeagueLeaderboardPage() {
 
           {mode === 'week' && (
             <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>
+          )}
+          {mode === 'month' && (
+            <span className="text-xs text-textMuted">{currentMonth.label}</span>
           )}
           {mode === 'season' && (
             <span className="text-xs text-textMuted">All predictions across the full season</span>
@@ -222,9 +270,7 @@ export default function LeagueLeaderboardPage() {
           <div className="card mb-6 bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <p className="text-textMuted text-sm">
-                  {mode === 'week' ? `Week ${selectedWeek}` : 'Season'} Position
-                </p>
+                <p className="text-textMuted text-sm">{modeLabel} Position</p>
                 <p className="text-3xl font-bold">
                   {myIndex + 1}
                   <span className="text-textMuted text-lg font-normal"> / {members.length}</span>
@@ -254,7 +300,9 @@ export default function LeagueLeaderboardPage() {
             <div className="text-center py-12">
               <div className="text-4xl mb-4">🏆</div>
               <p className="text-textMuted">
-                {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` : 'No predictions yet'}
+                {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` :
+                 mode === 'month' ? `No predictions for ${currentMonth.label} yet` :
+                 'No predictions yet'}
               </p>
             </div>
           ) : (

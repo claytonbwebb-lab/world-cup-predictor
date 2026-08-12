@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 
-import { SEASON_START, getWeekRange, getWeekDropdownLabel } from '@/lib/weeks';
+import { SEASON_START, SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd } from '@/lib/weeks';
 
 const PAGE_SIZE = 25;
 
@@ -31,9 +31,10 @@ function getVisiblePages(currentPage: number, totalPages: number) {
 }
 
 export default function LeaderboardPage() {
-  const [mode, setMode] = useState<'season' | 'week'>('week');
+  const [mode, setMode] = useState<'season' | 'week' | 'month'>('week');
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState(0);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,7 +53,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     loadLeaderboard();
-  }, [mode, selectedWeek, currentPage]);
+  }, [mode, selectedWeek, selectedMonthIdx, currentPage]);
 
   async function loadLeaderboard() {
     setLoading(true);
@@ -74,8 +75,10 @@ export default function LeaderboardPage() {
 
     if (mode === 'season') {
       await loadSeasonLeaderboard(currentUserId);
-    } else {
+    } else if (mode === 'week') {
       await loadWeeklyLeaderboard(currentUserId, selectedWeek);
+    } else {
+      await loadMonthlyLeaderboard(currentUserId, selectedMonthIdx);
     }
     setLoading(false);
   }
@@ -181,6 +184,59 @@ export default function LeaderboardPage() {
     setUserEntry(currentUserId ? enriched.find(e => e.user_id === currentUserId) || null : null);
   }
 
+  async function loadMonthlyLeaderboard(currentUserId: string | null, monthIdx: number) {
+    const sm = SEASON_MONTHS[monthIdx];
+    const monthStart = getMonthStart(sm.year, sm.month).toISOString();
+    const monthEnd   = getMonthEnd(sm.year, sm.month).toISOString();
+
+    const { data: allUsers } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
+
+    if (!allUsers) return;
+
+    const { data: monthMatches } = await supabase
+      .from('matches')
+      .select('id')
+      .gte('kickoff_at', monthStart)
+      .lte('kickoff_at', monthEnd)
+      .eq('result_entered', true);
+
+    const matchIds = (monthMatches || []).map(m => m.id);
+
+    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
+      if (matchIds.length === 0) {
+        return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
+          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0 };
+      }
+      const { data: scored } = await supabase
+        .from('predictions')
+        .select('points_awarded, is_exact_score, is_correct_result')
+        .eq('user_id', profile.id)
+        .in('match_id', matchIds)
+        .not('scored_at', 'is', null);
+
+      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
+      const exact = (scored || []).filter(p => p.is_exact_score).length;
+      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
+      const total = (scored || []).length;
+      return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
+        total_points: pts, exact_scores: exact, correct_results: correct, total_predictions: total };
+    }));
+
+    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
+    const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
+    const page = Math.min(currentPage, totalPages);
+    const offset = (page - 1) * PAGE_SIZE;
+    setEntries(enriched.slice(offset, offset + PAGE_SIZE));
+    setTotalCount(enriched.length);
+    setCurrentPage(page);
+    const rank = currentUserId ? enriched.findIndex(e => e.user_id === currentUserId) : -1;
+    setUserRank(rank >= 0 ? rank + 1 : null);
+    setUserEntry(currentUserId ? enriched.find(e => e.user_id === currentUserId) || null : null);
+  }
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   // Build week selector options
@@ -209,6 +265,14 @@ export default function LeaderboardPage() {
               🗓️ Weekly
             </button>
             <button
+              onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(0); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
+              }`}
+            >
+              📅 Monthly
+            </button>
+            <button
               onClick={() => { setMode('season'); setCurrentPage(1); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
@@ -233,8 +297,26 @@ export default function LeaderboardPage() {
             </div>
           )}
 
+          {mode === 'month' && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-textMuted">Month:</label>
+              <select
+                value={selectedMonthIdx}
+                onChange={e => { setSelectedMonthIdx(Number(e.target.value)); setCurrentPage(1); }}
+                className="input py-1.5 text-sm"
+              >
+                {SEASON_MONTHS.map((sm, i) => (
+                  <option key={i} value={i}>{sm.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {mode === 'week' && (
             <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>
+          )}
+          {mode === 'month' && (
+            <span className="text-xs text-textMuted">{SEASON_MONTHS[selectedMonthIdx].label}</span>
           )}
           {mode === 'season' && (
             <span className="text-xs text-textMuted">All scored predictions across the full season</span>
@@ -247,7 +329,7 @@ export default function LeaderboardPage() {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <p className="text-textMuted text-sm">
-                  {mode === 'week' ? `Week ${selectedWeek}` : 'Season'} Position
+                  {mode === 'week' ? `Week ${selectedWeek}` : mode === 'month' ? SEASON_MONTHS[selectedMonthIdx].label : 'Season'} Position
                 </p>
                 <p className="text-3xl font-bold">
                   {userRank}
@@ -344,7 +426,9 @@ export default function LeaderboardPage() {
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">🏆</div>
                 <p className="text-textMuted">
-                  {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` : 'No predictions scored yet'}
+                  {mode === 'week' ? `No predictions for Week ${selectedWeek} yet` :
+                   mode === 'month' ? `No predictions for ${SEASON_MONTHS[selectedMonthIdx].label} yet` :
+                   'No predictions scored yet'}
                 </p>
               </div>
             )}
