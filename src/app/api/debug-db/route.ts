@@ -10,7 +10,7 @@ export async function GET() {
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, username')
-    .ilike('username', '*clayton*');
+    .ilike('username', '%clayton%');
 
   // 2. VIP league members
   const vipLeagueId = process.env.VIP_LEAGUE_ID;
@@ -27,7 +27,7 @@ export async function GET() {
     .not('week_number', 'is', null)
     .order('week_number', { ascending: false });
 
-  const uniqueWeeks = [...new Set((matches || []).map(m => m.week_number))].sort((a, b) => b - a);
+  const uniqueWeeks = Array.from(new Set((matches || []).map(m => m.week_number))).sort((a, b) => b - a);
 
   return NextResponse.json({
     profiles,

@@ -17,18 +17,20 @@ function CallbackContent() {
     const recoveryToken = searchParams.get('token');
     const email = searchParams.get('email');
     if (type === 'recovery' && recoveryToken) {
-      const { error } = await supabase.auth.verifyOtp({
-        type: 'recovery',
-        token: recoveryToken,
-        email: email || '',
-      });
-      if (error) {
-        setStatus('error');
-        setTimeout(() => router.replace('/auth/login'), 3000);
-      } else {
-        setStatus('success');
-        setTimeout(() => router.replace('/auth/reset-password'), 800);
-      }
+      (async () => {
+        const { error } = await supabase.auth.verifyOtp({
+          type: 'recovery',
+          token: recoveryToken,
+          email: email || '',
+        });
+        if (error) {
+          setStatus('error');
+          setTimeout(() => router.replace('/auth/login'), 3000);
+        } else {
+          setStatus('success');
+          setTimeout(() => router.replace('/auth/reset-password'), 800);
+        }
+      })();
       return;
     }
 
