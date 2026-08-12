@@ -27,8 +27,20 @@ function CallbackContent() {
           setStatus('error');
           setTimeout(() => router.replace('/auth/login'), 3000);
         } else {
-          setStatus('success');
-          setTimeout(() => router.replace('/auth/reset-password'), 800);
+          // Wait for the session to actually persist before redirecting
+          // to avoid "Auth session missing" on the reset-password page
+          let attempts = 0;
+          const checkSession = setInterval(async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            attempts++;
+            if (session || attempts >= 10) {
+              clearInterval(checkSession);
+              // Store a flag so reset-password knows this is a valid reset flow
+              try { sessionStorage.setItem('pw_reset_flow', '1'); } catch {}
+              setStatus('success');
+              setTimeout(() => router.replace('/auth/reset-password'), 200);
+            }
+          }, 100);
         }
       })();
       return;
