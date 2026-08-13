@@ -113,7 +113,7 @@ export default function LeaderboardPage() {
       };
     }));
 
-    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
+    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results);
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
     const page = Math.min(currentPage, totalPages);
     const offset = (page - 1) * PAGE_SIZE;
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
       };
     }));
 
-    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
+    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results);
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
     const page = Math.min(currentPage, totalPages);
     const offset = (page - 1) * PAGE_SIZE;
@@ -225,7 +225,7 @@ export default function LeaderboardPage() {
         total_points: pts, exact_scores: exact, correct_results: correct, total_predictions: total };
     }));
 
-    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores);
+    enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results);
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
     const page = Math.min(currentPage, totalPages);
     const offset = (page - 1) * PAGE_SIZE;
