@@ -13,4 +13,4 @@ SELECT
 FROM profiles p
 LEFT JOIN predictions pr ON p.id = pr.user_id AND pr.scored_at IS NOT NULL
 GROUP BY p.id, p.username, p.avatar_url
-ORDER BY total_points DESC, exact_scores DESC, p.id ASC;
+ORDER BY total_points DESC, exact_scores DESC, correct_results DESC, p.id ASC;

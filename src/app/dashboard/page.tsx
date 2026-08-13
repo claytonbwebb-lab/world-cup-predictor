@@ -167,7 +167,9 @@ export default async function Dashboard() {
     .from('leaderboard')
     .select('user_id')
     .order('total_points', { ascending: false })
-    .order('exact_scores', { ascending: false });
+    .order('exact_scores', { ascending: false })
+    .order('correct_results', { ascending: false })
+    .order('user_id', { ascending: true });
   const userRank = leaderboardData
     ? leaderboardData.findIndex((e: any) => e.user_id === user.id) + 1
     : 0;
