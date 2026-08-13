@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ALL_TEAMS } from '@/lib/teams';
+import { ALL_TEAMS, findTeam } from '@/lib/teams';
 
 interface FavouriteTeamSelectProps {
   value: string;
@@ -27,8 +27,11 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
     'Non-League',
   ] as const;
 
+  const normalizedQuery = query.toLowerCase();
   const filtered = ALL_TEAMS.filter((t) =>
-    t.name.toLowerCase().includes(query.toLowerCase())
+    t.name.toLowerCase().includes(normalizedQuery) ||
+    t.shortName?.toLowerCase().includes(normalizedQuery) ||
+    t.aliases?.some((alias) => alias.toLowerCase().includes(normalizedQuery))
   );
 
   const displayed = query
@@ -53,7 +56,7 @@ export default function FavouriteTeamSelect({ value, onChange, label, small }: F
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const selected = ALL_TEAMS.find((t) => t.name.toLowerCase() === value.toLowerCase());
+  const selected = findTeam(value);
 
   async function handleRequestTeam(e: React.FormEvent) {
     e.preventDefault();
