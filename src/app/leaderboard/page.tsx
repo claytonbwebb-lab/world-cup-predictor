@@ -329,7 +329,7 @@ export default function LeaderboardPage() {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <p className="text-textMuted text-sm">
-                  {mode === 'week' ? `Week ${selectedWeek}` : mode === 'month' ? SEASON_MONTHS[selectedMonthIdx].label : 'Season'} Position
+                  {mode === 'week' ? getWeekRange(selectedWeek) : mode === 'month' ? SEASON_MONTHS[selectedMonthIdx].label : 'Season'} Position
                 </p>
                 <p className="text-3xl font-bold">
                   {userRank}
