@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
+import { getWeekNumber } from '@/lib/weeks';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
@@ -152,7 +153,13 @@ export async function POST(request: NextRequest) {
         const { error } = await (supabase as any).from('matches').insert({
           home_team: home,
           away_team: away,
+          home_flag: f.teams.home.logo || null,
+          away_flag: f.teams.away.logo || null,
           kickoff_at: kickoffBST,
+          week_number: getWeekNumber(new Date(kickoffBST)),
+          is_visible: false,
+          is_locked: false,
+          result_entered: false,
         });
 
         if (error) {

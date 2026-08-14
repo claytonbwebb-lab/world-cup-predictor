@@ -19,7 +19,7 @@ function getNextWeekRange() {
   return { from: fmt(nextTuesday), to: fmt(nextMonday) };
 }
 
-export default function FixtureActions({ showHidden }: { showHidden: boolean }) {
+export default function FixtureActions() {
   const router = useRouter();
   const [importing, setImporting] = useState(false);
   const [pushing, setPushing] = useState(false);
@@ -81,12 +81,6 @@ export default function FixtureActions({ showHidden }: { showHidden: boolean }) 
       >
         {pushing ? '⏳ Pushing...' : '🚀 Push Next Week Live'}
       </button>
-      <a
-        href={showHidden ? '/admin' : '/admin?hidden=true'}
-        className="text-sm text-yellow-400 hover:text-yellow-300 underline px-2 py-2"
-      >
-        {showHidden ? '👁️ Hide hidden matches' : '👻 Show hidden matches'}
-      </a>
       {message && <span className="text-sm font-medium">{message}</span>}
     </div>
   );

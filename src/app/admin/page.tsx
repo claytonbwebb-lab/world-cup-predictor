@@ -29,9 +29,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   // Await searchParams to get week filter
   const sp = await searchParams ?? {};
   const selectedWeek = sp.week ? Number(sp.week) : null;
-  const showHidden = sp.hidden === 'true';
 
-  // Fetch all matches (to build week list)
+  // Fetch all matches for admin — visible and staged/hidden together.
+  // Public/user pages still filter hidden matches out.
   const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
@@ -43,10 +43,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
     .filter(w => w !== null)
   )).sort((a, b) => b - a);
 
-  // Filter matches by week if selected; also filter by visibility
-  let matches = showHidden
-    ? (allMatches || []).filter(m => m.is_visible === false)
-    : (allMatches || []).filter(m => m.is_visible !== false);
+  // Filter by week only; admin always sees both live and staged matches.
+  let matches = allMatches || [];
 
   if (selectedWeek) {
     matches = matches.filter(m => m.week_number === selectedWeek);
@@ -69,12 +67,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
         {/* Matches Management */}
         <div className="card">
-          <FixtureActions showHidden={showHidden} />
+          <FixtureActions />
           <AdminMatchTable
             matches={matches}
             availableWeeks={allWeeks as number[]}
             selectedWeek={selectedWeek}
-            showHidden={showHidden}
           />
         </div>
       </main>

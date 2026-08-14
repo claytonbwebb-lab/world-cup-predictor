@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { getWeekNumber } from '@/lib/weeks';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
@@ -45,6 +46,10 @@ async function fetchFixtures(league: number, from: string, to: string): Promise<
   });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = await res.json();
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    const msg = Object.values(data.errors).join('; ');
+    throw new Error(`API-Football error: ${msg}`);
+  }
   return data.response || [];
 }
 
@@ -66,7 +71,7 @@ export async function POST() {
 
     const from = getDateStr(targetTuesday);
     const to = getDateStr(targetMonday);
-    const weekNumber = Math.floor((targetTuesday.getTime() - currentTuesday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+    const weekNumber = getWeekNumber(targetTuesday);
 
     console.log(`[fixtures-auto-import] Importing fixtures from ${from} to ${to}`);
 
@@ -112,8 +117,8 @@ export async function POST() {
         const { error } = await supabase.from('matches').insert({
           home_team: home,
           away_team: away,
-          home_flag: null,
-          away_flag: null,
+          home_flag: f.teams.home.logo || null,
+          away_flag: f.teams.away.logo || null,
           group_stage: null,
           kickoff_at: applyBST(kickoffUTC),
           is_visible: false,

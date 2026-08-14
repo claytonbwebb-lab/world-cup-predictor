@@ -241,10 +241,9 @@ interface AdminMatchTableProps {
   matches: Match[];
   availableWeeks?: number[];
   selectedWeek?: number | null;
-  showHidden?: boolean;
 }
 
-export default function AdminMatchTable({ matches, availableWeeks = [], selectedWeek, showHidden }: AdminMatchTableProps) {
+export default function AdminMatchTable({ matches, availableWeeks = [], selectedWeek }: AdminMatchTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const now = new Date();
@@ -423,16 +422,15 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                       </td>
                       {/* Status */}
                       <td className="py-3 px-4 text-center whitespace-nowrap">
-                        {match.is_visible === false && (
-                          <span className="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded text-xs font-medium mr-1" title="Not visible to users">👻 Hidden</span>
-                        )}
                         {match.week_number !== null && (
                           <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium mr-1">{getWeekDropdownLabel(match.week_number).split(' — ')[0]}</span>
                         )}
-                        {match.is_locked || new Date(match.kickoff_at) <= new Date() ? (
-                          <span className="text-red-400 text-xs" title="Locked">🔒</span>
+                        {match.is_visible === false ? (
+                          <span className="text-yellow-400 text-xs" title="Staged — hidden from users until pushed live">🟡</span>
+                        ) : match.is_locked || new Date(match.kickoff_at) <= new Date() ? (
+                          <span className="text-red-400 text-xs" title="Live but locked">🔴</span>
                         ) : (
-                          <span className="text-green-400 text-xs" title="Open for predictions">🟢</span>
+                          <span className="text-green-400 text-xs" title="Live and open for predictions">🟢</span>
                         )}
                       </td>
                       {/* Date */}
