@@ -5,7 +5,6 @@ import { getWeekNumber } from '@/lib/weeks';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
-const BST_OFFSET_MS = 60 * 60 * 1000; // BST = UTC+1
 
 const PREM_TEAMS = new Set([
   'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Brighton & Hove Albion',
@@ -33,12 +32,6 @@ function teamMatch(name: string, premTeam: string): boolean {
 
 function isPremMatch(home: string, away: string): boolean {
   return Array.from(PREM_TEAMS).some(t => teamMatch(home, t) || teamMatch(away, t));
-}
-
-function applyBST(utcDateStr: string): string {
-  const utc = new Date(utcDateStr);
-  const bst = new Date(utc.getTime() + BST_OFFSET_MS);
-  return bst.toISOString();
 }
 
 function extractMatchKey(home: string, away: string, kickoff: string): string {
@@ -148,15 +141,15 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        const kickoffBST = applyBST(kickoffUTC);
+        const kickoffAt = new Date(kickoffUTC).toISOString();
 
         const { error } = await (supabase as any).from('matches').insert({
           home_team: home,
           away_team: away,
           home_flag: f.teams.home.logo || null,
           away_flag: f.teams.away.logo || null,
-          kickoff_at: kickoffBST,
-          week_number: getWeekNumber(new Date(kickoffBST)),
+          kickoff_at: kickoffAt,
+          week_number: getWeekNumber(new Date(kickoffAt)),
           is_visible: false,
           is_locked: false,
           result_entered: false,
