@@ -423,7 +423,7 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                       {/* Status */}
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         {match.week_number !== null && (
-                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium mr-1">{getWeekDropdownLabel(match.week_number).split(' — ')[0]}</span>
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-medium mr-1">{getWeekDropdownLabel(match.week_number)}</span>
                         )}
                         {match.is_visible === false ? (
                           <span className="text-yellow-400 text-xs" title="Staged — hidden from users until pushed live">🟡</span>
