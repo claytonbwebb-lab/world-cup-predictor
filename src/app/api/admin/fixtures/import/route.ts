@@ -146,17 +146,10 @@ export async function POST(request: NextRequest) {
         const kickoffBST = applyBST(kickoffUTC);
         const round = f.league?.round || '';
 
-        const { error } = await supabase.from('matches').insert({
+        const { error } = await (supabase as any).from('matches').insert({
           home_team: home,
           away_team: away,
-          home_flag: null,
-          away_flag: null,
-          group_stage: null,
           kickoff_at: kickoffBST,
-          is_visible: false,
-          is_locked: false,
-          result_entered: false,
-          week_number: null,
         });
 
         if (error) {
