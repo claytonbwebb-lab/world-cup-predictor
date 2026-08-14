@@ -52,6 +52,10 @@ async function fetchFixturesFromAPI(league: number, from: string, to: string): P
   });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = await res.json();
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    const msg = Object.values(data.errors).join('; ');
+    throw new Error(`API-Football error: ${msg}`);
+  }
   return data.response || [];
 }
 
