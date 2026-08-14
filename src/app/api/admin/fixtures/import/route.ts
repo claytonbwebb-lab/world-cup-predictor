@@ -1,0 +1,175 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/adminAuth';
+
+const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
+const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
+const BST_OFFSET_MS = 60 * 60 * 1000; // BST = UTC+1
+
+const PREM_TEAMS = new Set([
+  'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Brighton & Hove Albion',
+  'Chelsea', 'Crystal Palace', 'Everton', 'Fulham', 'Ipswich Town',
+  'Leicester City', 'Leicester', 'Leeds United', 'Leeds',
+  'Liverpool', 'Manchester City', 'Man City', 'Manchester United', 'Man Utd',
+  'Newcastle United', 'Newcastle', 'Nottingham Forest', 'Nottm Forest',
+  'Southampton', 'Tottenham Hotspur', 'Tottenham',
+  'West Ham United', 'West Ham',
+  'Wolverhampton Wanderers', 'Wolves', 'Wolverhampton',
+]);
+
+function isPremTeam(name: string): boolean {
+  if (!name) return false;
+  const n = name.toLowerCase();
+  return Array.from(PREM_TEAMS).some(t => t.toLowerCase() === n);
+}
+
+function teamMatch(name: string, premTeam: string): boolean {
+  if (!name || !premTeam) return false;
+  const n = name.toLowerCase();
+  const p = premTeam.toLowerCase();
+  return n === p || n.includes(p) || p.includes(n);
+}
+
+function isPremMatch(home: string, away: string): boolean {
+  return Array.from(PREM_TEAMS).some(t => teamMatch(home, t) || teamMatch(away, t));
+}
+
+function applyBST(utcDateStr: string): string {
+  const utc = new Date(utcDateStr);
+  const bst = new Date(utc.getTime() + BST_OFFSET_MS);
+  return bst.toISOString();
+}
+
+function extractMatchKey(home: string, away: string, kickoff: string): string {
+  const date = kickoff.slice(0, 10);
+  return `${home.trim()}|${away.trim()}|${date}`;
+}
+
+async function fetchFixturesFromAPI(league: number, from: string, to: string): Promise<any[]> {
+  const url = `https://${API_FOOTBALL_HOST}/fixtures?league=${league}&season=2026&from=${from}&to=${to}`;
+  const res = await fetch(url, {
+    headers: { 'x-apisports-key': API_FOOTBALL_KEY },
+  });
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+  return data.response || [];
+}
+
+async function getExistingMatchKeys(supabase: any, fixtures: any[]): Promise<Set<string>> {
+  const keys = fixtures.map(f => extractMatchKey(
+    f.teams.home.name, f.teams.away.name, f.fixture.date
+  ));
+  if (keys.length === 0) return new Set();
+
+  // Check each key — get matches where date+teams match
+  const existing = new Set<string>();
+  for (const key of keys) {
+    const [home, away, date] = key.split('|');
+    const { data } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('home_team', home)
+      .eq('away_team', away)
+      .gte('kickoff_at', `${date}T00:00:00Z`)
+      .lt('kickoff_at', `${date}T23:59:59Z`)
+      .limit(1);
+    if (data && data.length > 0) existing.add(key);
+  }
+  return existing;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const isAdmin = await requireAdmin();
+    if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(request.url);
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    const leaguesParam = searchParams.get('leagues');
+
+    if (!from || !to) {
+      return NextResponse.json({ error: 'from and to dates are required (YYYY-MM-DD)' }, { status: 400 });
+    }
+
+    const defaultLeagues = [
+      { id: 39, name: 'Premier League', filterPrem: false },
+      { id: 2, name: 'Champions League', filterPrem: true },
+      { id: 3, name: 'Europa League', filterPrem: true },
+      { id: 47, name: 'Carabao Cup', filterPrem: true },
+      { id: 294, name: 'FA Cup', filterPrem: true },
+    ];
+
+    const leagues = leaguesParam
+      ? defaultLeagues.filter(l => leaguesParam.split(',').includes(String(l.id)))
+      : defaultLeagues;
+
+    const supabase: SupabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    ) as any;
+
+    let imported = 0;
+    let skipped = 0;
+    const errors: string[] = [];
+
+    for (const league of leagues) {
+      let fixtures: any[];
+      try {
+        fixtures = await fetchFixturesFromAPI(league.id, from, to);
+      } catch (e: any) {
+        errors.push(`League ${league.id}: ${e.message}`);
+        continue;
+      }
+
+      // Filter to PL teams for non-PL leagues
+      if (league.filterPrem) {
+        fixtures = fixtures.filter((f: any) =>
+          isPremMatch(f.teams.home.name, f.teams.away.name)
+        );
+      }
+
+      // Check for existing
+      const existing = await getExistingMatchKeys(supabase, fixtures);
+
+      for (const f of fixtures) {
+        const home = f.teams.home.name;
+        const away = f.teams.away.name;
+        const kickoffUTC = f.fixture.date;
+        const key = extractMatchKey(home, away, kickoffUTC);
+
+        if (existing.has(key)) {
+          skipped++;
+          continue;
+        }
+
+        const kickoffBST = applyBST(kickoffUTC);
+        const round = f.league?.round || '';
+
+        const { error } = await supabase.from('matches').insert({
+          home_team: home,
+          away_team: away,
+          home_flag: null,
+          away_flag: null,
+          group_stage: null,
+          kickoff_at: kickoffBST,
+          is_visible: false,
+          is_locked: false,
+          result_entered: false,
+          week_number: null,
+        });
+
+        if (error) {
+          errors.push(`Insert error for ${home} vs ${away}: ${error.message}`);
+        } else {
+          imported++;
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, imported, skipped, errors: errors.slice(0, 20) });
+  } catch (error: any) {
+    console.error('Fixtures import error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

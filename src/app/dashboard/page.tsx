@@ -115,6 +115,7 @@ export default async function Dashboard() {
     .select('*')
     .gt('kickoff_at', new Date().toISOString())
     .eq('is_locked', false)
+    .eq('is_visible', true)
     .order('kickoff_at', { ascending: true })
     .limit(5);
 

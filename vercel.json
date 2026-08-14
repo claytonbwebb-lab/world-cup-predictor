@@ -1,3 +1,8 @@
 {
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/cron/fixtures-auto-import",
+      "schedule": "0 22 * * 0"
+    }
+  ]
 }

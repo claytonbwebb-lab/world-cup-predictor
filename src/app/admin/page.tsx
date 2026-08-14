@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { type Metadata } from 'next';
 import AdminMatchTable from './AdminMatchTable';
 import AddMatchForm from './AddMatchForm';
+import FixtureActions from './FixtureActions';
 import NavBar from '@/components/NavBar';
 
 export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
@@ -28,6 +29,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   // Await searchParams to get week filter
   const sp = await searchParams ?? {};
   const selectedWeek = sp.week ? Number(sp.week) : null;
+  const showHidden = sp.hidden === 'true';
 
   // Fetch all matches (to build week list)
   const { data: allMatches } = await supabase
@@ -41,10 +43,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
     .filter(w => w !== null)
   )).sort((a, b) => b - a);
 
-  // Filter matches by week if selected
-  const matches = selectedWeek
-    ? (allMatches || []).filter(m => m.week_number === selectedWeek)
-    : (allMatches || []);
+  // Filter matches by week if selected; also filter by visibility
+  let matches = showHidden
+    ? (allMatches || []).filter(m => m.is_visible === false)
+    : (allMatches || []).filter(m => m.is_visible !== false);
+
+  if (selectedWeek) {
+    matches = matches.filter(m => m.week_number === selectedWeek);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,10 +69,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
         {/* Matches Management */}
         <div className="card">
+          <FixtureActions showHidden={showHidden} />
           <AdminMatchTable
             matches={matches}
             availableWeeks={allWeeks as number[]}
             selectedWeek={selectedWeek}
+            showHidden={showHidden}
           />
         </div>
       </main>
