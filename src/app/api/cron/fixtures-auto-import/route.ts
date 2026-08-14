@@ -51,15 +51,19 @@ async function fetchFixtures(league: number, from: string, to: string): Promise<
 export async function POST() {
   try {
     const now = new Date();
+    // PPW weeks run Tuesday → Monday
+    // Find current week's Tuesday, then take the Tuesday after
+    const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const daysSinceTuesday = (day - 2 + 7) % 7;
+    const currentTuesday = new Date(now);
+    currentTuesday.setDate(now.getDate() - daysSinceTuesday);
+    const nextTuesday = new Date(currentTuesday);
+    nextTuesday.setDate(currentTuesday.getDate() + 7);
+    const nextMonday = new Date(nextTuesday);
+    nextMonday.setDate(nextTuesday.getDate() + 6);
 
-    // Next Monday to next Sunday
-    const nextMonday = new Date(now);
-    nextMonday.setDate(now.getDate() + ((8 - now.getDay()) % 7 || 7));
-    const nextSunday = new Date(nextMonday);
-    nextSunday.setDate(nextMonday.getDate() + 6);
-
-    const from = getDateStr(nextMonday);
-    const to = getDateStr(nextSunday);
+    const from = getDateStr(nextTuesday);
+    const to = getDateStr(nextMonday);
 
     console.log(`[fixtures-auto-import] Importing fixtures from ${from} to ${to}`);
 

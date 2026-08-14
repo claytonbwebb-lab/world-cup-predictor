@@ -4,12 +4,19 @@ import { useRouter } from 'next/navigation';
 
 function getNextWeekRange() {
   const now = new Date();
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + ((8 - now.getDay()) % 7 || 7));
-  const nextSunday = new Date(nextMonday);
-  nextSunday.setDate(nextMonday.getDate() + 6);
+  // PPW weeks run Tuesday → Monday
+  // Find the Tuesday that starts the current week
+  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysSinceTuesday = (day - 2 + 7) % 7; // days since last Tuesday
+  const currentTuesday = new Date(now);
+  currentTuesday.setDate(now.getDate() - daysSinceTuesday);
+  // Next PPW week starts the Tuesday after current Tuesday
+  const nextTuesday = new Date(currentTuesday);
+  nextTuesday.setDate(currentTuesday.getDate() + 7);
+  const nextMonday = new Date(nextTuesday);
+  nextMonday.setDate(nextTuesday.getDate() + 6);
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
-  return { from: fmt(nextMonday), to: fmt(nextSunday) };
+  return { from: fmt(nextTuesday), to: fmt(nextMonday) };
 }
 
 export default function FixtureActions({ showHidden }: { showHidden: boolean }) {
