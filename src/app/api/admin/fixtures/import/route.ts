@@ -144,29 +144,33 @@ export async function POST(request: NextRequest) {
         }
 
         const kickoffBST = applyBST(kickoffUTC);
-        const round = f.league?.round || '';
 
-        console.log(`[import] Attempting insert: ${home} vs ${away}, kickoff=${kickoffBST}, round=${round}`);
-
-        const insertData: any = {
+        const { error } = await (supabase as any).from('matches').insert({
           home_team: home,
           away_team: away,
           kickoff_at: kickoffBST,
-        };
-        if (round) insertData.group_stage = round;
-
-        const { error } = await (supabase as any).from('matches').insert(insertData);
+        });
 
         if (error) {
-          console.error(`[import] INSERT FAILED for ${home} vs ${away}:`, JSON.stringify(error));
-          errors.push(`Insert error for ${home} vs ${away}: code=${error.code} msg=${error.message} details=${error.details} hint=${error.hint}`);
+          console.error(`[fixtures-import] Insert error for ${home} vs ${away}:`, error);
+          errors.push(`Insert error for ${home} vs ${away}: ${error.message}`);
         } else {
           imported++;
         }
       }
     }
 
-    return NextResponse.json({ success: true, imported, skipped, errors: errors.slice(0, 20) });
+    if (errors.length > 0) {
+      return NextResponse.json({
+        success: false,
+        imported,
+        skipped,
+        error: errors.slice(0, 5).join(' | '),
+        errors: errors.slice(0, 20),
+      }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, imported, skipped, errors: [] });
   } catch (error: any) {
     console.error('Fixtures import error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

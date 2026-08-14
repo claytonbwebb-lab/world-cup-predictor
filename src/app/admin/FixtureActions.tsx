@@ -30,7 +30,7 @@ export default function FixtureActions({ showHidden }: { showHidden: boolean }) 
     setMessage('');
     const { from, to } = getNextWeekRange();
     try {
-      const res = await fetch(`/api/admin/fixtures/import?from=${from}&to=${to}`);
+      const res = await fetch(`/api/admin/fixtures/import?from=${from}&to=${to}`, { method: 'POST' });
       const json = await res.json();
       if (res.ok) {
         setMessage(`✅ Imported ${json.imported} fixtures, ${json.skipped} skipped`);
@@ -50,7 +50,7 @@ export default function FixtureActions({ showHidden }: { showHidden: boolean }) 
     setMessage('');
     const { from, to } = getNextWeekRange();
     try {
-      const res = await fetch(`/api/admin/fixtures/push-live?from=${from}&to=${to}`);
+      const res = await fetch(`/api/admin/fixtures/push-live?from=${from}&to=${to}`, { method: 'POST' });
       const json = await res.json();
       if (res.ok) {
         setMessage(`🚀 ${json.updated_count} matches pushed live!`);
