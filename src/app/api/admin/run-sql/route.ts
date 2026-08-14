@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
-import { Pool } from 'pg';
 
-const DATABASE_URL = `postgresql://postgres:${process.env.SUPABASE_SERVICE_ROLE_KEY}@db.suyrbsuuckcvhdvxcvsf.supabase.co:5432/postgres?sslmode=require`;
+// Use Supabase Management API via service role key
+// (no native pg module needed — works on Vercel)
+
+const MGMT_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const MGMT_BASE = 'https://api.supabase.com/v1';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,28 +18,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'sql field is required' }, { status: 400 });
     }
 
-    // Safety: only allow DDL (ALTER, CREATE) and data queries - block dangerous commands
+    // Safety: block dangerous commands
     const upper = sql.toUpperCase();
-    const forbidden = ['DROP', 'TRUNCATE', 'DELETE FROM', 'UPDATE ', 'GRANT', 'REVOKE', 'ROLLBACK'];
-    if (forbidden.some(k => upper.includes(k))) {
-      return NextResponse.json({ error: `Forbidden command: ${sql.slice(0, 50)}` }, { status: 403 });
+    const forbidden = ['DROP', 'TRUNCATE', 'DELETE', 'GRANT', 'REVOKE', 'ROLLBACK', 'INSERT', 'UPDATE'];
+    const blockWord = forbidden.find(k => upper.includes(k));
+    if (blockWord) {
+      return NextResponse.json({ error: `Forbidden command: ${blockWord}` }, { status: 403 });
     }
 
-    const pool = new Pool({ connectionString: DATABASE_URL, max: 1 });
-    const client = await pool.connect();
-    let result: any;
-    try {
-      result = await client.query(sql);
-    } finally {
-      client.release();
-      await pool.end();
+    // Use Supabase Management API to run SQL
+    const res = await fetch(`${MGMT_BASE}/projects/suyrbsuuckcvhdvxcvsf/database/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${MGMT_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: sql }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return NextResponse.json({ error: data.message || data.error?.message || 'Query failed' }, { status: 500 });
     }
 
     return NextResponse.json({
       ok: true,
-      rows: result.rows,
-      rowCount: result.rowCount,
-      fields: result.fields?.map((f: any) => f.name) || [],
+      rows: data,
+      rowCount: Array.isArray(data) ? data.length : 0,
     });
   } catch (error: any) {
     console.error('[run-sql]', error);
