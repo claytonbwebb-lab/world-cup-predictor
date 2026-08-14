@@ -146,14 +146,20 @@ export async function POST(request: NextRequest) {
         const kickoffBST = applyBST(kickoffUTC);
         const round = f.league?.round || '';
 
-        const { error } = await (supabase as any).from('matches').insert({
+        console.log(`[import] Attempting insert: ${home} vs ${away}, kickoff=${kickoffBST}, round=${round}`);
+
+        const insertData: any = {
           home_team: home,
           away_team: away,
           kickoff_at: kickoffBST,
-        });
+        };
+        if (round) insertData.group_stage = round;
+
+        const { error } = await (supabase as any).from('matches').insert(insertData);
 
         if (error) {
-          errors.push(`Insert error for ${home} vs ${away}: ${error.message}`);
+          console.error(`[import] INSERT FAILED for ${home} vs ${away}:`, JSON.stringify(error));
+          errors.push(`Insert error for ${home} vs ${away}: code=${error.code} msg=${error.message} details=${error.details} hint=${error.hint}`);
         } else {
           imported++;
         }
