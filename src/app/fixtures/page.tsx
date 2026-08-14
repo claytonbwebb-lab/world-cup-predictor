@@ -75,6 +75,7 @@ export default function FixturesPage() {
     const { data: weekData } = await supabase
       .from('matches')
       .select('week_number')
+      .eq('is_visible', true)
       .not('result_entered', 'eq', true)
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
@@ -85,6 +86,7 @@ export default function FixturesPage() {
     let query = supabase
       .from('matches')
       .select('*')
+      .eq('is_visible', true)
       .not('result_entered', 'eq', true)
       .order('kickoff_at', { ascending: true });
 
