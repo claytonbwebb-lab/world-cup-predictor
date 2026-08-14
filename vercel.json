@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/fixtures-auto-import",
       "schedule": "0 22 * * 0"
+    },
+    {
+      "path": "/api/cron/update-scores",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
