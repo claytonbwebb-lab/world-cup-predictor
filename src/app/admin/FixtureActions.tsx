@@ -10,9 +10,9 @@ function getNextWeekRange() {
   const daysSinceTuesday = (day - 2 + 7) % 7; // days since last Tuesday
   const currentTuesday = new Date(now);
   currentTuesday.setDate(now.getDate() - daysSinceTuesday);
-  // Next PPW week starts the Tuesday after current Tuesday
+  // Two weeks ahead — always stage a future week, not the current one
   const nextTuesday = new Date(currentTuesday);
-  nextTuesday.setDate(currentTuesday.getDate() + 7);
+  nextTuesday.setDate(currentTuesday.getDate() + 14);
   const nextMonday = new Date(nextTuesday);
   nextMonday.setDate(nextTuesday.getDate() + 6);
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
