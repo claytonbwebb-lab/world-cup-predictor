@@ -16,11 +16,18 @@ const PREM_TEAMS = new Set([
   'Wolverhampton Wanderers', 'Wolves', 'Wolverhampton',
 ]);
 
+function normaliseTeamName(name: string): string {
+  return (name || '').trim().toLowerCase();
+}
+
+function isPremTeam(name: string): boolean {
+  const normalised = normaliseTeamName(name);
+  return Array.from(PREM_TEAMS).some(t => normaliseTeamName(t) === normalised);
+}
+
 function isPremMatch(home: string, away: string): boolean {
-  return Array.from(PREM_TEAMS).some(t =>
-    home.toLowerCase().includes(t.toLowerCase()) ||
-    away.toLowerCase().includes(t.toLowerCase())
-  );
+  // Exact aliases only — avoids false positives like Newcastle Town / Bourne Town.
+  return isPremTeam(home) || isPremTeam(away);
 }
 
 function getDateStr(d: Date): string {
