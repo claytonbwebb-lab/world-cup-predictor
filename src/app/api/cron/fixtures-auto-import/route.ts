@@ -52,18 +52,21 @@ export async function POST() {
   try {
     const now = new Date();
     // PPW weeks run Tuesday → Monday
-    // Find current week's Tuesday, then take the Tuesday after
+    // Find current week's Tuesday, then take the Tuesday AFTER NEXT
+    // (so on Sunday when current week is underway, we still get a full week ahead)
     const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
     const daysSinceTuesday = (day - 2 + 7) % 7;
     const currentTuesday = new Date(now);
     currentTuesday.setDate(now.getDate() - daysSinceTuesday);
-    const nextTuesday = new Date(currentTuesday);
-    nextTuesday.setDate(currentTuesday.getDate() + 7);
-    const nextMonday = new Date(nextTuesday);
-    nextMonday.setDate(nextTuesday.getDate() + 6);
+    // Two weeks ahead so we're always staging a future week, not the current one
+    const targetTuesday = new Date(currentTuesday);
+    targetTuesday.setDate(currentTuesday.getDate() + 14);
+    const targetMonday = new Date(targetTuesday);
+    targetMonday.setDate(targetTuesday.getDate() + 6);
 
-    const from = getDateStr(nextTuesday);
-    const to = getDateStr(nextMonday);
+    const from = getDateStr(targetTuesday);
+    const to = getDateStr(targetMonday);
+    const weekNumber = Math.floor((targetTuesday.getTime() - currentTuesday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
     console.log(`[fixtures-auto-import] Importing fixtures from ${from} to ${to}`);
 
@@ -113,10 +116,10 @@ export async function POST() {
           away_flag: null,
           group_stage: null,
           kickoff_at: applyBST(kickoffUTC),
-          is_visible: true,
+          is_visible: false,
           is_locked: false,
           result_entered: false,
-          week_number: null,
+          week_number: weekNumber,
         });
 
         if (!error) imported++;
