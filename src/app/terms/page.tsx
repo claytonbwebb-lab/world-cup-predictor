@@ -14,7 +14,7 @@ export default function TermsPage() {
       <main className="max-w-3xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-black mb-2">Terms & Conditions</h1>
-          <p className="text-textMuted text-sm">Last updated: 26 July 2026</p>
+          <p className="text-textMuted text-sm">Last updated: 15 August 2026</p>
         </div>
 
         <div className="space-y-8 text-textMuted leading-relaxed text-sm">
@@ -49,7 +49,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold text-text mb-2">3. How the Competition Works</h2>
             <p>
               Play Predict Win is a free-to-enter football score prediction competition. Participants predict
-              the exact result of Premier League matches before kick-off. Points are awarded as follows:
+              the exact result of matches before kick-off. Points are awarded as follows:
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li><strong>3 points</strong> — for predicting the exact final score</li>
@@ -59,6 +59,22 @@ export default function TermsPage() {
             <p className="mt-2">
               Predictions lock when the match kicks off. Once locked, predictions cannot be changed.
               In the event of a match being postponed or cancelled, our decisions on scoring will be final.
+            </p>
+            <p className="mt-2">
+              <strong>Match results</strong> are based on the score at the end of normal playing time (90 minutes,
+              plus stoppage time). For cup or tournament matches that go to extra time or a penalty shoot-out,
+              only the 90-minute result is counted for the purposes of this competition.
+            </p>
+            <p className="mt-2">
+              <strong>Leaderboard ranking.</strong> Where two or more participants have the same total points
+              in any weekly, monthly, or season leaderboard, they are ranked first by the number of exact
+              scores predicted, and second by the number of correct results predicted. Our decisions on all
+              ranking matters are final.
+            </p>
+            <p className="mt-2">
+              <strong>Weekly prize ties.</strong> In the unlikely event of a tie for a weekly prize, all
+              tied participants will be contacted to take part in a tiebreaker process. The tiebreaker
+              format may vary and will be communicated at the time. Our decisions on tiebreakers are final.
             </p>
           </div>
 
