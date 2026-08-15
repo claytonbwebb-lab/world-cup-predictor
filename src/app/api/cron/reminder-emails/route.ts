@@ -5,6 +5,16 @@ const webpush = require('web-push');
 
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 const SUPABASE_PAGE_SIZE = 1000;
+const REMINDER_LOCK_TABLE = 'reminder_email_sends';
+
+function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function getReminderRunKey(matches: { kickoff_at: string }[]): string {
+  const kickoffDays = Array.from(new Set(matches.map((m) => m.kickoff_at.slice(0, 10)))).sort();
+  return `match-reminder:${kickoffDays.join(',')}`;
+}
 
 // Configure web-push with VAPID keys
 // Only set VAPID details if keys are configured
@@ -159,6 +169,8 @@ export async function POST(request: Request) {
   type EmailPayload = { userId: string; email: string; subject: string; html: string };
   const toSend: EmailPayload[] = [];
   const skippedResults: any[] = [];
+  const queuedEmails = new Set<string>();
+  const reminderRunKey = getReminderRunKey(tomorrowMatches);
 
   for (const user of (users ?? [])) {
     const predicted = userPredictedMap.get(user.id) ?? new Set();
@@ -174,6 +186,13 @@ export async function POST(request: Request) {
       continue;
     }
 
+    const normalisedEmail = normaliseEmail(user.email);
+    if (queuedEmails.has(normalisedEmail)) {
+      skippedResults.push({ userId: user.id, email: user.email, sent: false, reason: 'duplicate-email-in-run' });
+      continue;
+    }
+    queuedEmails.add(normalisedEmail);
+
     const predictedCount = tomorrowMatchIds.length - missing.length;
     const totalCount = tomorrowMatches.length;
 
@@ -188,15 +207,49 @@ export async function POST(request: Request) {
     }
 
     const html = buildEmailHtml(predictedCount, totalCount, matchesListHtml, user.id);
-    toSend.push({ userId: user.id, email: user.email, subject, html });
+    toSend.push({ userId: user.id, email: normalisedEmail, subject, html });
   }
 
-  // ── Step 7: Batch send emails in chunks of 100 ──
+  // ── Step 7: Claim idempotency locks, then batch send emails in chunks of 100 ──
   const sentResults: any[] = [];
   const BATCH_SIZE = 100;
+  let lockedToSend = toSend;
 
-  for (let i = 0; i < toSend.length; i += BATCH_SIZE) {
-    const chunk = toSend.slice(i, i + BATCH_SIZE);
+  if (!dryRun && toSend.length > 0) {
+    const lockRows = toSend.map(({ userId, email }) => ({
+      user_id: userId,
+      email,
+      run_key: reminderRunKey,
+    }));
+
+    const { data: claimedLocks, error: lockError } = await supabase
+      .from(REMINDER_LOCK_TABLE)
+      .upsert(lockRows, { onConflict: 'email,run_key', ignoreDuplicates: true })
+      .select('email,run_key');
+
+    if (lockError) {
+      console.error('[reminder-emails] ❌ Send lock error:', lockError);
+      return NextResponse.json({
+        error: 'Reminder send lock failed',
+        detail: lockError.message,
+        hint: `Ensure the ${REMINDER_LOCK_TABLE} migration has been applied before running live reminder emails.`,
+      }, { status: 500 });
+    }
+
+    const claimedEmails = new Set((claimedLocks ?? []).map((row: { email: string }) => normaliseEmail(row.email)));
+    lockedToSend = toSend.filter(({ email }) => claimedEmails.has(normaliseEmail(email)));
+
+    for (const payload of toSend) {
+      if (!claimedEmails.has(normaliseEmail(payload.email))) {
+        skippedResults.push({ userId: payload.userId, email: payload.email, sent: false, reason: 'already-sent-for-run' });
+      }
+    }
+
+    console.log(`[reminder-emails] 🔒 Claimed ${lockedToSend.length}/${toSend.length} send locks for ${reminderRunKey}`);
+  }
+
+  for (let i = 0; i < lockedToSend.length; i += BATCH_SIZE) {
+    const chunk = lockedToSend.slice(i, i + BATCH_SIZE);
     const batch = chunk.map(({ email, subject, html }) => ({ from: FROM_EMAIL, to: email, subject, html }));
     console.log(`[reminder-emails] 📦 Sending batch ${Math.floor(i / BATCH_SIZE) + 1}: ${chunk.length} emails`);
 
