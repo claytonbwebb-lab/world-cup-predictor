@@ -76,6 +76,12 @@ export default function TermsPage() {
               tied participants will be contacted to take part in a tiebreaker process. The tiebreaker
               format may vary and will be communicated at the time. Our decisions on tiebreakers are final.
             </p>
+            <p className="mt-2">
+              <strong>Double Up.</strong> Once per gameweek, participants may nominate one match as their
+              Double Up pick. Points earned from a correct Double Up prediction are doubled (3 points becomes
+              6 for an exact score; 1 point becomes 2 for a correct result). The Double Up pick locks when
+              the first match of that gameweek kicks off and cannot be changed thereafter.
+            </p>
           </div>
 
           <div>
