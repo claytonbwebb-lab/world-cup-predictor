@@ -37,9 +37,9 @@ async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string):
     const hn = homeTeam.toLowerCase();
     const an = awayTeam.toLowerCase();
     if ((h.includes(hn) || hn.includes(h)) && (a.includes(an) || an.includes(a))) {
-      const hs = f.scores?.home;
-      const as = f.scores?.away;
-      if (hs !== null && as !== null) {
+      const hs = f.goals?.home ?? f.score?.fulltime?.home;
+      const as = f.goals?.away ?? f.score?.fulltime?.away;
+      if (hs !== null && hs !== undefined && as !== null && as !== undefined) {
         return { homeScore: hs, awayScore: as };
       }
     }
