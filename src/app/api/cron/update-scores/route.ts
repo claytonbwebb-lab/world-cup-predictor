@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
+const API_FOOTBALL_LEAGUES = [39, 528]; // Premier League, Community Shield
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'steve.males@gmail.com';
@@ -22,25 +23,27 @@ function createSupabaseClient() {
 }
 
 async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string): Promise<{ homeScore: number; awayScore: number } | null> {
-  const url = `https://${API_FOOTBALL_HOST}/fixtures?date=${date}&league=39&season=2026`;
-  const res = await fetch(url, {
-    headers: { 'x-apisports-key': API_FOOTBALL_KEY },
-  });
-  if (!res.ok) return null;
+  for (const league of API_FOOTBALL_LEAGUES) {
+    const url = `https://${API_FOOTBALL_HOST}/fixtures?date=${date}&league=${league}&season=2026`;
+    const res = await fetch(url, {
+      headers: { 'x-apisports-key': API_FOOTBALL_KEY },
+    });
+    if (!res.ok) continue;
 
-  const data = await res.json();
-  const fixtures = data.response || [];
+    const data = await res.json();
+    const fixtures = data.response || [];
 
-  for (const f of fixtures) {
-    const h = f.teams.home.name.toLowerCase();
-    const a = f.teams.away.name.toLowerCase();
-    const hn = homeTeam.toLowerCase();
-    const an = awayTeam.toLowerCase();
-    if ((h.includes(hn) || hn.includes(h)) && (a.includes(an) || an.includes(a))) {
-      const hs = f.goals?.home ?? f.score?.fulltime?.home;
-      const as = f.goals?.away ?? f.score?.fulltime?.away;
-      if (hs !== null && hs !== undefined && as !== null && as !== undefined) {
-        return { homeScore: hs, awayScore: as };
+    for (const f of fixtures) {
+      const h = f.teams.home.name.toLowerCase();
+      const a = f.teams.away.name.toLowerCase();
+      const hn = homeTeam.toLowerCase();
+      const an = awayTeam.toLowerCase();
+      if ((h.includes(hn) || hn.includes(h)) && (a.includes(an) || an.includes(a))) {
+        const hs = f.goals?.home ?? f.score?.fulltime?.home;
+        const as = f.goals?.away ?? f.score?.fulltime?.away;
+        if (hs !== null && hs !== undefined && as !== null && as !== undefined) {
+          return { homeScore: hs, awayScore: as };
+        }
       }
     }
   }
