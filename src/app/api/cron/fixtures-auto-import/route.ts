@@ -7,12 +7,11 @@ const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
 
 const PREM_TEAMS = new Set([
   'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Brighton & Hove Albion',
-  'Chelsea', 'Crystal Palace', 'Everton', 'Fulham', 'Ipswich Town',
-  'Leicester City', 'Leicester', 'Leeds United', 'Leeds',
+  'Chelsea', 'Coventry', 'Coventry City', 'Crystal Palace', 'Everton', 'Fulham',
+  'Hull', 'Hull City', 'Ipswich', 'Ipswich Town', 'Leeds United', 'Leeds',
   'Liverpool', 'Manchester City', 'Man City', 'Manchester United', 'Man Utd',
   'Newcastle United', 'Newcastle', 'Nottingham Forest', 'Nottm Forest',
-  'Southampton', 'Tottenham Hotspur', 'Tottenham',
-  'West Ham United', 'West Ham',
+  'Sunderland', 'Tottenham Hotspur', 'Tottenham',
   'Wolverhampton Wanderers', 'Wolves', 'Wolverhampton',
 ]);
 
