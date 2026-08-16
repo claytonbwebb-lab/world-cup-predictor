@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
-const API_FOOTBALL_LEAGUES = [39, 528]; // Premier League, Community Shield
+const API_FOOTBALL_LEAGUES = [39, 2, 3, 47, 294, 528]; // Premier League, Champions League, Europa League, Carabao Cup, FA Cup, Community Shield
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'steve.males@gmail.com';
@@ -20,6 +20,64 @@ function createSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+async function scorePredictionsForMatch(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  matchId: string,
+  homeScore: number,
+  awayScore: number
+): Promise<number> {
+  const { data: predictions, error: predError } = await supabase
+    .from('predictions')
+    .select('id, user_id, home_prediction, away_prediction')
+    .eq('match_id', matchId)
+    .is('scored_at', null);
+
+  if (predError) throw predError;
+  if (!predictions || predictions.length === 0) return 0;
+
+  const { data: doubleUpRows, error: doubleUpError } = await supabase
+    .from('double_up_picks')
+    .select('user_id')
+    .eq('match_id', matchId);
+
+  if (doubleUpError) throw doubleUpError;
+
+  const doubleUpUserIds = new Set((doubleUpRows || []).map((row: any) => row.user_id));
+  const scoredAt = new Date().toISOString();
+
+  for (const prediction of predictions) {
+    const isExactScore = prediction.home_prediction === homeScore && prediction.away_prediction === awayScore;
+
+    let actualResult: 'home' | 'draw' | 'away';
+    if (homeScore > awayScore) actualResult = 'home';
+    else if (homeScore === awayScore) actualResult = 'draw';
+    else actualResult = 'away';
+
+    let predictedResult: 'home' | 'draw' | 'away';
+    if (prediction.home_prediction > prediction.away_prediction) predictedResult = 'home';
+    else if (prediction.home_prediction === prediction.away_prediction) predictedResult = 'draw';
+    else predictedResult = 'away';
+
+    const isCorrectResult = actualResult === predictedResult && !isExactScore;
+    let points = isExactScore ? 3 : isCorrectResult ? 1 : 0;
+    if (points > 0 && doubleUpUserIds.has(prediction.user_id)) points *= 2;
+
+    const { error: updateError } = await supabase
+      .from('predictions')
+      .update({
+        points_awarded: points,
+        is_exact_score: isExactScore,
+        is_correct_result: isCorrectResult || isExactScore,
+        scored_at: scoredAt,
+      })
+      .eq('id', prediction.id);
+
+    if (updateError) throw updateError;
+  }
+
+  return predictions.length;
 }
 
 async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string): Promise<{ homeScore: number; awayScore: number } | null> {
@@ -92,7 +150,7 @@ export async function POST() {
 
   console.log(`[update-scores] Checking ${matches.length} matches for scores...`);
 
-  const results = { updated: 0, retried: 0, failed: 0, alerts: 0 };
+  const results = { updated: 0, retried: 0, failed: 0, alerts: 0, scoredPredictions: 0 };
 
   for (const match of matches) {
     // Check if enough time has passed since last retry
@@ -119,8 +177,10 @@ export async function POST() {
       if (error) {
         console.error(`[update-scores] DB update error for ${matchInfo}:`, error);
       } else {
-        console.log(`[update-scores] ✅ Scored: ${matchInfo} => ${score.homeScore}-${score.awayScore}`);
+        const scoredPredictions = await scorePredictionsForMatch(supabase, match.id, score.homeScore, score.awayScore);
+        console.log(`[update-scores] ✅ Scored: ${matchInfo} => ${score.homeScore}-${score.awayScore}; predictions=${scoredPredictions}`);
         results.updated++;
+        results.scoredPredictions += scoredPredictions;
       }
     } else {
       // No score yet — increment retry count
@@ -143,7 +203,7 @@ export async function POST() {
     }
   }
 
-  console.log(`[update-scores] Done. updated=${results.updated} retried=${results.retried} failed=${results.failed} alerts=${results.alerts}`);
+  console.log(`[update-scores] Done. updated=${results.updated} retried=${results.retried} failed=${results.failed} alerts=${results.alerts} scoredPredictions=${results.scoredPredictions}`);
 
   return NextResponse.json({
     ok: true,

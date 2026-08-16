@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
       { id: 3, name: 'Europa League', filterPrem: true },
       { id: 47, name: 'Carabao Cup', filterPrem: true },
       { id: 294, name: 'FA Cup', filterPrem: true },
+      { id: 528, name: 'Community Shield', filterPrem: true },
     ];
 
     const leagues = leaguesParam
