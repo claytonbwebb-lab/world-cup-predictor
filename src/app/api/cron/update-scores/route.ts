@@ -8,7 +8,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'steve.males@gmail.com';
 
 // How long after kickoff to wait before fetching scores
-const KO_GRACE_HOURS = 2;
+const KO_GRACE_MINS = 135; // 2h 15m
 // Retry interval in minutes
 const RETRY_INTERVAL_MINS = 15;
 // Max retries before alerting
@@ -68,10 +68,10 @@ export async function POST() {
   const supabase = createSupabaseClient();
 
   // Find matches that:
-  // - Have kicked off KO_GRACE_HOURS ago or more
+  // - Have kicked off KO_GRACE_MINS ago or more
   // - Don't have a result entered yet
   // - Haven't been retried more than MAX_RETRIES times already
-  const cutoff = new Date(Date.now() - KO_GRACE_HOURS * 60 * 60 * 1000).toISOString();
+  const cutoff = new Date(Date.now() - KO_GRACE_MINS * 60 * 1000).toISOString();
   const retryCutoff = new Date(Date.now() - RETRY_INTERVAL_MINS * 60 * 1000).toISOString();
 
   const { data: matches } = await supabase
