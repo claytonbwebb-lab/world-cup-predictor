@@ -332,25 +332,20 @@ export default async function Dashboard() {
                         )}
                       </div>
 
-                      {/* Home: flag above name */}
+                      {/* Home: flag above name — match fixtures (md badge, text-xs) */}
                       <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                        <TeamBadge value={pred.match.home_flag} size="sm" />
-                        <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.home_team, true)}</span>
+                        <TeamBadge value={pred.match.home_flag} size="md" />
+                        <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.home_team, true)}</span>
                       </div>
-                      {/* Scores centred */}
+                      {/* Scores — stacked vertically to free horizontal space for bigger teams */}
                       <div className="shrink-0 flex flex-col items-center gap-0.5">
-                        <div className="flex gap-2 text-[9px] text-textMuted">
-                          <span>pred</span><span>act</span>
-                        </div>
-                        <div className="flex gap-2 text-xs">
-                          <span className="font-medium">{pred.home_prediction}-{pred.away_prediction}</span>
-                          <span className="font-bold text-primary">{pred.match.home_score}-{pred.match.away_score}</span>
-                        </div>
+                        <span className="text-[9px] text-textMuted">{pred.home_prediction}-{pred.away_prediction}</span>
+                        <span className="text-xs font-bold text-primary">{pred.match.home_score}-{pred.match.away_score}</span>
                       </div>
-                      {/* Away: flag above name */}
-                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0 pr-6">
-                        <TeamBadge value={pred.match.away_flag} size="sm" />
-                        <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
+                      {/* Away: flag above name — match fixtures */}
+                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                        <TeamBadge value={pred.match.away_flag} size="md" />
+                        <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
                       </div>
                       {/* Points — fixed width, always aligned */}
                       <div className="w-7 text-right shrink-0">
