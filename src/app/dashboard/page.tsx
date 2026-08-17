@@ -305,115 +305,163 @@ export default async function Dashboard() {
           </div>
 
           {/* Recent Results */}
-          <div className="card">
+          {/* Mobile: big standalone cards matching Results page */}
+          <div className="md:hidden space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">Your Recent Results</h2>
+              <Link href="/fixtures" className="text-primary text-sm hover:underline">
+                Predict More →
+              </Link>
+            </div>
+
+            {recentPredictions && recentPredictions.length > 0 ? (
+              <div className="space-y-4">
+                {recentPredictions.map((pred: any) => {
+                  const matchDate = pred.match.kickoff_at
+                    ? new Date(pred.match.kickoff_at).toLocaleDateString('en-GB', {
+                        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                      })
+                    : null;
+                  const isExact = pred.is_exact_score;
+                  const isCorrect = pred.is_correct_result;
+                  const isDouble = doubleUpMatchIds.has(pred.match_id);
+                  const pts = pred.points_awarded || 0;
+                  return (
+                    <div key={pred.id} className="card">
+                      {/* Meta row */}
+                      <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium uppercase tracking-wide">{pred.match.group_stage}</span>
+                          {isDouble && (
+                            <span className="font-medium bg-yellow-400/15 text-yellow-400 px-2 py-0.5 rounded-full text-[10px]">
+                              ⭐ Double Up
+                            </span>
+                          )}
+                        </div>
+                        <span>{matchDate}</span>
+                      </div>
+
+                      {/* Score row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                          <TeamBadge value={pred.match.home_flag} size="lg" />
+                          <span className="font-bold text-sm text-center leading-tight">{getTeamName(pred.match.home_team)}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-4xl font-black text-primary">{pred.match.home_score ?? 0}</span>
+                          <span className="text-textMuted font-bold">–</span>
+                          <span className="text-4xl font-black text-primary">{pred.match.away_score ?? 0}</span>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                          <TeamBadge value={pred.match.away_flag} size="lg" />
+                          <span className="font-bold text-sm text-center leading-tight">{getTeamName(pred.match.away_team)}</span>
+                        </div>
+                      </div>
+
+                      {/* Prediction + points row */}
+                      <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-center gap-3">
+                        <div className="text-center">
+                          <div className="text-[10px] text-textMuted uppercase tracking-wider mb-0.5">You predicted</div>
+                          <span className="text-sm font-medium">{pred.home_prediction} – {pred.away_prediction}</span>
+                        </div>
+                        <div className="text-center">
+                          {isExact && (
+                            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded font-medium">Exact!</span>
+                          )}
+                          {isCorrect && !isExact && (
+                            <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-medium">Correct result</span>
+                          )}
+                          {!isCorrect && !isExact && (
+                            <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-medium">Wrong</span>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] text-textMuted uppercase tracking-wider mb-0.5">Points</div>
+                          <span className={`text-sm font-bold ${isDouble ? 'text-yellow-400' : 'text-primary'}`}>
+                            +{pts} {isDouble && '⭐'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-textMuted text-center py-8">
+                No predictions scored yet. Go make some predictions!
+              </p>
+            )}
+          </div>
+
+          {/* Desktop: card container with table */}
+          <div className="hidden md:block card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Your Recent Results</h2>
               <Link href="/fixtures" className="text-primary text-sm hover:underline">
                 Predict More →
               </Link>
             </div>
-            
+
             {recentPredictions && recentPredictions.length > 0 ? (
               <>
-                {/* Mobile: flag-above-name, scores centred (default — shown below 768px) */}
-                <div className="md:hidden space-y-2">
-                  {recentPredictions.map((pred: any) => (
+                <div className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 px-3 pb-1 text-xs text-textMuted uppercase tracking-wider">
+                  <div className="text-right pr-2">Home Team</div>
+                  <div className="text-center">Predicted</div>
+                  <div className="text-center">Actual</div>
+                  <div className="text-left pl-2">Away Team</div>
+                  <div className="text-right pl-2">Pts</div>
+                </div>
+                <div className="space-y-2">
+                  {recentPredictions.map((pred: any) => {
+                    const matchDate = pred.match.kickoff_at
+                      ? new Date(pred.match.kickoff_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                      : null;
+                    return (
                     <div
                       key={pred.id}
-                      className="flex items-center gap-2 px-2 py-2.5 bg-surfaceLight rounded-lg relative"
+                      className="grid grid-cols-[1fr_5rem_5rem_1fr_minmax(6rem,auto)] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
                     >
-                      {/* Badges — absolute top-right so they never push layout */}
-                      <div className="absolute top-1 right-1.5 flex flex-col items-end gap-0.5">
+                      {/* Home team — badge over name, like fixtures */}
+                      <div className="flex flex-col items-center gap-1">
+                        <TeamBadge value={pred.match.home_flag} size="md" />
+                        <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.home_team, true)}</span>
+                        {matchDate && <span className="text-[9px] text-textMuted">{matchDate}</span>}
+                      </div>
+
+                      <div className="w-[5rem] text-center">
+                        <div className="text-[10px] text-textMuted/60 mb-0.5">Predicted</div>
+                        <div className="text-sm font-medium">
+                          {pred.home_prediction} - {pred.away_prediction}
+                        </div>
+                      </div>
+                      <div className="w-[5rem] text-center">
+                        <div className="text-[10px] text-textMuted/60 mb-0.5">Actual</div>
+                        <div className="text-sm font-bold text-primary">
+                          {pred.match.home_score} - {pred.match.away_score}
+                        </div>
+                      </div>
+
+                      {/* Away team — badge over name, like fixtures */}
+                      <div className="flex flex-col items-center gap-1">
+                        <TeamBadge value={pred.match.away_flag} size="md" />
+                        <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.away_team, true)}</span>
+                      </div>
+
+                      {/* Tags + Points — stacked vertically, anchored right */}
+                      <div className="flex flex-col items-end gap-0.5">
                         {pred.is_exact_score && (
-                          <span className="text-[8px] bg-primary/20 text-primary px-1 py-0.5 rounded whitespace-nowrap">EXACT</span>
+                          <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded whitespace-nowrap">EXACT</span>
                         )}
                         {doubleUpMatchIds.has(pred.match_id) && (
-                          <span className="text-[8px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded whitespace-nowrap">2×</span>
+                          <span className="text-xs bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded whitespace-nowrap">DOUBLE UP</span>
                         )}
-                      </div>
-
-                      {/* Home: flag above name — match fixtures (md badge, text-xs) */}
-                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                        <TeamBadge value={pred.match.home_flag} size="md" />
-                        <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.home_team, true)}</span>
-                      </div>
-                      {/* Scores — stacked vertically to free horizontal space for bigger teams */}
-                      <div className="shrink-0 flex flex-col items-center gap-0.5">
-                        <span className="text-[9px] text-textMuted">{pred.home_prediction}-{pred.away_prediction}</span>
-                        <span className="text-xs font-bold text-primary">{pred.match.home_score}-{pred.match.away_score}</span>
-                      </div>
-                      {/* Away: flag above name — match fixtures */}
-                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                        <TeamBadge value={pred.match.away_flag} size="md" />
-                        <span className="text-xs font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
-                      </div>
-                      {/* Points — fixed width, always aligned */}
-                      <div className="w-7 text-right shrink-0">
-                        <span className="text-xs font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
+                        <span className="font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Desktop: 5-col table (shown at 768px+) */}
-                <div className="hidden md:block">
-                  <div className="grid grid-cols-[1fr_5rem_5rem_1fr_auto] items-center gap-2 px-3 pb-1 text-xs text-textMuted uppercase tracking-wider">
-                    <div className="text-right pr-2">Home Team</div>
-                    <div className="text-center">Predicted</div>
-                    <div className="text-center">Actual</div>
-                    <div className="text-left pl-2">Away Team</div>
-                    <div className="text-right pl-2">Pts</div>
-                  </div>
-                  <div className="space-y-2">
-                    {recentPredictions.map((pred: any) => {
-                      const matchDate = pred.match.kickoff_at
-                        ? new Date(pred.match.kickoff_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-                        : null;
-                      return (
-                      <div
-                        key={pred.id}
-                        className="grid grid-cols-[1fr_5rem_5rem_1fr_minmax(6rem,auto)] items-center gap-2 p-3 bg-surfaceLight rounded-lg"
-                      >
-                        {/* Home team — badge over name, like fixtures */}
-                        <div className="flex flex-col items-center gap-1">
-                          <TeamBadge value={pred.match.home_flag} size="md" />
-                          <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.home_team, true)}</span>
-                          {matchDate && <span className="text-[9px] text-textMuted">{matchDate}</span>}
-                        </div>
-
-                        <div className="w-[5rem] text-center">
-                          <div className="text-[10px] text-textMuted/60 mb-0.5">Predicted</div>
-                          <div className="text-sm font-medium">
-                            {pred.home_prediction} - {pred.away_prediction}
-                          </div>
-                        </div>
-                        <div className="w-[5rem] text-center">
-                          <div className="text-[10px] text-textMuted/60 mb-0.5">Actual</div>
-                          <div className="text-sm font-bold text-primary">
-                            {pred.match.home_score} - {pred.match.away_score}
-                          </div>
-                        </div>
-
-                        {/* Away team — badge over name, like fixtures */}
-                        <div className="flex flex-col items-center gap-1">
-                          <TeamBadge value={pred.match.away_flag} size="md" />
-                          <span className="text-xs font-medium text-center leading-tight">{getTeamName(pred.match.away_team, true)}</span>
-                        </div>
-
-                        {/* Tags + Points — stacked vertically, anchored right */}
-                        <div className="flex flex-col items-end gap-0.5">
-                          {pred.is_exact_score && (
-                            <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded whitespace-nowrap">EXACT</span>
-                          )}
-                          {doubleUpMatchIds.has(pred.match_id) && (
-                            <span className="text-xs bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded whitespace-nowrap">DOUBLE UP</span>
-                          )}
-                          <span className="font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
-                        </div>
-                      </div>
-                      );
-                    })}
-                  </div>
+                    );
+                  })}
                 </div>
               </>
             ) : (
