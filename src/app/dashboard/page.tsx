@@ -320,8 +320,18 @@ export default async function Dashboard() {
                   {recentPredictions.map((pred: any) => (
                     <div
                       key={pred.id}
-                      className="flex items-center gap-2 px-2 py-2.5 bg-surfaceLight rounded-lg"
+                      className="flex items-center gap-2 px-2 py-2.5 bg-surfaceLight rounded-lg relative"
                     >
+                      {/* Badges — absolute top-right so they never push layout */}
+                      <div className="absolute top-1 right-1.5 flex flex-col items-end gap-0.5">
+                        {pred.is_exact_score && (
+                          <span className="text-[8px] bg-primary/20 text-primary px-1 py-0.5 rounded whitespace-nowrap">EXACT</span>
+                        )}
+                        {doubleUpMatchIds.has(pred.match_id) && (
+                          <span className="text-[8px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded whitespace-nowrap">2×</span>
+                        )}
+                      </div>
+
                       {/* Home: flag above name */}
                       <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
                         <TeamBadge value={pred.match.home_flag} size="sm" />
@@ -338,18 +348,12 @@ export default async function Dashboard() {
                         </div>
                       </div>
                       {/* Away: flag above name */}
-                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0 pr-6">
                         <TeamBadge value={pred.match.away_flag} size="sm" />
                         <span className="text-[11px] font-medium text-center leading-tight break-words w-full">{getTeamName(pred.match.away_team, true)}</span>
                       </div>
-                      {/* Tags + Points — stacked vertically, anchored right */}
-                      <div className="shrink-0 flex flex-col items-end gap-0.5">
-                        {pred.is_exact_score && (
-                          <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded whitespace-nowrap">EXACT</span>
-                        )}
-                        {doubleUpMatchIds.has(pred.match_id) && (
-                          <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-1 py-0.5 rounded whitespace-nowrap">DOUBLE UP</span>
-                        )}
+                      {/* Points — fixed width, always aligned */}
+                      <div className="w-7 text-right shrink-0">
                         <span className="text-xs font-bold text-primary whitespace-nowrap">+{pred.points_awarded}</span>
                       </div>
                     </div>
