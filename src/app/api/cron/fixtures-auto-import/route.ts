@@ -79,7 +79,7 @@ export async function POST() {
       { id: 2, filterPrem: true },
       { id: 3, filterPrem: true },
       { id: 47, filterPrem: true },
-      { id: 294, filterPrem: true },
+      { id: 48, filterPrem: true },
       { id: 528, filterPrem: true },
     ];
 
