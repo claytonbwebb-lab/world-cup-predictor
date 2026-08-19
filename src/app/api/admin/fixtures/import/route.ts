@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       { id: 2, name: 'Champions League', filterPrem: true },
       { id: 3, name: 'Europa League', filterPrem: true },
       { id: 47, name: 'Carabao Cup', filterPrem: true },
-      { id: 294, name: 'FA Cup', filterPrem: true },
+      { id: 48, name: 'League Cup', filterPrem: true },
       { id: 528, name: 'Community Shield', filterPrem: true },
     ];
 
@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
           away_team: away,
           home_flag: f.teams.home.logo || null,
           away_flag: f.teams.away.logo || null,
+          group_stage: league.name,
           kickoff_at: kickoffAt,
           week_number: getWeekNumber(new Date(kickoffAt)),
           is_visible: false,

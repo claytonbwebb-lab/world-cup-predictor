@@ -74,12 +74,12 @@ export async function POST() {
     console.log(`[fixtures-auto-import] Importing fixtures from ${from} to ${to}`);
 
     const leagues = [
-      { id: 39, filterPrem: false },
-      { id: 2, filterPrem: true },
-      { id: 3, filterPrem: true },
-      { id: 47, filterPrem: true },
-      { id: 48, filterPrem: true },
-      { id: 528, filterPrem: true },
+      { id: 39, filterPrem: false, groupStage: 'Premier League' },
+      { id: 2, filterPrem: true, groupStage: 'Champions League' },
+      { id: 3, filterPrem: true, groupStage: 'Europa League' },
+      { id: 47, filterPrem: true, groupStage: 'FA Cup' },
+      { id: 48, filterPrem: true, groupStage: 'League Cup' },
+      { id: 528, filterPrem: true, groupStage: 'Community Shield' },
     ];
 
     const supabase = createClient(
@@ -118,7 +118,7 @@ export async function POST() {
           away_team: away,
           home_flag: f.teams.home.logo || null,
           away_flag: f.teams.away.logo || null,
-          group_stage: null,
+          group_stage: league.groupStage || null,
           kickoff_at: new Date(kickoffUTC).toISOString(),
           is_visible: false,
           is_locked: false,
