@@ -2,17 +2,30 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-function getNextWeekRange() {
+function getImportRange() {
   const now = new Date();
-  // PPW weeks run Tuesday → Monday
-  // Find the Tuesday that starts the current week
-  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-  const daysSinceTuesday = (day - 2 + 7) % 7; // days since last Tuesday
+  const day = now.getDay();
+  const daysSinceTuesday = (day - 2 + 7) % 7;
   const currentTuesday = new Date(now);
   currentTuesday.setDate(now.getDate() - daysSinceTuesday);
-  // Two weeks ahead — always stage a future week, not the current one
+  // Two weeks ahead — stage a future week
+  const targetTuesday = new Date(currentTuesday);
+  targetTuesday.setDate(currentTuesday.getDate() + 14);
+  const targetMonday = new Date(targetTuesday);
+  targetMonday.setDate(targetTuesday.getDate() + 6);
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  return { from: fmt(targetTuesday), to: fmt(targetMonday) };
+}
+
+function getNextWeekRange() {
+  const now = new Date();
+  const day = now.getDay();
+  const daysSinceTuesday = (day - 2 + 7) % 7;
+  const currentTuesday = new Date(now);
+  currentTuesday.setDate(now.getDate() - daysSinceTuesday);
+  // One week ahead — the actual next PPW week
   const nextTuesday = new Date(currentTuesday);
-  nextTuesday.setDate(currentTuesday.getDate() + 14);
+  nextTuesday.setDate(currentTuesday.getDate() + 7);
   const nextMonday = new Date(nextTuesday);
   nextMonday.setDate(nextTuesday.getDate() + 6);
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
@@ -28,7 +41,7 @@ export default function FixtureActions() {
   async function handleImport() {
     setImporting(true);
     setMessage('');
-    const { from, to } = getNextWeekRange();
+    const { from, to } = getImportRange();
     try {
       const res = await fetch(`/api/admin/fixtures/import?from=${from}&to=${to}`, { method: 'POST' });
       const json = await res.json();
