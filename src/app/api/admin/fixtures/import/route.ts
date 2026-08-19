@@ -13,7 +13,6 @@ const PREM_TEAMS = new Set([
   'Liverpool', 'Manchester City', 'Man City', 'Manchester United', 'Man Utd',
   'Newcastle United', 'Newcastle', 'Nottingham Forest', 'Nottm Forest',
   'Sunderland', 'Tottenham Hotspur', 'Tottenham',
-  'Wolverhampton Wanderers', 'Wolves', 'Wolverhampton',
 ]);
 
 function normaliseTeamName(name: string): string {

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
-const API_FOOTBALL_LEAGUES = [39, 2, 3, 47, 294, 528]; // Premier League, Champions League, Europa League, Carabao Cup, FA Cup, Community Shield
+const API_FOOTBALL_LEAGUES = [39, 2, 3, 47, 48, 528]; // Premier League, Champions League, Europa League, FA Cup, Carabao Cup, Community Shield
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'steve.males@gmail.com';
