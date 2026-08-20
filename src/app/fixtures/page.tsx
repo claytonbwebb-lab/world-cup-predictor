@@ -1,7 +1,7 @@
 'use client';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import TeamBadge from '@/components/TeamBadge';
@@ -29,6 +29,148 @@ interface Prediction {
   away_prediction: number;
   points_awarded: number;
   scored_at: string | null;
+}
+
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+});
+
+function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button type="button" onClick={() => onChange(Math.min(20, value + 1))}
+        className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
+        +
+      </button>
+      <span className="text-3xl font-black w-10 text-center leading-none">{value}</span>
+      <button type="button" onClick={() => onChange(Math.max(0, value - 1))}
+        className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
+        −
+      </button>
+    </div>
+  );
+}
+
+interface MatchCardProps {
+  match: Match;
+  prediction?: Prediction;
+  inputs: { home: number; away: number };
+  isLocked: boolean;
+  doubleUpPick: string | null;
+  doubleUpLocked: boolean;
+  togglingDoubleUp: boolean;
+  selectedWeek: number;
+  onToggleDoubleUp: (matchId: string) => void;
+  onInputChange: (matchId: string, field: 'home' | 'away', value: number) => void;
+  onSave?: (id: string) => Promise<void>;
+  justSaved?: boolean;
+}
+
+function MatchCard({
+  match,
+  prediction,
+  inputs,
+  isLocked,
+  doubleUpPick,
+  doubleUpLocked,
+  togglingDoubleUp,
+  selectedWeek,
+  onToggleDoubleUp,
+  onInputChange,
+  onSave,
+  justSaved,
+}: MatchCardProps) {
+  const hasPredicted = !!prediction;
+  const isDoubleUp = doubleUpPick === match.id;
+  const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== -1 && !doubleUpLocked;
+
+  return (
+    <div className="card">
+      {/* Meta row */}
+      <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
+        <div className="flex items-center gap-2">
+          <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>{fmtDate(match.kickoff_at)}</span>
+          {isLocked && (
+            <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Locked</span>
+          )}
+        </div>
+      </div>
+
+      {/* Score row */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+          <TeamBadge value={match.home_flag} size="lg" />
+          <span className="font-bold text-sm text-center leading-tight">{match.home_team}</span>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          {isLocked ? (
+            <div className="flex items-center gap-3">
+              <span className="text-3xl font-black text-textMuted">{prediction ? prediction.home_prediction : '?'}</span>
+              <span className="text-textMuted font-bold text-sm">v</span>
+              <span className="text-3xl font-black text-textMuted">{prediction ? prediction.away_prediction : '?'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <ScoreStepper value={inputs.home} onChange={v => onInputChange(match.id, 'home', v)} />
+              <span className="text-textMuted font-bold text-lg px-1">v</span>
+              <ScoreStepper value={inputs.away} onChange={v => onInputChange(match.id, 'away', v)} />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+          <TeamBadge value={match.away_flag} size="lg" />
+          <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
+        </div>
+      </div>
+
+      {/* Double Up toggle + save row */}
+      <div className="mt-3 flex items-center justify-between gap-3">
+        {/* Double Up — bottom-left */}
+        {canDoubleUp && (
+          <button
+            type="button"
+            disabled={togglingDoubleUp}
+            onClick={() => onToggleDoubleUp(match.id)}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 transition-all ${
+              isDoubleUp
+                ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
+                : 'border-surfaceLight bg-surfaceLight/50 text-textMuted hover:border-yellow-400/40'
+            }`}
+          >
+            <span>{isDoubleUp ? '⭐' : '☆'}</span>
+            {isDoubleUp ? 'Double Up!' : 'Double Up'}
+          </button>
+        )}
+        {hasPredicted && (isLocked || doubleUpLocked) && isDoubleUp && (
+          <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 border-yellow-400/30 bg-yellow-400/10 text-yellow-400">
+            ⭐ Double Up locked
+          </span>
+        )}
+        {/* Spacer if no double up shown */}
+        {(!canDoubleUp && !(hasPredicted && isDoubleUp)) && <div />}
+
+        {/* Save button — right side */}
+        {!isLocked && onSave && (
+          <div className="flex items-center gap-3">
+            {justSaved && (
+              <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
+            )}
+            <button
+              onClick={() => onSave(match.id)}
+              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              💾 Save
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function FixturesPage() {
@@ -207,130 +349,13 @@ export default function FixturesPage() {
     setTogglingDoubleUp(false);
   }
 
+  const handleInputChange = useCallback((matchId: string, field: 'home' | 'away', value: number) => {
+    setInputs(prev => ({ ...prev, [matchId]: { ...prev[matchId], [field]: value } }));
+  }, []);
+
   const now = new Date();
   const upcoming  = matches.filter(m => !m.is_locked && new Date(m.kickoff_at) > now);
   const locked    = matches.filter(m => m.is_locked || new Date(m.kickoff_at) <= now);
-
-  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-  });
-
-  // Build week options for selector — position-based labels for fixtures
-  // (use calendar-based getWeekDropdownLabel from lib/weeks for results/leaderboard)
-
-
-  function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <button type="button" onClick={() => onChange(Math.min(20, value + 1))}
-          className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
-          +
-        </button>
-        <span className="text-3xl font-black w-10 text-center leading-none">{value}</span>
-        <button type="button" onClick={() => onChange(Math.max(0, value - 1))}
-          className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
-          −
-        </button>
-      </div>
-    );
-  }
-
-  function MatchCard({ match, onSave, justSaved }: { match: Match; onSave?: (id: string) => Promise<void>; justSaved?: boolean }) {
-    const pred = predictions.get(match.id);
-    const isLocked = match.is_locked || new Date(match.kickoff_at) <= now;
-    const vals = inputs[match.id] || { home: 0, away: 0 };
-    const hasPredicted = predictions.has(match.id);
-    const isDoubleUp = doubleUpPick === match.id;
-    const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== -1 && !doubleUpLocked;
-
-    return (
-      <div className="card">
-        {/* Meta row */}
-        <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
-          <div className="flex items-center gap-2">
-            <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>{fmtDate(match.kickoff_at)}</span>
-            {isLocked && (
-              <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Locked</span>
-            )}
-          </div>
-        </div>
-
-        {/* Score row */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-            <TeamBadge value={match.home_flag} size="lg" />
-            <span className="font-bold text-sm text-center leading-tight">{match.home_team}</span>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            {isLocked ? (
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-black text-textMuted">{pred ? pred.home_prediction : '?'}</span>
-                <span className="text-textMuted font-bold text-sm">v</span>
-                <span className="text-3xl font-black text-textMuted">{pred ? pred.away_prediction : '?'}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <ScoreStepper value={vals.home} onChange={v => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], home: v } }))} />
-                <span className="text-textMuted font-bold text-lg px-1">v</span>
-                <ScoreStepper value={vals.away} onChange={v => setInputs(prev => ({ ...prev, [match.id]: { ...prev[match.id], away: v } }))} />
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-            <TeamBadge value={match.away_flag} size="lg" />
-            <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
-          </div>
-        </div>
-
-        {/* Double Up toggle + save row */}
-        <div className="mt-3 flex items-center justify-between gap-3">
-          {/* Double Up — bottom-left */}
-          {canDoubleUp && (
-            <button
-              type="button"
-              disabled={togglingDoubleUp}
-              onClick={() => toggleDoubleUp(match.id)}
-              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 transition-all ${
-                isDoubleUp
-                  ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
-                  : 'border-surfaceLight bg-surfaceLight/50 text-textMuted hover:border-yellow-400/40'
-              }`}
-            >
-              <span>{isDoubleUp ? '⭐' : '☆'}</span>
-              {isDoubleUp ? 'Double Up!' : 'Double Up'}
-            </button>
-          )}
-          {hasPredicted && (isLocked || doubleUpLocked) && isDoubleUp && (
-            <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 border-yellow-400/30 bg-yellow-400/10 text-yellow-400">
-              ⭐ Double Up locked
-            </span>
-          )}
-          {/* Spacer if no double up shown */}
-          {(!canDoubleUp && !(hasPredicted && isDoubleUp)) && <div />}
-
-          {/* Save button — right side */}
-          {!isLocked && onSave && (
-            <div className="flex items-center gap-3">
-              {justSaved && (
-                <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
-              )}
-              <button
-                onClick={() => onSave(match.id)}
-                className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                💾 Save
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -381,7 +406,23 @@ export default function FixturesPage() {
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
                 <div className="space-y-3">
-                  {upcoming.map(m => <MatchCard key={m.id} match={m} onSave={saveMatch} justSaved={savedMatch === m.id} />)}
+                  {upcoming.map(m => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      prediction={predictions.get(m.id)}
+                      inputs={inputs[m.id] || { home: 0, away: 0 }}
+                      isLocked={m.is_locked || new Date(m.kickoff_at) <= now}
+                      doubleUpPick={doubleUpPick}
+                      doubleUpLocked={doubleUpLocked}
+                      togglingDoubleUp={togglingDoubleUp}
+                      selectedWeek={selectedWeek}
+                      onToggleDoubleUp={toggleDoubleUp}
+                      onInputChange={handleInputChange}
+                      onSave={saveMatch}
+                      justSaved={savedMatch === m.id}
+                    />
+                  ))}
                 </div>
               </section>
             )}
@@ -391,7 +432,21 @@ export default function FixturesPage() {
                   <span>🔒</span> Locked
                 </h2>
                 <div className="space-y-3">
-                  {locked.map(m => <MatchCard key={m.id} match={m} />)}
+                  {locked.map(m => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      prediction={predictions.get(m.id)}
+                      inputs={inputs[m.id] || { home: 0, away: 0 }}
+                      isLocked={m.is_locked || new Date(m.kickoff_at) <= now}
+                      doubleUpPick={doubleUpPick}
+                      doubleUpLocked={doubleUpLocked}
+                      togglingDoubleUp={togglingDoubleUp}
+                      selectedWeek={selectedWeek}
+                      onToggleDoubleUp={toggleDoubleUp}
+                      onInputChange={handleInputChange}
+                    />
+                  ))}
                 </div>
               </section>
             )}
