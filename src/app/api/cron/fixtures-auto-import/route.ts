@@ -51,6 +51,10 @@ async function fetchFixtures(league: number, from: string, to: string): Promise<
   return data.response || [];
 }
 
+export async function GET() {
+  return POST();
+}
+
 export async function POST() {
   try {
     const now = new Date();

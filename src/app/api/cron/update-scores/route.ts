@@ -125,6 +125,10 @@ async function sendAlertEmail(matchInfo: string, error: string) {
   return res.ok;
 }
 
+export async function GET() {
+  return POST();
+}
+
 export async function POST() {
   const supabase = createSupabaseClient();
 
