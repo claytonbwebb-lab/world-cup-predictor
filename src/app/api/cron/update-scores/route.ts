@@ -80,7 +80,7 @@ async function scorePredictionsForMatch(
   return predictions.length;
 }
 
-async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string): Promise<{ homeScore: number; awayScore: number } | null> {
+async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string): Promise<{ homeScore: number; awayScore: number; status: string } | null> {
   for (const league of API_FOOTBALL_LEAGUES) {
     const url = `https://${API_FOOTBALL_HOST}/fixtures?date=${date}&league=${league}&season=2026`;
     const res = await fetch(url, {
@@ -100,7 +100,7 @@ async function fetchLiveScore(homeTeam: string, awayTeam: string, date: string):
         const hs = f.goals?.home ?? f.score?.fulltime?.home;
         const as = f.goals?.away ?? f.score?.fulltime?.away;
         if (hs !== null && hs !== undefined && as !== null && as !== undefined) {
-          return { homeScore: hs, awayScore: as };
+          return { homeScore: hs, awayScore: as, status: f.fixture?.status?.short ?? 'N/A' };
         }
       }
     }
@@ -165,8 +165,18 @@ export async function POST() {
     const score = await fetchLiveScore(match.home_team, match.away_team, date);
     const matchInfo = `${match.home_team} vs ${match.away_team} (${date})`;
 
-    if (score) {
-      // Score found — update the match
+    if (!score) {
+      // No fixture found at all → increment retry
+      const newRetryCount = (match.retry_count || 0) + 1;
+      console.log(`[update-scores] ⏳ No fixture data yet for ${matchInfo} (retry ${newRetryCount}/${MAX_RETRIES})`);
+      await supabase.from('matches').update({ retry_count: newRetryCount }).eq('id', match.id);
+      if (newRetryCount >= MAX_RETRIES) {
+        console.warn(`[update-scores] ❌ All retries exhausted for ${matchInfo}`);
+        await sendAlertEmail(matchInfo, 'No fixture data returned after all retries');
+        results.alerts++;
+      }
+    } else if (score.status === 'FT') {
+      // Match finished — safe to record final score
       const { error } = await supabase
         .from('matches')
         .update({
@@ -187,22 +197,10 @@ export async function POST() {
         results.scoredPredictions += scoredPredictions;
       }
     } else {
-      // No score yet — increment retry count
-      const newRetryCount = (match.retry_count || 0) + 1;
-
-      if (newRetryCount >= MAX_RETRIES) {
-        console.warn(`[update-scores] ❌ All retries exhausted for ${matchInfo}`);
-        await sendAlertEmail(matchInfo, 'No score returned after all retries');
-        results.alerts++;
-      } else {
-        console.log(`[update-scores] ⏳ No score yet for ${matchInfo} (retry ${newRetryCount}/${MAX_RETRIES})`);
-      }
-
-      await supabase
-        .from('matches')
-        .update({ retry_count: newRetryCount })
-        .eq('id', match.id);
-
+      // Fixture found but match not finished yet (e.g. 1H, HT, 2H)
+      console.log(`[update-scores] ⏳ Match in progress for ${matchInfo} — status=${score.status}, waiting for FT`);
+      // Reset retry count so in-progress matches don't falsely exhaust retries
+      await supabase.from('matches').update({ retry_count: 0 }).eq('id', match.id);
       results.retried++;
     }
   }
