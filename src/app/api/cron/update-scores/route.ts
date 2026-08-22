@@ -9,7 +9,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const ADMIN_EMAIL = 'steve.males@gmail.com';
 
 // How long after kickoff to wait before fetching scores
-const KO_GRACE_MINS = 135; // 2h 15m
+const KO_GRACE_MINS = 105; // 1h 45m
 // Retry interval in minutes
 const RETRY_INTERVAL_MINS = 15;
 // Max retries before alerting
