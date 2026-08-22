@@ -27,6 +27,7 @@ export default function ResultsPage() {
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>(getWeekNumber(new Date()));
   const [doubleUpMatchIds, setDoubleUpMatchIds] = useState<Set<string>>(new Set());
   const [predictions, setPredictions] = useState<Map<string, any>>(new Map());
+  const [totalCompleted, setTotalCompleted] = useState(0);
   const supabase = createClient();
 
   useEffect(() => { load(); }, [selectedWeek]);
@@ -51,6 +52,13 @@ export default function ResultsPage() {
       .order('week_number', { ascending: false });
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
+
+    // Total completed matches across all weeks (for the "All Results" label)
+    const { count: totalCount } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .eq('result_entered', true);
+    setTotalCompleted(totalCount || 0);
 
     let query = supabase
       .from('matches')
@@ -103,7 +111,7 @@ export default function ResultsPage() {
 
   // Build week options for selector
   const weekOptions: { value: number | 'all'; label: string }[] = [
-    { value: 'all', label: `All Results (${matches.length} matches)` },
+    { value: 'all', label: `All Results (${totalCompleted} matches)` },
   ];
   for (const w of availableWeeks) {
     weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
