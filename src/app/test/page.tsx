@@ -321,13 +321,13 @@ export default function TestLeaderboardPage() {
         </div>
 
         {/* Prize Money Display */}
-        <div className="mb-6">
-          <p className="text-sm text-textMuted font-medium mb-2 text-center">🏆 Prize Money</p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
+        <div className="mb-6 bg-surface border border-border rounded-2xl p-4">
+          <p className="text-xs text-textMuted font-medium mb-3 text-center uppercase tracking-wider">🏆 Prize Money</p>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             {prizes.map((amount, i) => (
-              <div key={i} className="bg-surfaceLight border border-border rounded-xl px-4 py-3 flex items-center gap-2">
-                <span className="text-xl">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
-                <span className="text-lg font-black text-primary">{amount}</span>
+              <div key={i} className="bg-surfaceLight border border-border/60 rounded-xl px-4 py-2.5 flex items-center gap-2 min-w-[90px] justify-center">
+                <span className="text-lg">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                <span className="text-base font-black text-primary">{amount}</span>
               </div>
             ))}
           </div>
