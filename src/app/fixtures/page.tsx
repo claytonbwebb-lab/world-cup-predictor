@@ -201,13 +201,7 @@ export default function FixturesPage() {
     load(selectedWeek);
   }, [selectedWeek]);
 
-  // Auto-refresh every 30s to detect kickoff passing / admin changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      load(selectedWeek);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [selectedWeek]);
+
 
   async function load(weekOverride?: number) {
     const { data: { user } } = await supabase.auth.getUser();
