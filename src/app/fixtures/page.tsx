@@ -256,7 +256,9 @@ export default function FixturesPage() {
     const initInputs: Record<string, { home: number; away: number }> = {};
     for (const m of matchData || []) {
       const p = predMap.get(m.id);
-      initInputs[m.id] = { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
+      const existing = inputs[m.id];
+      // Preserve unsaved user input on auto-refresh; only initialise on first load
+      initInputs[m.id] = existing ?? { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
     }
 
     // Load Double Up state for the week being viewed
