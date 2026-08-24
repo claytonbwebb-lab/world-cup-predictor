@@ -20,20 +20,20 @@ export const ALL_TEAMS: TeamBadge[] = [
   { name: "Brentford", badge: "/badges/brentford.png", league: "Premier League" },
   { name: "Brighton & Hove Albion", badge: "/badges/brighton.png", league: "Premier League", shortName: "Brighton", aliases: ["Brighton"] },
   { name: "Chelsea", badge: "/badges/chelsea.png", league: "Premier League" },
-  { name: "Coventry City", badge: "/badges/coventry_city.png", league: "Premier League" },
+  { name: "Coventry City", badge: "/badges/coventry_city.png", league: "Premier League", aliases: ["Coventry"] },
   { name: "Crystal Palace", badge: "/badges/crystal_palace.png", league: "Premier League" },
   { name: "Everton", badge: "/badges/everton.png", league: "Premier League" },
   { name: "Fulham", badge: "/badges/fulham.png", league: "Premier League" },
-  { name: "Hull City", badge: "/badges/hull_city.png", league: "Premier League" },
-  { name: "Ipswich Town", badge: "/badges/ipswich_town.png", league: "Premier League" },
-  { name: "Leeds United", badge: "/badges/leeds_united.png", league: "Premier League" },
+  { name: "Hull City", badge: "/badges/hull_city.png", league: "Premier League", aliases: ["Hull"] },
+  { name: "Ipswich Town", badge: "/badges/ipswich_town.png", league: "Premier League", aliases: ["Ipswich"] },
+  { name: "Leeds United", badge: "/badges/leeds_united.png", league: "Premier League", aliases: ["Leeds"] },
   { name: "Liverpool", badge: "/badges/liverpool.png", league: "Premier League" },
-  { name: "Manchester City", badge: "/badges/manchester_city.png", league: "Premier League" },
-  { name: "Manchester United", badge: "/badges/manchester_united.png", league: "Premier League" },
-  { name: "Newcastle United", badge: "/badges/newcastle_united.png", league: "Premier League" },
-  { name: "Nottingham Forest", badge: "/badges/nottingham_forest.png", league: "Premier League" },
+  { name: "Manchester City", badge: "/badges/manchester_city.png", league: "Premier League", aliases: ["Man City"] },
+  { name: "Manchester United", badge: "/badges/manchester_united.png", league: "Premier League", aliases: ["Man Utd"] },
+  { name: "Newcastle United", badge: "/badges/newcastle_united.png", league: "Premier League", aliases: ["Newcastle"] },
+  { name: "Nottingham Forest", badge: "/badges/nottingham_forest.png", league: "Premier League", aliases: ["Nottm Forest"] },
   { name: "Sunderland", badge: "/badges/sunderland.png", league: "Premier League" },
-  { name: "Tottenham Hotspur", badge: "/badges/tottenham_hotspur.png", league: "Premier League" },
+  { name: "Tottenham Hotspur", badge: "/badges/tottenham_hotspur.png", league: "Premier League", aliases: ["Tottenham"] },
 
   // Championship
   { name: "Birmingham City", badge: "/badges/birmingham_city.png", league: "Championship" },
@@ -180,6 +180,11 @@ export function findTeam(name: string): TeamBadge | undefined {
       t.shortName?.toLowerCase() === normalized ||
       t.aliases?.some((alias) => alias.toLowerCase() === normalized)
   );
+}
+
+export function canonicalTeamName(name: string): string {
+  const team = findTeam(name);
+  return team?.name ?? name;
 }
 
 export function getTeamsByLeague(league: TeamBadge['league']) {

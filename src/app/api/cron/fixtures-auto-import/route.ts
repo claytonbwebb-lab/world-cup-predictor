@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { getWeekNumber } from '@/lib/weeks';
+import { canonicalTeamName } from '@/lib/teams';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
@@ -101,8 +102,8 @@ export async function POST() {
 
       // Deduplicate against existing
       for (const f of fixtures) {
-        const home = f.teams.home.name;
-        const away = f.teams.away.name;
+        const home = canonicalTeamName(f.teams.home.name);
+        const away = canonicalTeamName(f.teams.away.name);
         const kickoffUTC = f.fixture.date;
         const date = kickoffUTC.slice(0, 10);
 

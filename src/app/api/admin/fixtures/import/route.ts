@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/adminAuth';
 import { getWeekNumber } from '@/lib/weeks';
+import { canonicalTeamName } from '@/lib/teams';
 
 const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY!;
 const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
@@ -127,8 +128,8 @@ export async function POST(request: NextRequest) {
       const existing = await getExistingMatchKeys(supabase, fixtures);
 
       for (const f of fixtures) {
-        const home = f.teams.home.name;
-        const away = f.teams.away.name;
+        const home = canonicalTeamName(f.teams.home.name);
+        const away = canonicalTeamName(f.teams.away.name);
         const kickoffUTC = f.fixture.date;
         const key = extractMatchKey(home, away, kickoffUTC);
 
