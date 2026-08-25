@@ -2,7 +2,7 @@
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import TeamBadge from '@/components/TeamBadge';
 import { SEASON_START, getWeekLabel, getWeekRange, getWeekDropdownLabel, getWeekNumber } from '@/lib/weeks';
@@ -25,6 +25,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number | 'all'>(getWeekNumber(new Date()));
+  const hasAutoSelected = useRef(false);
   const [doubleUpMatchIds, setDoubleUpMatchIds] = useState<Set<string>>(new Set());
   const [predictions, setPredictions] = useState<Map<string, any>>(new Map());
   const [totalCompleted, setTotalCompleted] = useState(0);
@@ -53,7 +54,14 @@ export default function ResultsPage() {
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
 
-    // Total completed matches across all weeks (for the "All Results" label)
+    // Auto-adjust to most recent week with results if current week has none
+    if (!hasAutoSelected.current && weeks.length > 0 && !weeks.includes(selectedWeek as number)) {
+      hasAutoSelected.current = true;
+      setSelectedWeek(weeks[0]);
+      setLoading(false);
+      return;
+    }
+    hasAutoSelected.current = true;
     const { count: totalCount } = await supabase
       .from('matches')
       .select('*', { count: 'exact', head: true })
