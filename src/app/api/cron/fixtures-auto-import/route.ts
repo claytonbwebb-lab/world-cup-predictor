@@ -60,15 +60,13 @@ export async function POST() {
   try {
     const now = new Date();
     // PPW weeks run Tuesday → Monday
-    // Find current week's Tuesday, then take the Tuesday AFTER NEXT
-    // (so on Sunday when current week is underway, we still get a full week ahead)
+    // Import the NEXT week (not two weeks ahead)
     const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
     const daysSinceTuesday = (day - 2 + 7) % 7;
     const currentTuesday = new Date(now);
     currentTuesday.setDate(now.getDate() - daysSinceTuesday);
-    // Two weeks ahead so we're always staging a future week, not the current one
     const targetTuesday = new Date(currentTuesday);
-    targetTuesday.setDate(currentTuesday.getDate() + 14);
+    targetTuesday.setDate(currentTuesday.getDate() + 7);
     const targetMonday = new Date(targetTuesday);
     targetMonday.setDate(targetTuesday.getDate() + 6);
 
