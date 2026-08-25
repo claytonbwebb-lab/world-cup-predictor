@@ -84,7 +84,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           {/* Stats row */}
           <div className="flex flex-wrap justify-center gap-8 mt-16 text-center">
             {[
-              { val: '104', label: 'Matches' },
+              { val: '38', label: 'Gameweeks' },
               { val: '3pts', label: 'Exact Score' },
               { val: '1pt', label: 'Correct Result' },
               { val: '∞', label: 'Bragging Rights' },
