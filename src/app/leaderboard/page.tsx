@@ -42,12 +42,31 @@ export default function LeaderboardPage() {
   const [userEntry, setUserEntry] = useState<LeaderboardEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [initialWeekReady, setInitialWeekReady] = useState(false);
   const supabase = createClient();
 
+  // Determine the correct initial week before any leaderboard rendering
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const [{ data: { user } }, { data: weekData }] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase
+          .from('matches')
+          .select('week_number')
+          .not('week_number', 'is', null)
+          .eq('result_entered', true)
+          .order('week_number', { ascending: false }),
+      ]);
+
       if (user) setUserId(user.id);
+
+      const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
+      setAvailableWeeks(weeks);
+
+      if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
+        setSelectedWeek(weeks[0]);
+      }
+      setInitialWeekReady(true);
     })();
   }, []);
 
@@ -60,17 +79,9 @@ export default function LeaderboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
     const currentUserId = user?.id ?? null;
 
-    const { data: weekData } = await supabase
-      .from('matches')
-      .select('week_number')
-      .not('week_number', 'is', null)
-      .eq('result_entered', true)
-      .order('week_number', { ascending: false });
-    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
-    setAvailableWeeks(weeks);
-
-    if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
-      setSelectedWeek(weeks[0]);
+    if (!initialWeekReady && mode === 'week') {
+      // Still determining initial week — don't load yet
+      setLoading(false);
       return;
     }
 
@@ -80,19 +91,19 @@ export default function LeaderboardPage() {
     try {
       if (mode === 'season') {
         const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {});
-        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
       } else if (mode === 'week') {
         const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
           p_week_number: selectedWeek,
         });
-        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
       } else {
         const sm = SEASON_MONTHS[selectedMonthIdx];
         const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
           p_month_start: getMonthStart(sm.year, sm.month).toISOString(),
           p_month_end: getMonthEnd(sm.year, sm.month).toISOString(),
         });
-        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
       }
     } catch {
       data = null;
