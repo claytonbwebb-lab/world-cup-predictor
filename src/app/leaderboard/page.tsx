@@ -69,8 +69,11 @@ export default function LeaderboardPage() {
       .order('week_number', { ascending: false });
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
+
+    // If current week has no results, auto-switch to most recent week with results
     if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
       setSelectedWeek(weeks[0]);
+      return; // will re-trigger via useEffect with corrected week
     }
 
     if (mode === 'season') {
@@ -91,27 +94,35 @@ export default function LeaderboardPage() {
 
     if (!allUsers) return;
 
-    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
-      const { data: scored } = await supabase
-        .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
-        .eq('user_id', profile.id)
-        .not('scored_at', 'is', null);
+    // Fetch ALL scored predictions in one query
+    const { data: allPredictions } = await supabase
+      .from('predictions')
+      .select('user_id, points_awarded, is_exact_score, is_correct_result')
+      .not('scored_at', 'is', null);
 
-      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
-      const exact = (scored || []).filter(p => p.is_exact_score).length;
-      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
-      const total = (scored || []).length;
+    // Aggregate per user in JS
+    const statsByUser = new Map<string, { pts: number; exact: number; correct: number; total: number }>();
+    for (const p of allPredictions || []) {
+      const s = statsByUser.get(p.user_id) || { pts: 0, exact: 0, correct: 0, total: 0 };
+      s.pts += p.points_awarded || 0;
+      if (p.is_exact_score) s.exact++;
+      else if (p.is_correct_result) s.correct++;
+      s.total++;
+      statsByUser.set(p.user_id, s);
+    }
+
+    const enriched: LeaderboardEntry[] = allUsers.map(profile => {
+      const s = statsByUser.get(profile.id);
       return {
         user_id: profile.id,
         username: profile.username,
         avatar_url: profile.avatar_url,
-        total_points: pts,
-        exact_scores: exact,
-        correct_results: correct,
-        total_predictions: total,
+        total_points: s?.pts || 0,
+        exact_scores: s?.exact || 0,
+        correct_results: s?.correct || 0,
+        total_predictions: s?.total || 0,
       };
-    }));
+    });
 
     enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results || a.user_id.localeCompare(b.user_id));
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
@@ -141,36 +152,52 @@ export default function LeaderboardPage() {
 
     const matchIds = (weekMatches || []).map(m => m.id);
 
-    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
-      if (matchIds.length === 0) {
-        return {
-          user_id: profile.id,
-          username: profile.username,
-          avatar_url: profile.avatar_url,
-          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
-        };
-      }
-      const { data: scored } = await supabase
-        .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
-        .eq('user_id', profile.id)
-        .in('match_id', matchIds)
-        .not('scored_at', 'is', null);
+    if (matchIds.length === 0) {
+      const enriched: LeaderboardEntry[] = allUsers.map(profile => ({
+        user_id: profile.id,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
+        total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
+      }));
+      enriched.sort((a, b) => a.user_id.localeCompare(b.user_id));
+      setEntries(enriched.slice(0, PAGE_SIZE));
+      setTotalCount(enriched.length);
+      setCurrentPage(1);
+      setUserRank(null);
+      setUserEntry(null);
+      return;
+    }
 
-      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
-      const exact = (scored || []).filter(p => p.is_exact_score).length;
-      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
-      const total = (scored || []).length;
+    // Fetch ALL predictions for these matches in ONE query
+    const { data: allPredictions } = await supabase
+      .from('predictions')
+      .select('user_id, points_awarded, is_exact_score, is_correct_result')
+      .in('match_id', matchIds)
+      .not('scored_at', 'is', null);
+
+    // Aggregate per user in JS
+    const statsByUser = new Map<string, { pts: number; exact: number; correct: number; total: number }>();
+    for (const p of allPredictions || []) {
+      const s = statsByUser.get(p.user_id) || { pts: 0, exact: 0, correct: 0, total: 0 };
+      s.pts += p.points_awarded || 0;
+      if (p.is_exact_score) s.exact++;
+      else if (p.is_correct_result) s.correct++;
+      s.total++;
+      statsByUser.set(p.user_id, s);
+    }
+
+    const enriched: LeaderboardEntry[] = allUsers.map(profile => {
+      const s = statsByUser.get(profile.id);
       return {
         user_id: profile.id,
         username: profile.username,
         avatar_url: profile.avatar_url,
-        total_points: pts,
-        exact_scores: exact,
-        correct_results: correct,
-        total_predictions: total,
+        total_points: s?.pts || 0,
+        exact_scores: s?.exact || 0,
+        correct_results: s?.correct || 0,
+        total_predictions: s?.total || 0,
       };
-    }));
+    });
 
     enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results || a.user_id.localeCompare(b.user_id));
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
@@ -205,25 +232,43 @@ export default function LeaderboardPage() {
 
     const matchIds = (monthMatches || []).map(m => m.id);
 
-    const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
-      if (matchIds.length === 0) {
-        return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
-          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0 };
-      }
-      const { data: scored } = await supabase
-        .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
-        .eq('user_id', profile.id)
-        .in('match_id', matchIds)
-        .not('scored_at', 'is', null);
+    if (matchIds.length === 0) {
+      const enriched: LeaderboardEntry[] = allUsers.map(profile => ({
+        user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
+        total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
+      }));
+      enriched.sort((a, b) => a.user_id.localeCompare(b.user_id));
+      setEntries(enriched.slice(0, PAGE_SIZE));
+      setTotalCount(enriched.length);
+      setCurrentPage(1);
+      setUserRank(null);
+      setUserEntry(null);
+      return;
+    }
 
-      const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
-      const exact = (scored || []).filter(p => p.is_exact_score).length;
-      const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
-      const total = (scored || []).length;
+    // Fetch ALL predictions for these matches in ONE query
+    const { data: allPredictions } = await supabase
+      .from('predictions')
+      .select('user_id, points_awarded, is_exact_score, is_correct_result')
+      .in('match_id', matchIds)
+      .not('scored_at', 'is', null);
+
+    // Aggregate per user in JS
+    const statsByUser = new Map<string, { pts: number; exact: number; correct: number; total: number }>();
+    for (const p of allPredictions || []) {
+      const s = statsByUser.get(p.user_id) || { pts: 0, exact: 0, correct: 0, total: 0 };
+      s.pts += p.points_awarded || 0;
+      if (p.is_exact_score) s.exact++;
+      else if (p.is_correct_result) s.correct++;
+      s.total++;
+      statsByUser.set(p.user_id, s);
+    }
+
+    const enriched: LeaderboardEntry[] = allUsers.map(profile => {
+      const s = statsByUser.get(profile.id);
       return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
-        total_points: pts, exact_scores: exact, correct_results: correct, total_predictions: total };
-    }));
+        total_points: s?.pts || 0, exact_scores: s?.exact || 0, correct_results: s?.correct || 0, total_predictions: s?.total || 0 };
+    });
 
     enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results || a.user_id.localeCompare(b.user_id));
     const totalPages = Math.max(1, Math.ceil(enriched.length / PAGE_SIZE));
