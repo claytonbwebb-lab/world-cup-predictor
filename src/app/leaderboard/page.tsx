@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 
-import { SEASON_START, SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd } from '@/lib/weeks';
+import { SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd } from '@/lib/weeks';
 
 const PAGE_SIZE = 25;
 
@@ -60,7 +60,6 @@ export default function LeaderboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
     const currentUserId = user?.id ?? null;
 
-    // Fetch distinct week numbers from matches
     const { data: weekData } = await supabase
       .from('matches')
       .select('week_number')
@@ -69,17 +68,59 @@ export default function LeaderboardPage() {
       .order('week_number', { ascending: false });
     const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => b - a);
     setAvailableWeeks(weeks);
+
     if (weeks.length > 0 && selectedWeek === 1 && !weeks.includes(1)) {
       setSelectedWeek(weeks[0]);
+      return;
     }
 
-    if (mode === 'season') {
-      await loadSeasonLeaderboard(currentUserId);
-    } else if (mode === 'week') {
-      await loadWeeklyLeaderboard(currentUserId, selectedWeek);
-    } else {
-      await loadMonthlyLeaderboard(currentUserId, selectedMonthIdx);
+    // Try RPC first, fallback to safe per-user queries
+    let data: LeaderboardEntry[] | null = null;
+
+    try {
+      if (mode === 'season') {
+        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {});
+        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+      } else if (mode === 'week') {
+        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
+          p_week_number: selectedWeek,
+        });
+        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+      } else {
+        const sm = SEASON_MONTHS[selectedMonthIdx];
+        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
+          p_month_start: getMonthStart(sm.year, sm.month).toISOString(),
+          p_month_end: getMonthEnd(sm.year, sm.month).toISOString(),
+        });
+        if (!error && rpcData) data = rpcData as LeaderboardEntry[];
+      }
+    } catch {
+      data = null;
     }
+
+    if (data) {
+      // RPC path
+      setTotalCount(data.length);
+      const totalPages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
+      const page = Math.min(currentPage, totalPages);
+      const offset = (page - 1) * PAGE_SIZE;
+      const pageData = data.slice(offset, offset + PAGE_SIZE);
+      setEntries(pageData);
+      setCurrentPage(page);
+      const rank = currentUserId ? data.findIndex(e => e.user_id === currentUserId) : -1;
+      setUserRank(rank >= 0 ? rank + 1 : null);
+      setUserEntry(currentUserId ? data.find(e => e.user_id === currentUserId) || null : null);
+    } else {
+      // Fallback: safe per-user queries
+      if (mode === 'season') {
+        await loadSeasonLeaderboard(currentUserId);
+      } else if (mode === 'week') {
+        await loadWeeklyLeaderboard(currentUserId, selectedWeek);
+      } else {
+        await loadMonthlyLeaderboard(currentUserId, selectedMonthIdx);
+      }
+    }
+
     setLoading(false);
   }
 
@@ -239,7 +280,6 @@ export default function LeaderboardPage() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  // Build week selector options
   const weekOptions = [];
   for (const w of availableWeeks) {
     weekOptions.push({ value: w, label: getWeekDropdownLabel(w) });
@@ -253,31 +293,15 @@ export default function LeaderboardPage() {
           <span>🥇</span> Leaderboard
         </h1>
 
-        {/* Mode toggle */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex bg-surfaceLight rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setMode('week'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
+            <button onClick={() => { setMode('week'); setCurrentPage(1); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
               🗓️ Weekly
             </button>
-            <button
-              onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(0); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
+            <button onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(0); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
               📅 Monthly
             </button>
-            <button
-              onClick={() => { setMode('season'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
+            <button onClick={() => { setMode('season'); setCurrentPage(1); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
               🏆 Season
             </button>
           </div>
@@ -285,14 +309,8 @@ export default function LeaderboardPage() {
           {mode === 'week' && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-textMuted">Week:</label>
-              <select
-                value={selectedWeek}
-                onChange={e => { setSelectedWeek(Number(e.target.value)); setCurrentPage(1); }}
-                className="input py-1.5 text-sm"
-              >
-                {weekOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
+              <select value={selectedWeek} onChange={e => { setSelectedWeek(Number(e.target.value)); setCurrentPage(1); }} className="input py-1.5 text-sm">
+                {weekOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
             </div>
           )}
@@ -300,30 +318,17 @@ export default function LeaderboardPage() {
           {mode === 'month' && (
             <div className="flex items-center gap-2">
               <label className="text-sm text-textMuted">Month:</label>
-              <select
-                value={selectedMonthIdx}
-                onChange={e => { setSelectedMonthIdx(Number(e.target.value)); setCurrentPage(1); }}
-                className="input py-1.5 text-sm"
-              >
-                {SEASON_MONTHS.map((sm, i) => (
-                  <option key={i} value={i}>{sm.label}</option>
-                ))}
+              <select value={selectedMonthIdx} onChange={e => { setSelectedMonthIdx(Number(e.target.value)); setCurrentPage(1); }} className="input py-1.5 text-sm">
+                {SEASON_MONTHS.map((sm, i) => <option key={i} value={i}>{sm.label}</option>)}
               </select>
             </div>
           )}
 
-          {mode === 'week' && (
-            <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>
-          )}
-          {mode === 'month' && (
-            <span className="text-xs text-textMuted">{SEASON_MONTHS[selectedMonthIdx].label}</span>
-          )}
-          {mode === 'season' && (
-            <span className="text-xs text-textMuted">All scored predictions across the full season</span>
-          )}
+          {mode === 'week' && <span className="text-xs text-textMuted">{getWeekRange(selectedWeek)}</span>}
+          {mode === 'month' && <span className="text-xs text-textMuted">{SEASON_MONTHS[selectedMonthIdx].label}</span>}
+          {mode === 'season' && <span className="text-xs text-textMuted">All scored predictions across the full season</span>}
         </div>
 
-        {/* User's Rank Summary */}
         {userEntry && userRank && (
           <div className="card mb-6 bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -332,8 +337,7 @@ export default function LeaderboardPage() {
                   {mode === 'week' ? getWeekRange(selectedWeek) : mode === 'month' ? SEASON_MONTHS[selectedMonthIdx].label : 'Season'} Position
                 </p>
                 <p className="text-3xl font-bold">
-                  {userRank}
-                  <span className="text-textMuted text-lg font-normal"> / {totalCount}</span>
+                  {userRank}<span className="text-textMuted text-lg font-normal"> / {totalCount}</span>
                 </p>
               </div>
               <div className="text-right">
@@ -352,7 +356,6 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {/* Leaderboard Table */}
         {loading ? (
           <div className="text-center py-16 text-textMuted">Loading...</div>
         ) : (
@@ -372,12 +375,7 @@ export default function LeaderboardPage() {
                 {entries.map((entry, index) => {
                   const rank = (currentPage - 1) * PAGE_SIZE + index + 1;
                   return (
-                    <tr
-                      key={entry.user_id}
-                      className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${
-                        entry.user_id === userId ? 'bg-primary/10' : ''
-                      }`}
-                    >
+                    <tr key={entry.user_id} className={`border-b border-border/50 hover:bg-surfaceLight/50 transition-colors ${entry.user_id === userId ? 'bg-primary/10' : ''}`}>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center w-8">
                           {rank === 1 && <span className="text-2xl">🥇</span>}
@@ -389,33 +387,17 @@ export default function LeaderboardPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={entry.avatar_url || '/default-avatar.png'}
-                            alt={entry.username}
-                            className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
-                          />
+                          <img src={entry.avatar_url || '/default-avatar.png'} alt={entry.username} className="w-8 h-8 rounded-full object-cover border border-border shrink-0" />
                           <div className="flex flex-col min-w-0">
-                            <span className={`font-medium truncate max-w-[120px] ${entry.user_id === userId ? 'text-primary' : ''}`}>
-                              {entry.username}
-                            </span>
-                            {entry.user_id === userId && (
-                              <span className="text-xs text-primary">You</span>
-                            )}
+                            <span className={`font-medium truncate max-w-[120px] ${entry.user_id === userId ? 'text-primary' : ''}`}>{entry.username}</span>
+                            {entry.user_id === userId && <span className="text-xs text-primary">You</span>}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-xl font-bold text-primary">{entry.total_points}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-warning font-medium">{entry.exact_scores}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-textMuted">{entry.correct_results}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="text-textMuted">{entry.total_predictions}</span>
-                      </td>
+                      <td className="py-3 px-4 text-center"><span className="text-xl font-bold text-primary">{entry.total_points}</span></td>
+                      <td className="py-3 px-4 text-center"><span className="text-warning font-medium">{entry.exact_scores}</span></td>
+                      <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.correct_results}</span></td>
+                      <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.total_predictions}</span></td>
                     </tr>
                   );
                 })}
@@ -437,40 +419,13 @@ export default function LeaderboardPage() {
 
         {totalPages > 1 && !loading && (
           <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Leaderboard pages">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="btn-secondary px-4 py-2 text-sm"
-            >
-              Previous
-            </button>
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="btn-secondary px-4 py-2 text-sm">Previous</button>
             {getVisiblePages(currentPage, totalPages).map((page, i) => (
-              page === 'ellipsis' ? (
-                <span key={`ellipsis-${i}`} className="px-2 text-textMuted">...</span>
-              ) : (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                    page === currentPage
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-border bg-surface hover:bg-surfaceLight text-text'
-                  }`}
-                >
-                  {page}
-                </button>
-              )
+              page === 'ellipsis' ? <span key={`ellipsis-${i}`} className="px-2 text-textMuted">...</span> :
+              <button key={page} onClick={() => setCurrentPage(page)} className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${page === currentPage ? 'border-primary bg-primary text-white' : 'border-border bg-surface hover:bg-surfaceLight text-text'}`}>{page}</button>
             ))}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="btn-secondary px-4 py-2 text-sm"
-            >
-              Next
-            </button>
-            <span className="w-full text-center text-sm text-textMuted sm:w-auto sm:pl-2">
-              {totalCount} players
-            </span>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="btn-secondary px-4 py-2 text-sm">Next</button>
+            <span className="w-full text-center text-sm text-textMuted sm:w-auto sm:pl-2">{totalCount} players</span>
           </nav>
         )}
       </main>
