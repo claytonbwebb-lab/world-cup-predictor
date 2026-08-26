@@ -16,6 +16,8 @@ interface LeaderboardEntry {
   exact_scores: number;
   correct_results: number;
   total_predictions: number;
+  double_up_bonus?: number;
+  double_up_count?: number;
 }
 
 function getVisiblePages(currentPage: number, totalPages: number) {
@@ -146,14 +148,22 @@ export default function LeaderboardPage() {
     const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
       const { data: scored } = await supabase
         .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
+        .select('points_awarded, is_exact_score, is_correct_result, match_id')
         .eq('user_id', profile.id)
         .not('scored_at', 'is', null);
+
+      const { data: dupRows } = await supabase
+        .from('double_up_picks')
+        .select('match_id')
+        .eq('user_id', profile.id);
+      const dupSet = new Set((dupRows || []).map(d => d.match_id));
 
       const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
       const exact = (scored || []).filter(p => p.is_exact_score).length;
       const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
       const total = (scored || []).length;
+      const doubleUpCount = (scored || []).filter(p => dupSet.has(p.match_id) && (p.points_awarded || 0) > 0).length;
+      const doubleUpBonus = (scored || []).reduce((s, p) => s + (dupSet.has(p.match_id) && (p.points_awarded || 0) > 0 ? (p.points_awarded || 0) / 2 : 0), 0);
       return {
         user_id: profile.id,
         username: profile.username,
@@ -162,6 +172,8 @@ export default function LeaderboardPage() {
         exact_scores: exact,
         correct_results: correct,
         total_predictions: total,
+        double_up_bonus: doubleUpBonus,
+        double_up_count: doubleUpCount,
       };
     }));
 
@@ -200,19 +212,29 @@ export default function LeaderboardPage() {
           username: profile.username,
           avatar_url: profile.avatar_url,
           total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
+          double_up_bonus: 0, double_up_count: 0,
         };
       }
       const { data: scored } = await supabase
         .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
+        .select('points_awarded, is_exact_score, is_correct_result, match_id')
         .eq('user_id', profile.id)
         .in('match_id', matchIds)
         .not('scored_at', 'is', null);
+
+      const { data: dupRows } = await supabase
+        .from('double_up_picks')
+        .select('match_id')
+        .eq('user_id', profile.id)
+        .in('match_id', matchIds);
+      const dupSet = new Set((dupRows || []).map(d => d.match_id));
 
       const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
       const exact = (scored || []).filter(p => p.is_exact_score).length;
       const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
       const total = (scored || []).length;
+      const doubleUpCount = (scored || []).filter(p => dupSet.has(p.match_id) && (p.points_awarded || 0) > 0).length;
+      const doubleUpBonus = (scored || []).reduce((s, p) => s + (dupSet.has(p.match_id) && (p.points_awarded || 0) > 0 ? (p.points_awarded || 0) / 2 : 0), 0);
       return {
         user_id: profile.id,
         username: profile.username,
@@ -221,6 +243,8 @@ export default function LeaderboardPage() {
         exact_scores: exact,
         correct_results: correct,
         total_predictions: total,
+        double_up_bonus: doubleUpBonus,
+        double_up_count: doubleUpCount,
       };
     }));
 
@@ -260,21 +284,32 @@ export default function LeaderboardPage() {
     const enriched: LeaderboardEntry[] = await Promise.all(allUsers.map(async (profile) => {
       if (matchIds.length === 0) {
         return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
-          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0 };
+          total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0,
+          double_up_bonus: 0, double_up_count: 0 };
       }
       const { data: scored } = await supabase
         .from('predictions')
-        .select('points_awarded, is_exact_score, is_correct_result')
+        .select('points_awarded, is_exact_score, is_correct_result, match_id')
         .eq('user_id', profile.id)
         .in('match_id', matchIds)
         .not('scored_at', 'is', null);
+
+      const { data: dupRows } = await supabase
+        .from('double_up_picks')
+        .select('match_id')
+        .eq('user_id', profile.id)
+        .in('match_id', matchIds);
+      const dupSet = new Set((dupRows || []).map(d => d.match_id));
 
       const pts = (scored || []).reduce((s, p) => s + (p.points_awarded || 0), 0);
       const exact = (scored || []).filter(p => p.is_exact_score).length;
       const correct = (scored || []).filter(p => p.is_correct_result && !p.is_exact_score).length;
       const total = (scored || []).length;
+      const doubleUpCount = (scored || []).filter(p => dupSet.has(p.match_id) && (p.points_awarded || 0) > 0).length;
+      const doubleUpBonus = (scored || []).reduce((s, p) => s + (dupSet.has(p.match_id) && (p.points_awarded || 0) > 0 ? (p.points_awarded || 0) / 2 : 0), 0);
       return { user_id: profile.id, username: profile.username, avatar_url: profile.avatar_url,
-        total_points: pts, exact_scores: exact, correct_results: correct, total_predictions: total };
+        total_points: pts, exact_scores: exact, correct_results: correct, total_predictions: total,
+        double_up_bonus: doubleUpBonus, double_up_count: doubleUpCount };
     }));
 
     enriched.sort((a, b) => b.total_points - a.total_points || b.exact_scores - a.exact_scores || b.correct_results - a.correct_results || a.user_id.localeCompare(b.user_id));
@@ -363,6 +398,12 @@ export default function LeaderboardPage() {
                 <p className="text-textMuted text-sm">Correct Results</p>
                 <p className="text-2xl font-bold">{userEntry.correct_results}</p>
               </div>
+              {(userEntry.double_up_bonus ?? 0) > 0 && (
+                <div className="text-right">
+                  <p className="text-textMuted text-sm">2× Bonus</p>
+                  <p className="text-2xl font-bold text-warning">+{userEntry.double_up_bonus}</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -380,6 +421,7 @@ export default function LeaderboardPage() {
                   <th className="text-center py-3 px-4 text-textMuted font-medium">Exact</th>
                   <th className="text-center py-3 px-4 text-textMuted font-medium">Results</th>
                   <th className="text-center py-3 px-4 text-textMuted font-medium">Preds</th>
+                  <th className="text-center py-3 px-4 text-textMuted font-medium">2×</th>
                 </tr>
               </thead>
               <tbody>
@@ -409,6 +451,15 @@ export default function LeaderboardPage() {
                       <td className="py-3 px-4 text-center"><span className="text-warning font-medium">{entry.exact_scores}</span></td>
                       <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.correct_results}</span></td>
                       <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.total_predictions}</span></td>
+                      <td className="py-3 px-4 text-center">
+                        {(entry.double_up_bonus ?? 0) > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-warning font-medium">
+                            <span>🔥</span>+{entry.double_up_bonus}
+                          </span>
+                        ) : (
+                          <span className="text-textMuted">—</span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
