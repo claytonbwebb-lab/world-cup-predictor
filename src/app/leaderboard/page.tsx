@@ -398,10 +398,10 @@ export default function LeaderboardPage() {
                 <p className="text-textMuted text-sm">Correct Results</p>
                 <p className="text-2xl font-bold">{userEntry.correct_results}</p>
               </div>
-              {(userEntry.double_up_bonus ?? 0) > 0 && (
+              {(userEntry.double_up_count ?? 0) > 0 && (
                 <div className="text-right">
-                  <p className="text-textMuted text-sm">2× Bonus</p>
-                  <p className="text-2xl font-bold text-warning">+{userEntry.double_up_bonus}</p>
+                  <p className="text-textMuted text-sm">2× Hits</p>
+                  <p className="text-2xl font-bold text-warning">{userEntry.double_up_count}</p>
                 </div>
               )}
             </div>
@@ -452,9 +452,9 @@ export default function LeaderboardPage() {
                       <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.correct_results}</span></td>
                       <td className="py-3 px-4 text-center"><span className="text-textMuted">{entry.total_predictions}</span></td>
                       <td className="py-3 px-4 text-center">
-                        {(entry.double_up_bonus ?? 0) > 0 ? (
+                        {(entry.double_up_count ?? 0) > 0 ? (
                           <span className="inline-flex items-center gap-1 text-warning font-medium">
-                            <span>🔥</span>+{entry.double_up_bonus}
+                            <span>🔥</span>{entry.double_up_count}
                           </span>
                         ) : (
                           <span className="text-textMuted">—</span>
