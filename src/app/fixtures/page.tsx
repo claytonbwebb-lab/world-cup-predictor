@@ -181,7 +181,9 @@ export default function FixturesPage() {
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
   const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
   const [showFloatingSave, setShowFloatingSave] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(true);
   const upcomingSectionRef = useRef<HTMLButtonElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -204,6 +206,16 @@ export default function FixturesPage() {
     observer.observe(upcomingSectionRef.current);
     return () => observer.disconnect();
   }, [matches.length]);
+
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   async function load(weekOverride?: number) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -454,10 +466,12 @@ export default function FixturesPage() {
           </div>
         )}
       </main>
-      <Footer />
+      <div ref={footerRef}>
+        <Footer />
+      </div>
 
       {/* Floating Save All — appears when Upcoming section scrolls out of view */}
-      {upcoming.length > 0 && showFloatingSave && (
+      {upcoming.length > 0 && showFloatingSave && !footerVisible && (
         <div className="fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent pointer-events-none">
           <div className="max-w-2xl mx-auto pointer-events-auto">
             <button
