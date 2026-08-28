@@ -33,13 +33,7 @@ export default function ResultsPage() {
 
   useEffect(() => { load(); }, [selectedWeek]);
 
-  // Auto-refresh every 30s to detect new scores / admin changes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      load();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [selectedWeek]);
+  // Auto-refresh removed — manual reload only
 
   async function load() {
     setLoading(true);

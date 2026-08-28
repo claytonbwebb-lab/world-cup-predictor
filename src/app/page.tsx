@@ -188,7 +188,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
               { name: 'FOOTBALL', href: '/telescore', src: '/images/partners/footbal12.png', alt: 'FOOTBALL' },
               { name: '3Retro', href: '/3retro', src: '/images/partners/3retro.png', alt: '3Retro' },
               { name: 'Allstar Signings', href: '/allstarsignings', src: '/images/partners/allstarsignings.png', alt: 'Allstar Signings' },
-              { name: 'Butterworths', href: '/butterworths', src: '/images/partners/butterworths.png', alt: "Butterworth's" },
+              { name: 'Butterworth Menswear', href: '/butterworths', src: '/images/partners/butterworths.png', alt: 'Butterworth Menswear' },
               { name: 'Retro Football Manager', href: '/retrofm', src: '/images/partners/rfm.png', alt: 'Retro Football Manager' },
             ].map(partner => (
               <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer"
