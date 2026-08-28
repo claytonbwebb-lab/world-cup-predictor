@@ -175,8 +175,9 @@ export async function POST() {
         await sendAlertEmail(matchInfo, 'No fixture data returned after all retries');
         results.alerts++;
       }
-    } else if (score.status === 'FT') {
-      // Match finished — safe to record final score
+    } else if (score.status === 'FT' || score.status === 'PEN' || score.status === 'AET') {
+      // Match finished (or after penalties/extra time) — safe to record final score
+      // Note: API-Football goals.home/away = 90-minute score for PEN/AET matches, which is what we predict
       const { error } = await supabase
         .from('matches')
         .update({
