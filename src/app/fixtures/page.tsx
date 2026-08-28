@@ -181,7 +181,7 @@ export default function FixturesPage() {
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
   const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
   const [showFloatingSave, setShowFloatingSave] = useState(false);
-  const upcomingSectionRef = useRef<HTMLDivElement>(null);
+  const upcomingSectionRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -385,7 +385,7 @@ export default function FixturesPage() {
         ) : (
           <div className="space-y-8">
             {upcoming.length > 0 && (
-              <section ref={upcomingSectionRef}>
+              <section>
                 <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-primary uppercase tracking-wide">
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
@@ -409,6 +409,7 @@ export default function FixturesPage() {
                   ))}
                 </div>
                 <button
+                  ref={upcomingSectionRef}
                   onClick={saveAllPredictions}
                   disabled={saving}
                   className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
