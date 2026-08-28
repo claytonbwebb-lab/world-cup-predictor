@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { findTeam } from '@/lib/teams';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import NavBar from "@/components/NavBar";;
+import NavBar from "@/components/NavBar";
+import UserClubBanner from './UserClubBanner';
 
 export const runtime = 'edge';
 
@@ -69,6 +70,9 @@ export default async function SupporterLeaguePage() {
   return (
     <div className="min-h-screen bg-bg">
       <NavBar />
+
+      {/* Signed-in banner showing user's club */}
+      <UserClubBanner />
 
       {/* Hero + CTA — only for signed-out visitors */}
       {!isSignedIn && (

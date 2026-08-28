@@ -1,7 +1,7 @@
 'use client';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import TeamBadge from '@/components/TeamBadge';
@@ -86,7 +86,6 @@ function MatchCard({
 
   return (
     <div className="card">
-      {/* Meta row */}
       <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
         <div className="flex items-center gap-2">
           <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
@@ -99,7 +98,6 @@ function MatchCard({
         </div>
       </div>
 
-      {/* Score row */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
           <TeamBadge value={match.home_flag} size="lg" />
@@ -128,9 +126,7 @@ function MatchCard({
         </div>
       </div>
 
-      {/* Double Up toggle + save row */}
       <div className="mt-3 flex items-center justify-between gap-3">
-        {/* Double Up — bottom-left */}
         {canDoubleUp && (
           <button
             type="button"
@@ -151,10 +147,8 @@ function MatchCard({
             ⭐ Double Up locked
           </span>
         )}
-        {/* Spacer if no double up shown */}
         {(!canDoubleUp && !(hasPredicted && isDoubleUp)) && <div />}
 
-        {/* Save button — right side */}
         {!isLocked && onSave && (
           <div className="flex items-center gap-3">
             {justSaved && (
@@ -182,32 +176,39 @@ export default function FixturesPage() {
   const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
   const [loading, setLoading] = useState(true);
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number>(-1); // -1 = compute on first load
+  const [selectedWeek, setSelectedWeek] = useState<number>(-1);
   const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
   const [doubleUpLocked, setDoubleUpLocked] = useState(false);
   const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
+  const [showFloatingSave, setShowFloatingSave] = useState(false);
+  const upcomingSectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
-  // Auto-default to this week → next week → earliest week on first load
   useEffect(() => {
-    if (selectedWeek !== -1) return; // already set
-    load(); // first load — will compute and set the default week
+    if (selectedWeek !== -1) return;
+    load();
   }, []);
 
-  // Reload when selected week changes (excluding initial -1)
   useEffect(() => {
     if (selectedWeek === -1) return;
     load(selectedWeek);
   }, [selectedWeek]);
 
-
+  useEffect(() => {
+    if (!upcomingSectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowFloatingSave(!entry.isIntersecting),
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
+    );
+    observer.observe(upcomingSectionRef.current);
+    return () => observer.disconnect();
+  }, [matches.length]);
 
   async function load(weekOverride?: number) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
-    // Fetch distinct week numbers from upcoming/locked matches (no completed)
     const { data: weekData } = await supabase
       .from('matches')
       .select('week_number')
@@ -215,10 +216,9 @@ export default function FixturesPage() {
       .not('result_entered', 'eq', true)
       .not('week_number', 'is', null)
       .order('week_number', { ascending: false });
-    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b); // asc
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b);
     setAvailableWeeks(weeks);
 
-    // Fixtures page only shows unscored matches (results page shows scored ones)
     let query = supabase
       .from('matches')
       .select('*')
@@ -228,13 +228,10 @@ export default function FixturesPage() {
 
     const qWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
 
-    // First load: compute the default week (this week → next week → earliest)
     if (weekOverride === undefined && selectedWeek === -1 && weeks.length > 0) {
       const now = new Date();
       const thisWeek = getWeekNumber(now);
-      // Find this week, or fall back to the earliest available
-      const defaultWeek = weeks.includes(thisWeek) ? thisWeek
-        : weeks.find(w => w > thisWeek) ?? weeks[0];
+      const defaultWeek = weeks.includes(thisWeek) ? thisWeek : weeks.find(w => w > thisWeek) ?? weeks[0];
       setSelectedWeek(defaultWeek);
       query = query.eq('week_number', defaultWeek);
     } else if (qWeek !== -1) {
@@ -251,16 +248,12 @@ export default function FixturesPage() {
     for (const m of matchData || []) {
       const p = predMap.get(m.id);
       const existing = inputs[m.id];
-      // Preserve unsaved user input on auto-refresh; only initialise on first load
       initInputs[m.id] = existing ?? { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
     }
 
-    // Load Double Up state for the week being viewed
     const activeWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
     if (activeWeek !== -1) {
       const weekNum = activeWeek as number;
-
-      // Always read double-up via API (bypasses RLS)
       const duRes = await fetch(`/api/double-up?weekNumber=${weekNum}`);
       if (duRes.ok) {
         const duData = await duRes.json();
@@ -332,7 +325,6 @@ export default function FixturesPage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         console.error('Double-up toggle failed:', err.error || res.statusText);
-        // Revert optimistic update on failure
         setDoubleUpPick(previousPick);
         alert(err.error || 'Failed to set Double Up. Did you save your prediction first?');
       } else {
@@ -350,18 +342,15 @@ export default function FixturesPage() {
   }, []);
 
   const now = new Date();
-  const upcoming  = matches.filter(m => !m.is_locked && new Date(m.kickoff_at) > now);
-  const locked    = matches.filter(m => m.is_locked || new Date(m.kickoff_at) <= now);
+  const upcoming = matches.filter(m => !m.is_locked && new Date(m.kickoff_at) > now);
+  const locked = matches.filter(m => m.is_locked || new Date(m.kickoff_at) <= now);
 
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
       <main className="max-w-2xl mx-auto px-4 py-8 pb-32">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
-
-          {/* Week selector — no 'all' option, just individual weeks */}
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm text-textMuted font-medium">Week:</label>
             <select
@@ -377,7 +366,6 @@ export default function FixturesPage() {
           </div>
         </div>
 
-        {/* Double Up explainer */}
         {selectedWeek !== -1 && !loading && matches.length > 0 && (
           <div className="mb-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-xl">
             <div className="flex items-start gap-3">
@@ -397,7 +385,7 @@ export default function FixturesPage() {
         ) : (
           <div className="space-y-8">
             {upcoming.length > 0 && (
-              <section className="relative">
+              <section ref={upcomingSectionRef}>
                 <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-primary uppercase tracking-wide">
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
@@ -420,6 +408,13 @@ export default function FixturesPage() {
                     />
                   ))}
                 </div>
+                <button
+                  onClick={saveAllPredictions}
+                  disabled={saving}
+                  className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+                >
+                  {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+                </button>
               </section>
             )}
             {locked.length > 0 && (
@@ -455,13 +450,13 @@ export default function FixturesPage() {
                 )}
               </div>
             )}
-
           </div>
         )}
       </main>
       <Footer />
-      {/* Floating Save All button — viewport-level so it stays visible while scrolling */}
-      {upcoming.length > 0 && (
+
+      {/* Floating Save All — appears when Upcoming section scrolls out of view */}
+      {upcoming.length > 0 && showFloatingSave && (
         <div className="fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent pointer-events-none">
           <div className="max-w-2xl mx-auto pointer-events-auto">
             <button
