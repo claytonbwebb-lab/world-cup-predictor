@@ -356,7 +356,7 @@ export default function FixturesPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <main className="max-w-2xl mx-auto px-4 py-8 pb-24">
+      <main className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
@@ -397,11 +397,11 @@ export default function FixturesPage() {
         ) : (
           <div className="space-y-8">
             {upcoming.length > 0 && (
-              <section>
+              <section className="relative">
                 <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-primary uppercase tracking-wide">
                   <span>📅</span> Upcoming — enter your predictions
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-3 pb-4">
                   {upcoming.map(m => (
                     <MatchCard
                       key={m.id}
@@ -419,6 +419,16 @@ export default function FixturesPage() {
                       justSaved={savedMatch === m.id}
                     />
                   ))}
+                </div>
+                {/* Sticky save button — stays at bottom of viewport within this section */}
+                <div className="sticky bottom-0 z-40 pb-4 pt-2 bg-gradient-to-t from-background to-transparent">
+                  <button
+                    onClick={saveAllPredictions}
+                    disabled={saving}
+                    className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+                  >
+                    {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+                  </button>
                 </div>
               </section>
             )}
@@ -459,19 +469,7 @@ export default function FixturesPage() {
           </div>
         )}
       </main>
-      {upcoming.length > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent">
-          <div className="max-w-2xl mx-auto">
-            <button
-              onClick={saveAllPredictions}
-              disabled={saving}
-              className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
-            >
-              {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Save All button removed — now sticky within the upcoming section */}
       <Footer />
     </div>
   );
