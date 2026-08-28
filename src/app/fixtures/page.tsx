@@ -356,7 +356,7 @@ export default function FixturesPage() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-8 pb-32">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
@@ -420,16 +420,6 @@ export default function FixturesPage() {
                     />
                   ))}
                 </div>
-                {/* Sticky save button — stays at bottom of viewport within this section */}
-                <div className="sticky bottom-0 z-40 pb-4 pt-2 bg-gradient-to-t from-background to-transparent">
-                  <button
-                    onClick={saveAllPredictions}
-                    disabled={saving}
-                    className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
-                  >
-                    {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
-                  </button>
-                </div>
               </section>
             )}
             {locked.length > 0 && (
@@ -469,8 +459,21 @@ export default function FixturesPage() {
           </div>
         )}
       </main>
-      {/* Save All button removed — now sticky within the upcoming section */}
       <Footer />
+      {/* Floating Save All button — viewport-level so it stays visible while scrolling */}
+      {upcoming.length > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent pointer-events-none">
+          <div className="max-w-2xl mx-auto pointer-events-auto">
+            <button
+              onClick={saveAllPredictions}
+              disabled={saving}
+              className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+            >
+              {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
