@@ -13,6 +13,25 @@ interface ClubStanding {
   num_supporters: number;
 }
 
+async function batchedFetchPredictions(service: any) {
+  const PAGE = 1000;
+  let offset = 0;
+  let all: any[] = [];
+  while (true) {
+    const { data, error } = await service
+      .from('predictions')
+      .select('user_id, points_awarded, matches!inner(result_entered)')
+      .eq('matches.result_entered', true)
+      .range(offset, offset + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < PAGE) break;
+    offset += PAGE;
+  }
+  return all;
+}
+
 async function getSupporterLeague(): Promise<ClubStanding[]> {
   const supabase = createClient();
   const { createClient: createServiceClient } = await import('@supabase/supabase-js');
@@ -21,12 +40,8 @@ async function getSupporterLeague(): Promise<ClubStanding[]> {
     process.env.SUPABASE_SERVICE_ROLE_KEY || ''
   );
 
-  const { data: predictions, error } = await service
-    .from('predictions')
-    .select('user_id, points_awarded, matches(result_entered)')
-    .eq('matches.result_entered', true);
-
-  if (error || !predictions) return [];
+  // Fetch ALL predictions with pagination (fixes 1000-row truncation bug)
+  const predictions = await batchedFetchPredictions(service);
 
   const userPoints: Record<string, number> = {};
   for (const pred of predictions) {
