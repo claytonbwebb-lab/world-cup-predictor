@@ -66,7 +66,7 @@ export async function POST() {
     const currentTuesday = new Date(now);
     currentTuesday.setDate(now.getDate() - daysSinceTuesday);
     const targetTuesday = new Date(currentTuesday);
-    targetTuesday.setDate(currentTuesday.getDate() + 7);
+    targetTuesday.setDate(currentTuesday.getDate() + 14);
     const targetMonday = new Date(targetTuesday);
     targetMonday.setDate(targetTuesday.getDate() + 6);
 
@@ -74,7 +74,7 @@ export async function POST() {
     const to = getDateStr(targetMonday);
     const weekNumber = getWeekNumber(targetTuesday);
 
-    console.log(`[fixtures-auto-import] Importing fixtures from ${from} to ${to}`);
+    console.log(`[fixtures-auto-import] Importing fixtures (two weeks ahead) from ${from} to ${to}`);
 
     const leagues = [
       { id: 39, filterPrem: false, groupStage: 'Premier League' },
