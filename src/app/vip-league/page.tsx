@@ -78,17 +78,24 @@ async function getVipLeaderboard(userId: string | null): Promise<{
     return { entries: [], userPoints: 0, userRank: 0, isMember: false, vipLeagueId };
   }
 
-  // Get predictions for all VIP members
-  const memberIds = members.map(m => m.user_id);
-  const { data: predictions } = await service
-    .from('predictions')
-    .select('user_id, points_awarded')
-    .in('user_id', memberIds)
-    .not('scored_at', 'is', null);
-
+  // Get predictions for all VIP members — batched to stay under 1000-row limit
+  const memberIds = members.map((m: any) => m.user_id);
   const pointsMap: Record<string, number> = {};
-  for (const pred of predictions || []) {
-    pointsMap[pred.user_id] = (pointsMap[pred.user_id] || 0) + (pred.points_awarded || 0);
+  const PAGE = 1000;
+  let offset = 0;
+  while (true) {
+    const { data: batch } = await service
+      .from('predictions')
+      .select('user_id, points_awarded')
+      .in('user_id', memberIds)
+      .not('scored_at', 'is', null)
+      .range(offset, offset + PAGE - 1);
+    if (!batch || batch.length === 0) break;
+    for (const pred of batch) {
+      pointsMap[pred.user_id] = (pointsMap[pred.user_id] || 0) + (pred.points_awarded || 0);
+    }
+    if (batch.length < PAGE) break;
+    offset += PAGE;
   }
 
   let entries: LeaderboardEntry[] = members.map(m => ({
