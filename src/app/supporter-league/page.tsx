@@ -91,9 +91,6 @@ export default async function SupporterLeaguePage() {
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-bg to-secondary/10 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 py-16 text-center">
             <UserClubBanner />
-            <h1 className="text-4xl md:text-5xl font-bold text-textPrimary">
-              The Supporter League
-            </h1>
           </div>
         </section>
       )}
