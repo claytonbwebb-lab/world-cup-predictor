@@ -53,8 +53,8 @@ const nextConfig = {
         permanent: false,
       },
       {
-        source: '/allstarsignings',
-        destination: 'https://assets.ikhnaie.me/click.html?wgcampaignid=1747476&wgprogramid=295320',
+        source: '/inkedmemorabilia',
+        destination: 'https://www.inkedmemorabilia.co.uk/?utm_source=Partner&utm_medium=Website&utm_campaign=PlayPredictWin',
         permanent: false,
       },
       {
