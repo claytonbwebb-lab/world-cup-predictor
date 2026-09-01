@@ -88,10 +88,10 @@ export async function POST(request: NextRequest) {
 
     const defaultLeagues = [
       { id: 39, name: 'Premier League', filterPrem: false },
-      { id: 2, name: 'Champions League', filterPrem: true },
-      { id: 3, name: 'Europa League', filterPrem: true },
+      { id: 2,  name: 'Champions League', filterPrem: true },
+      { id: 3,  name: 'Europa League', filterPrem: true },
       { id: 47, name: 'Carabao Cup', filterPrem: true },
-      { id: 48, name: 'League Cup', filterPrem: true },
+      { id: 294, name: 'FA Cup', filterPrem: true },
       { id: 528, name: 'Community Shield', filterPrem: true },
     ];
 

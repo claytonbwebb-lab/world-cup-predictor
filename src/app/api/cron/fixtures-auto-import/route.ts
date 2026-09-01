@@ -78,10 +78,10 @@ export async function POST() {
 
     const leagues = [
       { id: 39, filterPrem: false, groupStage: 'Premier League' },
-      { id: 2, filterPrem: true, groupStage: 'Champions League' },
-      { id: 3, filterPrem: true, groupStage: 'Europa League' },
-      { id: 47, filterPrem: true, groupStage: 'FA Cup' },
-      { id: 48, filterPrem: true, groupStage: 'League Cup' },
+      { id: 2,  filterPrem: true,  groupStage: 'Champions League' },
+      { id: 3,  filterPrem: true,  groupStage: 'Europa League' },
+      { id: 47, filterPrem: true,  groupStage: 'Carabao Cup' },
+      { id: 294, filterPrem: true, groupStage: 'FA Cup' },
       { id: 528, filterPrem: true, groupStage: 'Community Shield' },
     ];
 
