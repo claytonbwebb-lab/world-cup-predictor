@@ -31,27 +31,25 @@ export default function UserClubBanner() {
   const team = findTeam(userClub);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-bg to-secondary/10 border-b border-border">
-      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <div className="inline-flex items-center gap-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 text-sm text-primary mb-3">
-          {team ? (
-            <img src={team.badge} alt={userClub} className="w-6 h-6 object-contain" />
-          ) : (
-            <span>⚽</span>
-          )}
-          <span>You&apos;re in the Supporter League</span>
-        </div>
-        <p className="text-textMuted max-w-xl mx-auto">
-          Every point you earn as a predictor also counts for{' '}
-          <span className="text-textPrimary font-semibold">{userClub}</span>.
-          The more correct predictions you make, the higher your club climbs.
-        </p>
-        <p className="text-textMuted text-xs mt-2">
-          <Link href="/profile" className="text-primary hover:underline">
-            Change your club in settings →
-          </Link>
-        </p>
+    <>
+      <div className="inline-flex items-center gap-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 text-sm text-primary mb-3">
+        {team ? (
+          <img src={team.badge} alt={userClub} className="w-6 h-6 object-contain" />
+        ) : (
+          <span>⚽</span>
+        )}
+        <span>You&apos;re in the Supporter League</span>
       </div>
-    </section>
+      <p className="text-textMuted max-w-xl mx-auto">
+        Every point you earn as a predictor also counts for{' '}
+        <span className="text-textPrimary font-semibold">{userClub}</span>.
+        The more correct predictions you make, the higher your club climbs.
+      </p>
+      <p className="text-textMuted text-xs mt-2">
+        <Link href="/profile" className="text-primary hover:underline">
+          Change your club in settings →
+        </Link>
+      </p>
+    </>
   );
 }
