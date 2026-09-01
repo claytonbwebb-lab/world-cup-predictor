@@ -380,6 +380,8 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                   <th className="pb-3 px-4 text-textMuted font-medium">Match</th>
                   <th className="pb-3 px-4 text-textMuted font-medium text-center">Score</th>
                   <th className="pb-3 px-4 text-textMuted font-medium text-center">Status</th>
+                  {/* Competition */}
+                  <th className="pb-3 px-4 text-textMuted font-medium">Competition</th>
                   <th className="pb-3 px-4 text-textMuted font-medium">Date</th>
                   <th className="pb-3 px-4 text-textMuted font-medium text-right">Actions</th>
                 </tr>
@@ -433,7 +435,11 @@ export default function AdminMatchTable({ matches, availableWeeks = [], selected
                           <span className="text-green-400 text-xs" title="Live and open for predictions">🟢</span>
                         )}
                       </td>
-                      {/* Date */}
+                      {/* Competition */}
+                  <td className="py-3 px-4">
+                    {match.group_stage || '—'}
+                  </td>
+                  {/* Date */}
                       <td className="py-3 px-4 text-textMuted text-xs whitespace-nowrap">
                         {new Date(match.kickoff_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </td>
