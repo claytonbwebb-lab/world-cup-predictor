@@ -29,7 +29,6 @@ function getVisiblePages(currentPage: number, totalPages: number) {
   return pages;
 }
 
-// Prize config per mode
 const PRIZES: Record<string, string[]> = {
   week: ['£50'],
   month: ['£100', '£50', '£25'],
@@ -246,7 +245,6 @@ export default function TestLeaderboardPage() {
   const weekOptions = availableWeeks.map(w => ({ value: w, label: getWeekDropdownLabel(w) }));
   const prizes = PRIZES[mode];
 
-  // Top 3 for podium
   const topThree = entries.slice(0, 3);
   while (topThree.length < 3) {
     topThree.push({ user_id: `empty-${topThree.length}`, username: '-', avatar_url: null, total_points: 0, exact_scores: 0, correct_results: 0, total_predictions: 0 });
@@ -263,30 +261,17 @@ export default function TestLeaderboardPage() {
         {/* Mode toggle */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex bg-surfaceLight rounded-xl p-1 gap-1">
-            <button
-              onClick={() => { setMode('week'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🗓️ Weekly
-            </button>
-            <button
-              onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(0); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              📅 Monthly
-            </button>
-            <button
-              onClick={() => { setMode('season'); setCurrentPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
-              }`}
-            >
-              🏆 Season
-            </button>
+            {(['week', 'month', 'season'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setCurrentPage(1); if (m === 'month') setSelectedMonthIdx(0); }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  mode === m ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'
+                }`}
+              >
+                {m === 'week' ? '🗓️ Weekly' : m === 'month' ? '📅 Monthly' : '🏆 Season'}
+              </button>
+            ))}
           </div>
 
           {mode === 'week' && (
@@ -320,90 +305,46 @@ export default function TestLeaderboardPage() {
           )}
         </div>
 
-        {/* Prize Money Display */}
-        <div className="mb-6">
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {prizes.map((amount, i) => (
-              <div key={i} className="bg-surfaceLight/80 border border-border/40 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
-                <span className="text-base">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
-                <span className="text-sm font-black text-primary">{amount}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Olympic Podium - Top 3 */}
+        {/* === Podium v2 === */}
         {!loading && totalCount > 0 && (
           <div className="mb-8">
-            <div className="flex items-end justify-center gap-3 sm:gap-6">
-              {/* 2nd place - left */}
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-slate-300 shadow-lg bg-surface">
-                    {topThree[1].avatar_url ? (
-                      <img src={topThree[1].avatar_url} alt={topThree[1].username} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-slate-200 flex items-center justify-center text-3xl">🥈</div>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center text-white font-bold text-sm shadow">2</div>
-                </div>
-                <div className="mt-2 text-center">
-                  <p className="font-bold text-sm truncate max-w-[100px] sm:max-w-[120px]">{topThree[1].username}</p>
-                  <p className="text-xs text-textMuted">{topThree[1].total_points} pts</p>
-                  {prizes[1] && <p className="text-sm font-black text-slate-600">{prizes[1]}</p>}
-                </div>
-                {/* Podium block */}
-                <div className="w-24 sm:w-32 h-20 bg-gradient-to-t from-slate-300 to-slate-200 rounded-b-lg mt-2 flex items-center justify-center">
-                  <span className="text-3xl font-black text-slate-500">2</span>
-                </div>
-              </div>
+            <div className="flex items-end justify-center gap-4 sm:gap-10">
+              {/* 2nd place */}
+              <PodiumPosition
+                entry={topThree[1]}
+                prize={prizes[1]}
+                hasData={entries.length >= 2}
+                border="border-slate-300"
+                blockBg="bg-slate-300"
+                blockHeight="h-20"
+                avatarSize="w-20 h-20 sm:w-24 sm:h-24"
+                rank={2}
+              />
 
-              {/* 1st place - center */}
-              <div className="flex flex-col items-center -mt-6">
-                <div className="relative">
-                  <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-amber-400 shadow-xl bg-surface">
-                    {topThree[0].avatar_url ? (
-                      <img src={topThree[0].avatar_url} alt={topThree[0].username} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-amber-100 flex items-center justify-center text-4xl">🥇</div>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center text-white font-bold text-lg shadow">1</div>
-                </div>
-                <div className="mt-2 text-center">
-                  <p className="font-bold text-base truncate max-w-[120px] sm:max-w-[160px]">{topThree[0].username}</p>
-                  <p className="text-xs text-textMuted">{topThree[0].total_points} pts</p>
-                  {prizes[0] && <p className="text-lg font-black text-amber-600">{prizes[0]}</p>}
-                </div>
-                {/* Podium block - tallest */}
-                <div className="w-28 sm:w-36 h-32 bg-gradient-to-t from-amber-400 to-amber-300 rounded-b-lg mt-2 flex items-center justify-center">
-                  <span className="text-4xl font-black text-amber-700">1</span>
-                </div>
-              </div>
+              {/* 1st place */}
+              <PodiumPosition
+                entry={topThree[0]}
+                prize={prizes[0]}
+                hasData={true}
+                border="border-amber-400"
+                blockBg="bg-amber-400"
+                blockHeight="h-32"
+                avatarSize="w-24 h-24 sm:w-32 sm:h-32"
+                rank={1}
+                isCenter
+              />
 
-              {/* 3rd place - right */}
-              <div className="flex flex-col items-center">
-                <div className="relative">
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-amber-600 shadow-lg bg-surface">
-                    {topThree[2].avatar_url ? (
-                      <img src={topThree[2].avatar_url} alt={topThree[2].username} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-amber-50 flex items-center justify-center text-3xl">🥉</div>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow">3</div>
-                </div>
-                <div className="mt-2 text-center">
-                  <p className="font-bold text-sm truncate max-w-[100px] sm:max-w-[120px]">{topThree[2].username}</p>
-                  <p className="text-xs text-textMuted">{topThree[2].total_points} pts</p>
-                  {prizes[2] && <p className="text-sm font-black text-amber-700">{prizes[2]}</p>}
-                </div>
-                {/* Podium block */}
-                <div className="w-24 sm:w-32 h-16 bg-gradient-to-t from-amber-600 to-amber-500 rounded-b-lg mt-2 flex items-center justify-center">
-                  <span className="text-3xl font-black text-amber-800">3</span>
-                </div>
-              </div>
+              {/* 3rd place */}
+              <PodiumPosition
+                entry={topThree[2]}
+                prize={prizes[2]}
+                hasData={entries.length >= 3}
+                border="border-amber-600"
+                blockBg="bg-amber-600"
+                blockHeight="h-16"
+                avatarSize="w-20 h-20 sm:w-24 sm:h-24"
+                rank={3}
+              />
             </div>
           </div>
         )}
@@ -464,12 +405,7 @@ export default function TestLeaderboardPage() {
                       }`}
                     >
                       <td className="py-3 px-4">
-                        <div className="flex items-center justify-center w-8">
-                          {rank === 1 && <span className="text-2xl">🥇</span>}
-                          {rank === 2 && <span className="text-2xl">🥈</span>}
-                          {rank === 3 && <span className="text-2xl">🥉</span>}
-                          {rank > 3 && <span className="text-textMuted">{rank}</span>}
-                        </div>
+                        <span className="text-textMuted w-8 inline-block text-center">{rank}</span>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
@@ -478,14 +414,10 @@ export default function TestLeaderboardPage() {
                             alt={entry.username}
                             className="w-8 h-8 rounded-full object-cover border border-border shrink-0"
                           />
-                          <div className="flex flex-col min-w-0">
-                            <span className={`font-medium truncate max-w-[120px] ${entry.user_id === userId ? 'text-primary' : ''}`}>
-                              {entry.username}
-                            </span>
-                            {entry.user_id === userId && (
-                              <span className="text-xs text-primary">You</span>
-                            )}
-                          </div>
+                          <span className={`font-medium truncate max-w-[120px] ${entry.user_id === userId ? 'text-primary' : ''}`}>
+                            {entry.username}
+                          </span>
+                          {entry.user_id === userId && <span className="text-xs text-primary">You</span>}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -559,6 +491,76 @@ export default function TestLeaderboardPage() {
         )}
       </main>
       <Footer />
+    </div>
+  );
+}
+
+// === Podium Position Component (v2 — clean, no duplication) ===
+function PodiumPosition({
+  entry,
+  prize,
+  hasData,
+  border,
+  blockBg,
+  blockHeight,
+  avatarSize,
+  rank,
+  isCenter = false,
+}: {
+  entry: LeaderboardEntry;
+  prize?: string;
+  hasData: boolean;
+  border: string;
+  blockBg: string;
+  blockHeight: string;
+  avatarSize: string;
+  rank: number;
+  isCenter?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col items-center ${isCenter ? '-mt-2' : ''}`}>
+      {/* Avatar: profile pic if available, simple fallback if not */}
+      <div className={`${avatarSize} rounded-full overflow-hidden border-4 ${border} shadow-lg bg-surface`}>
+        {hasData && entry.avatar_url ? (
+          <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
+        ) : hasData ? (
+          <div className="w-full h-full bg-surfaceLight flex items-center justify-center">
+            <span className="text-2xl text-textMuted">👤</span>
+          </div>
+        ) : (
+          <div className="w-full h-full bg-surfaceLight flex items-center justify-center">
+            <span className="text-xl text-textMuted">–</span>
+          </div>
+        )}
+      </div>
+
+      {/* Name + points + prize (single source of truth) */}
+      <div className="mt-2 text-center min-h-[3.5rem]">
+        <p className={`font-bold truncate max-w-[90px] sm:max-w-[120px] ${isCenter ? 'text-base' : 'text-sm'}`}>
+          {hasData ? entry.username : '–'}
+        </p>
+        {hasData && (
+          <>
+            <p className="text-xs text-textMuted">{entry.total_points} pts</p>
+            {prize && (
+              <p className={`font-black text-primary ${isCenter ? 'text-lg' : 'text-sm'}`}>
+                {prize}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Podium block — rank shown ONCE here */}
+      <div className={`w-20 sm:w-28 ${blockHeight} ${blockBg} rounded-b-lg mt-2 flex items-center justify-center`}>
+        <span className={`font-black ${
+          blockBg.includes('amber-400') ? 'text-amber-800' :
+          blockBg.includes('amber-600') ? 'text-amber-900' :
+          'text-slate-600'
+        } ${isCenter ? 'text-4xl' : 'text-3xl'}`}>
+          {rank}
+        </span>
+      </div>
     </div>
   );
 }
