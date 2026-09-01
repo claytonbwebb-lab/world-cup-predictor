@@ -314,8 +314,8 @@ export default function TestLeaderboardPage() {
                 entry={topThree[1]}
                 prize={prizes[1]}
                 hasData={entries.length >= 2}
-                border="border-green-300"
-                blockBg="bg-green-300"
+                border="border-primary"
+                blockBg="bg-primary"
                 blockHeight="h-20"
                 avatarSize="w-20 h-20 sm:w-24 sm:h-24"
                 rank={2}
@@ -339,8 +339,8 @@ export default function TestLeaderboardPage() {
                 entry={topThree[2]}
                 prize={prizes[2]}
                 hasData={entries.length >= 3}
-                border="border-green-700"
-                blockBg="bg-green-700"
+                border="border-primary"
+                blockBg="bg-primary"
                 blockHeight="h-16"
                 avatarSize="w-20 h-20 sm:w-24 sm:h-24"
                 rank={3}
@@ -553,12 +553,7 @@ function PodiumPosition({
 
       {/* Podium block — rank shown ONCE here */}
       <div className={`w-20 sm:w-28 ${blockHeight} ${blockBg} rounded-b-lg mt-2 flex items-center justify-center`}>
-        <span className={`font-black ${
-          blockBg.includes('primary') ? 'text-green-900' :
-          blockBg.includes('green-300') ? 'text-green-800' :
-          blockBg.includes('green-700') ? 'text-white' :
-          'text-textMuted'
-        } ${isCenter ? 'text-4xl' : 'text-3xl'}`}>
+        <span className={`font-black text-green-900 ${isCenter ? 'text-4xl' : 'text-3xl'}`}>
           {rank}
         </span>
       </div>
