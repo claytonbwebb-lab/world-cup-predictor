@@ -32,20 +32,43 @@ export default function UserClubBanner() {
 
   return (
     <>
-      <div className="inline-flex items-center gap-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 text-sm text-primary mb-3">
+      {/* Pill badge */}
+      <div className="inline-flex items-center gap-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 text-sm text-primary mb-4">
         {team ? (
-          <img src={team.badge} alt={userClub} className="w-6 h-6 object-contain" />
+          <img src={team.badge} alt={userClub} className="w-5 h-5 object-contain" />
         ) : (
           <span>⚽</span>
         )}
         <span>You&apos;re in the Supporter League</span>
       </div>
-      <p className="text-textMuted max-w-xl mx-auto">
+
+      {/* Title */}
+      <h1 className="text-4xl md:text-5xl font-bold text-textPrimary mb-5">
+        The Supporter League
+      </h1>
+
+      {/* Big club crest */}
+      <div className="flex justify-center mb-5">
+        {team ? (
+          <img
+            src={team.badge}
+            alt={userClub}
+            className="w-20 h-20 md:w-28 md:h-28 object-contain drop-shadow-xl"
+          />
+        ) : (
+          <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-surfaceLight flex items-center justify-center text-4xl">
+            ⚽
+          </div>
+        )}
+      </div>
+
+      {/* Description */}
+      <p className="text-textMuted max-w-xl mx-auto mb-1">
         Every point you earn as a predictor also counts for{' '}
         <span className="text-textPrimary font-semibold">{userClub}</span>.
         The more correct predictions you make, the higher your club climbs.
       </p>
-      <p className="text-textMuted text-xs mt-2">
+      <p className="text-textMuted text-xs">
         <Link href="/profile" className="text-primary hover:underline">
           Change your club in settings →
         </Link>

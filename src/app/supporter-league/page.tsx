@@ -141,7 +141,7 @@ export default async function SupporterLeaguePage() {
       )}
 
       {/* League Table */}
-      <section className="max-w-4xl mx-auto px-4 pb-16">
+      <section className="max-w-4xl mx-auto px-4 pb-16 mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-textPrimary">Club Standings</h2>
           <span className="text-sm text-textMuted">Top 20 clubs</span>
