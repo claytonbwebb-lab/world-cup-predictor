@@ -305,46 +305,31 @@ export default function TestLeaderboardPage() {
           )}
         </div>
 
-        {/* === Podium v2 === */}
+        {/* === Social-Style Podium === */}
         {!loading && totalCount > 0 && (
-          <div className="mb-8">
-            <div className="flex items-end justify-center gap-4 sm:gap-10">
-              {/* 2nd place */}
-              <PodiumPosition
-                entry={topThree[1]}
-                prize={prizes[1]}
-                hasData={entries.length >= 2}
-                border="border-primary"
-                blockBg="bg-primary"
-                blockHeight="h-20"
-                avatarSize="w-20 h-20 sm:w-24 sm:h-24"
-                rank={2}
-              />
-
-              {/* 1st place */}
-              <PodiumPosition
-                entry={topThree[0]}
-                prize={prizes[0]}
-                hasData={true}
-                border="border-primary"
-                blockBg="bg-primary"
-                blockHeight="h-32"
-                avatarSize="w-24 h-24 sm:w-32 sm:h-32"
-                rank={1}
-                isCenter
-              />
-
-              {/* 3rd place */}
-              <PodiumPosition
-                entry={topThree[2]}
-                prize={prizes[2]}
-                hasData={entries.length >= 3}
-                border="border-primary"
-                blockBg="bg-primary"
-                blockHeight="h-16"
-                avatarSize="w-20 h-20 sm:w-24 sm:h-24"
-                rank={3}
-              />
+          <div className="mb-8 relative overflow-hidden rounded-2xl" style={{
+            background: 'linear-gradient(180deg, #0a0e27 0%, #1a1f4b 50%, #0a0e27 100%)',
+          }}>
+            {/* Stadium lights */}
+            <div className="absolute top-0 left-1/4 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-1/4 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
+            
+            {/* Title */}
+            <div className="text-center pt-6 pb-2 relative z-10">
+              <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-wide">
+                {mode === 'week' ? 'Weekly' : mode === 'month' ? 'Monthly' : 'Season'} Winners!
+              </h2>
+              <p className="text-white/60 text-sm mt-1">Top Predictors {mode === 'season' ? 'This Season' : mode === 'month' ? 'This Month' : 'This Week'}</p>
+            </div>
+            
+            {/* Podiums */}
+            <div className="flex items-end justify-center gap-2 sm:gap-6 px-4 pb-4 pt-6 relative z-10">
+              {/* 2nd */}
+              <SocialPodium entry={topThree[1]} rank={2} prize={prizes[1]} hasData={entries.length >= 2} />
+              {/* 1st */}
+              <SocialPodium entry={topThree[0]} rank={1} prize={prizes[0]} hasData={true} isCenter />
+              {/* 3rd */}
+              <SocialPodium entry={topThree[2]} rank={3} prize={prizes[2]} hasData={entries.length >= 3} />
             </div>
           </div>
         )}
@@ -495,67 +480,131 @@ export default function TestLeaderboardPage() {
   );
 }
 
-// === Podium Position Component (v2 — clean, no duplication) ===
-function PodiumPosition({
+// === Social Media Style Podium Component ===
+function SocialPodium({
   entry,
   prize,
   hasData,
-  border,
-  blockBg,
-  blockHeight,
-  avatarSize,
   rank,
   isCenter = false,
 }: {
   entry: LeaderboardEntry;
   prize?: string;
   hasData: boolean;
-  border: string;
-  blockBg: string;
-  blockHeight: string;
-  avatarSize: string;
   rank: number;
   isCenter?: boolean;
 }) {
+  const configs: Record<number, {
+    ring: string;
+    bg: string;
+    blockGradient: string;
+    label: string;
+    textColor: string;
+    blockHeight: string;
+    avatarSize: string;
+    translateY: string;
+  }> = {
+    1: {
+      ring: 'border-[#FFD700]',
+      bg: 'bg-[#FFD700]',
+      blockGradient: 'linear-gradient(180deg, #FFD700 0%, #D4AF37 100%)',
+      label: '1',
+      textColor: 'text-[#1a1a1a]',
+      blockHeight: 'h-28 sm:h-36',
+      avatarSize: 'w-20 h-20 sm:w-28 sm:h-28',
+      translateY: '-translate-y-4',
+    },
+    2: {
+      ring: 'border-[#C0C0C0]',
+      bg: 'bg-[#C0C0C0]',
+      blockGradient: 'linear-gradient(180deg, #C0C0C0 0%, #A8A8A8 100%)',
+      label: '2',
+      textColor: 'text-[#1a1a1a]',
+      blockHeight: 'h-20 sm:h-28',
+      avatarSize: 'w-18 h-18 sm:w-24 sm:h-24',
+      translateY: '',
+    },
+    3: {
+      ring: 'border-[#CD7F32]',
+      bg: 'bg-[#CD7F32]',
+      blockGradient: 'linear-gradient(180deg, #CD7F32 0%, #A0522D 100%)',
+      label: '3',
+      textColor: 'text-[#1a1a1a]',
+      blockHeight: 'h-16 sm:h-24',
+      avatarSize: 'w-18 h-18 sm:w-24 sm:h-24',
+      translateY: '',
+    },
+  };
+
+  const cfg = configs[rank];
+
   return (
-    <div className={`flex flex-col items-center ${isCenter ? '-mt-2' : ''}`}>
-      {/* Avatar: profile pic if available, simple fallback if not */}
-      <div className={`${avatarSize} rounded-full overflow-hidden border-4 ${border} shadow-lg bg-surface`}>
+    <div className={`flex flex-col items-center ${isCenter ? cfg.translateY : ''} w-[110px] sm:w-[160px]`}>
+      {/* Medal Badge */}
+      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${cfg.bg} flex items-center justify-center shadow-lg mb-1 z-20`}>
+        <span className="font-black text-sm sm:text-base text-white">{cfg.label}</span>
+      </div>
+
+      {/* Avatar with ring */}
+      <div className={`${cfg.avatarSize} rounded-full overflow-hidden border-3 sm:border-4 ${cfg.ring} shadow-xl bg-[#1a1f4b] relative`}>
         {hasData && entry.avatar_url ? (
           <img src={entry.avatar_url} alt={entry.username} className="w-full h-full object-cover" />
         ) : hasData ? (
-          <div className="w-full h-full bg-surfaceLight flex items-center justify-center">
-            <span className="text-2xl text-textMuted">👤</span>
+          <div className="w-full h-full bg-[#2a3060] flex items-center justify-center">
+            <svg className="w-1/2 h-1/2 text-white/40" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           </div>
         ) : (
-          <div className="w-full h-full bg-surfaceLight flex items-center justify-center">
-            <span className="text-xl text-textMuted">–</span>
+          <div className="w-full h-full bg-[#2a3060] flex items-center justify-center">
+            <span className="text-xl text-white/40">–</span>
           </div>
         )}
       </div>
 
-      {/* Name + points + prize (single source of truth) */}
-      <div className="mt-2 text-center min-h-[3.5rem]">
-        <p className={`font-bold truncate max-w-[90px] sm:max-w-[120px] ${isCenter ? 'text-base' : 'text-sm'}`}>
-          {hasData ? entry.username : '–'}
-        </p>
-        {hasData && (
-          <>
-            <p className="text-xs text-textMuted">{entry.total_points} pts</p>
-            {prize && (
-              <p className={`font-black text-primary ${isCenter ? 'text-lg' : 'text-sm'}`}>
-                {prize}
-              </p>
-            )}
-          </>
-        )}
+      {/* Name badge */}
+      <div className="mt-2 w-full">
+        <div className="bg-[#1a1f4b]/80 border border-white/10 rounded-lg px-2 py-1 text-center">
+          <p className="font-bold text-white text-xs sm:text-sm truncate">{hasData ? entry.username : '–'}</p>
+        </div>
       </div>
 
-      {/* Podium block — rank shown ONCE here */}
-      <div className={`w-20 sm:w-28 ${blockHeight} ${blockBg} rounded-b-lg mt-2 flex items-center justify-center`}>
-        <span className={`font-black text-green-900 ${isCenter ? 'text-4xl' : 'text-3xl'}`}>
-          {rank}
-        </span>
+      {/* Points badge */}
+      {hasData && (
+        <div className="mt-1.5 bg-[#7ED321] rounded-md px-3 py-0.5 shadow-lg">
+          <span className="font-black text-[#1a1a1a] text-sm sm:text-base">{entry.total_points}</span>
+          <span className="text-[#1a1a1a] text-[10px] font-bold ml-0.5">POINTS</span>
+        </div>
+      )}
+
+      {/* Prize on podium */}
+      {hasData && prize && (
+        <div className="mt-1.5 text-center">
+          <span className="font-black text-[#FFD700] text-lg sm:text-2xl drop-shadow-lg">{prize}</span>
+          <p className="text-white/60 text-[10px] sm:text-xs font-bold">WINNER PRIZE!</p>
+        </div>
+      )}
+
+      {/* Stats bar */}
+      {hasData && (
+        <div className="mt-1.5 flex gap-1">
+          {[
+            { label: 'EXACT', value: entry.exact_scores },
+            { label: 'RESULTS', value: entry.correct_results },
+            { label: 'PREDS', value: entry.total_predictions },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-[#1a1f4b]/60 rounded px-1.5 py-0.5 text-center min-w-[32px]">
+              <p className="text-white/40 text-[8px] sm:text-[9px] font-bold">{stat.label}</p>
+              <p className="text-white text-xs font-bold">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Podium block */}
+      <div
+        className={`w-full ${cfg.blockHeight} rounded-t-lg mt-3 flex items-center justify-center shadow-inner`}
+        style={{ background: cfg.blockGradient }}
+      >
+        <span className={`font-black text-3xl sm:text-4xl ${cfg.textColor} opacity-60`}>{rank}</span>
       </div>
     </div>
   );
