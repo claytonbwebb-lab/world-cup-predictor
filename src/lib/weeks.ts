@@ -71,3 +71,9 @@ export function getCurrentSeasonMonth(): { year: number; month: number } {
   const inSeason = SEASON_MONTHS.some(sm => sm.year === y && sm.month === m);
   return inSeason ? { year: y, month: m } : SEASON_MONTHS[0];
 }
+
+export function getCurrentSeasonMonthIndex(): number {
+  const now = new Date();
+  const idx = SEASON_MONTHS.findIndex(sm => sm.year === now.getFullYear() && sm.month === now.getMonth());
+  return idx >= 0 ? idx : 0;
+}

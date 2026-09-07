@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
 
-import { SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd } from '@/lib/weeks';
+import { SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd, getCurrentSeasonMonthIndex } from '@/lib/weeks';
 
 const PAGE_SIZE = 25;
 
@@ -344,7 +344,7 @@ export default function LeaderboardPage() {
             <button onClick={() => { setMode('week'); setCurrentPage(1); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'week' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
               🗓️ Weekly
             </button>
-            <button onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(0); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
+            <button onClick={() => { setMode('month'); setCurrentPage(1); setSelectedMonthIdx(getCurrentSeasonMonthIndex()); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'month' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
               📅 Monthly
             </button>
             <button onClick={() => { setMode('season'); setCurrentPage(1); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'season' ? 'bg-primary text-white shadow' : 'text-textMuted hover:text-text'}`}>
