@@ -51,7 +51,9 @@ async function fetchFixturesFromAPI(league: number, from: string, to: string): P
 
 async function getExistingMatchKeys(supabase: any, fixtures: any[]): Promise<Set<string>> {
   const keys = fixtures.map(f => extractMatchKey(
-    f.teams.home.name, f.teams.away.name, f.fixture.date
+    canonicalTeamName(f.teams.home.name),
+    canonicalTeamName(f.teams.away.name),
+    f.fixture.date
   ));
   if (keys.length === 0) return new Set();
 
