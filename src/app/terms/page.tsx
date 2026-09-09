@@ -99,7 +99,9 @@ export default function TermsPage() {
             <p className="mt-2">
               Winners will be required to provide valid identification and proof of age (18+) before a
               prize is released. Payments will be made by BACS to the bank account details provided by
-              the winner. We aim to process payouts within 14 business days of verification.
+              the winner, or via PayPal if preferred. We aim to process payouts within 14 business days of verification.
+              Prizes must be claimed within one month of the winner notification email. If a winner does not respond
+              within this period, the prize will be forfeited.
             </p>
           </div>
 

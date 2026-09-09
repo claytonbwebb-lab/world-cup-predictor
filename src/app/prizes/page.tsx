@@ -92,7 +92,8 @@ export default function PrizesPage() {
 
         <div className="mt-8 card bg-surfaceLight/50 border-primary/20 text-center">
           <p className="text-textMuted text-sm leading-relaxed">
-            All prizes are paid by bank transfer. Winners will be contacted at the end of each week, month, and the season.
+            All prizes are paid by bank transfer (UK only) or PayPal. Winners will be contacted by email at the end of each week, month, and the season.
+            Prizes must be claimed within one month of the winner notification email.
             <br />
             <Link href="/auth/signup" className="text-primary font-medium hover:underline">Sign up free →</Link> and start predicting to win.
           </p>
