@@ -15,6 +15,7 @@ const stats = [
   { num: '30k+', label: 'Email Subscribers' },
   { num: '120', label: 'Countries' },
   { num: '100K+', label: 'Digital Interactions' },
+  { num: '7,500', label: 'Monthly Visits' },
 ];
 
 const tiers = [
@@ -171,7 +172,7 @@ export default function MediaPackPage() {
       </section>
 
       {/* ── STATS BAR ──────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border">
         {stats.map((s) => (
           <div key={s.label} className="bg-surface py-10 md:py-14 text-center">
             <div className="text-4xl md:text-5xl lg:text-6xl font-black text-primary font-heading">
