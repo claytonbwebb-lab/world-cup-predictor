@@ -20,7 +20,7 @@ const stats = [
 
 const tiers = [
   {
-    name: 'Main Sponsor',
+    name: 'Main Partner',
     title: 'Headline Partner',
     price: '£10,000',
     priceSub: 'full season',
@@ -34,7 +34,7 @@ const tiers = [
     ],
   },
   {
-    name: 'Prize Sponsor',
+    name: 'Prize Partner',
     title: 'Weekly Prize',
     price: '£5,000',
     priceSub: 'full season',
@@ -49,7 +49,7 @@ const tiers = [
     ],
   },
   {
-    name: 'Prize Sponsor',
+    name: 'Prize Partner',
     title: 'Monthly Prize',
     price: '£5,000',
     priceSub: 'full season',
@@ -62,7 +62,7 @@ const tiers = [
     ],
   },
   {
-    name: 'Prize Sponsor',
+    name: 'Prize Partner',
     title: 'End of Season',
     price: '£5,000',
     priceSub: 'full season',
@@ -85,7 +85,7 @@ const tiers = [
       'Permanent feature slot within the dedicated "Partners Section" of the website',
       'Custom brand imagery and 100-word promotional copy',
       'SEO-boosting "Do-Follow" hyperlink',
-      'Monthly newsletter sponsor mention',
+      'Monthly newsletter partner mention',
     ],
   },
 ];
@@ -95,33 +95,33 @@ const aLaCarte = [
     icon: '📧',
     title: 'Solus Email Broadcast',
     price: '£1,500',
-    per: 'per send',
+    per: ' per send',
     desc: 'A completely dedicated, exclusive HTML broadcast sent directly to our clean database of 30,000+ subscribers. Zero competing advertisements.',
   },
   {
     icon: '🗞️',
     title: 'Monthly Newsletter Banner',
     price: '£300',
-    per: 'per issue',
+    per: ' per issue',
     desc: 'High-visibility graphic leaderboard display (above or between core editorial text) within the monthly PPW newsletter round-up.',
   },
   {
     icon: '✍️',
     title: 'Football Guest Blog Post',
     price: '£200',
-    per: 'per post',
+    per: ' per post',
     desc: 'A permanent, editorially native article published on the PPW blog. Content must be football-related and can include up to two permanent contextual "Do-Follow" links for SEO authority building.',
   },
   {
     icon: '🔗',
     title: 'Recommended Sites Listing',
     price: '£150',
-    per: 'per season',
+    per: ' per season',
     desc: 'A static text and hyperlink placement on our high-authority "Useful Links / Resources" widget or footer roster for the full 12 months.',
   },
   {
     icon: '📱',
-    title: 'App Title Sponsorship',
+    title: 'App Title Partnership',
     price: 'POA',
     per: '',
     desc: 'Custom-built integration opportunities for our dedicated mobile application, currently deep in active development. Price on application.',
@@ -165,9 +165,11 @@ export default function MediaPackPage() {
           </a>
         </div>
         {/* scroll hint */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-textMuted text-xs tracking-widest uppercase opacity-50 animate-bounce">
-          <span>Scroll</span>
-          <div className="w-px h-8 bg-gradient-to-b from-primary to-transparent" />
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none">
+          <div className="flex flex-col items-center gap-2 text-textMuted text-xs tracking-widest uppercase opacity-50 animate-bounce">
+            <span>Scroll</span>
+            <div className="w-px h-8 bg-gradient-to-b from-primary to-transparent" />
+          </div>
         </div>
       </section>
 
@@ -226,7 +228,7 @@ export default function MediaPackPage() {
         <div className="mt-10 flex flex-wrap gap-3">
           {[
             'UK-Anchored Audience',
-            '6,000+ Monthly Visits',
+            '7,500 Monthly Visits',
             'High-Utility Retention Tech',
             'Private League Virality',
             'Clean, Targetable Database',
@@ -268,7 +270,7 @@ export default function MediaPackPage() {
                 n: '02',
                 icon: '📝',
                 title: 'Submit Predictions',
-                body: 'Pick the exact scoreline for every Premier League match before kickoff. Predictions lock the moment the whistle blows — no late changes.',
+                body: 'Pick the exact scoreline for every Premier League, domestic cup, and Champions League match (where a Premier League side is involved) before kickoff. Predictions lock the moment the whistle blows — no late changes.',
               },
               {
                 n: '03',
@@ -377,7 +379,7 @@ export default function MediaPackPage() {
               {
                 emoji: '📈',
                 title: '100% Reinvestment Model',
-                body: '100% of sponsorship fees are directly allocated to software optimisation and UX. All commercial profits are instantly re-injected into marketing to aggressively scale our active user base.',
+                body: '100% of partnership fees are allocated to platform prizes, product development, and user experience improvements. Every pound is reinvested to grow the platform and its community.',
               },
             ].map((f) => (
               <div
@@ -535,7 +537,7 @@ export default function MediaPackPage() {
             <span className="text-primary">With Us?</span>
           </h2>
           <p className="text-textMuted text-xl mb-12">
-            The 2026/27 Premier League season kicks off on 15 August. Don't miss the most engaging
+            The 2026/27 football season kicks off on 15 August. Don't miss the most engaging
             prediction platform in football.
           </p>
           <a
