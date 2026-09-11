@@ -14,7 +14,6 @@ const stats = [
   { num: '1K+', label: 'Active Players' },
   { num: '30k+', label: 'Email Subscribers' },
   { num: '120', label: 'Countries' },
-  { num: '100K+', label: 'Digital Interactions' },
   { num: '7,500', label: 'Monthly Visits' },
 ];
 
@@ -23,7 +22,7 @@ const tiers = [
     name: 'Main Partner',
     title: 'Headline Partner',
     price: '£10,000',
-    priceSub: 'full season',
+    priceSub: 'for the season OR',
     monthly: '£1,500 / month',
     featured: true,
     items: [
@@ -37,7 +36,7 @@ const tiers = [
     name: 'Prize Partner',
     title: 'Weekly Prize',
     price: '£5,000',
-    priceSub: 'full season',
+    priceSub: 'for the season OR',
     monthly: '£600 / month',
     featured: false,
     items: [
@@ -52,7 +51,7 @@ const tiers = [
     name: 'Prize Partner',
     title: 'Monthly Prize',
     price: '£5,000',
-    priceSub: 'full season',
+    priceSub: 'for the season OR',
     monthly: '£600 / month',
     featured: false,
     items: [
@@ -65,7 +64,7 @@ const tiers = [
     name: 'Prize Partner',
     title: 'End of Season',
     price: '£5,000',
-    priceSub: 'full season',
+    priceSub: 'for the season',
     featured: false,
     items: [
       'Exclusive anchor branding on our flagship Global Leaderboard all season long',
@@ -78,7 +77,7 @@ const tiers = [
     name: 'Entry Tier',
     title: 'Partner Brand',
     price: '£2,000',
-    priceSub: 'full season',
+    priceSub: 'for the season OR',
     monthly: '£250 / month',
     featured: false,
     items: [
@@ -174,7 +173,7 @@ export default function MediaPackPage() {
       </section>
 
       {/* ── STATS BAR ──────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border">
         {stats.map((s) => (
           <div key={s.label} className="bg-surface py-10 md:py-14 text-center">
             <div className="text-4xl md:text-5xl lg:text-6xl font-black text-primary font-heading">
