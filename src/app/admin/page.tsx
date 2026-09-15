@@ -27,16 +27,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
     redirect('/dashboard');
   }
 
-  // Await searchParams to get week filter
-  const sp = await searchParams ?? {};
-  const currentWeek = getWeekNumber(new Date());
-  const nextWeek = currentWeek + 1;
-  // Default to next week if it has matches, otherwise this week
-  const defaultWeek = allWeeks?.includes(nextWeek) ? nextWeek : currentWeek;
-  const selectedWeek = sp.week ? Number(sp.week) : defaultWeek;
-
   // Fetch all matches for admin — visible and staged/hidden together.
-  // Public/user pages still filter hidden matches out.
   const { data: allMatches } = await supabase
     .from('matches')
     .select('*')
@@ -47,6 +38,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
     .map(m => m.week_number)
     .filter(w => w !== null)
   )).sort((a, b) => b - a);
+
+  // Await searchParams to get week filter
+  const sp = await searchParams ?? {};
+  const currentWeek = getWeekNumber(new Date());
+  const nextWeek = currentWeek + 1;
+  // Default to next week if it has matches, otherwise this week
+  const defaultWeek = allWeeks?.includes(nextWeek) ? nextWeek : currentWeek;
+  const selectedWeek = sp.week ? Number(sp.week) : defaultWeek;
 
   // Filter by week only; admin always sees both live and staged matches.
   let matches = allMatches || [];
