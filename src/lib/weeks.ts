@@ -1,5 +1,5 @@
-// Season start: Tuesday 2026-08-11 00:00 UTC (Premier League 2026/27 kickoff)
-export const SEASON_START = new Date('2026-08-11T00:00:00Z');
+// Season start: Tuesday 2026-07-14 00:00 UTC
+export const SEASON_START = new Date('2026-07-14T00:00:00Z');
 
 // Season months — Premier League 2026/27 runs Aug 2026 → May 2027
 export const SEASON_MONTHS: { year: number; month: number; label: string }[] = [
