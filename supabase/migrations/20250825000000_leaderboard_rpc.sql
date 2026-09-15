@@ -56,6 +56,7 @@ BEGIN
     COALESCE(s.total_points, 0) DESC,
     COALESCE(s.exact_scores, 0) DESC,
     COALESCE(s.correct_results, 0) DESC,
-    p.id;
+    p.id
+  LIMIT 10000;
 END;
 $$;
