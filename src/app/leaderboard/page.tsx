@@ -112,15 +112,18 @@ export default function LeaderboardPage() {
     }
 
     if (data) {
-      // RPC path
-      setTotalCount(data.length);
-      const totalPages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
+      // RPC path — extract total count from magic footer row if present
+      const footerRow = data.find(e => e.username === '__total_count__');
+      const rows = footerRow ? data.filter(e => e.username !== '__total_count__') : data;
+      const total = footerRow ? (footerRow.total_points ?? rows.length) : rows.length;
+      setTotalCount(total);
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
       const page = Math.min(currentPage, totalPages);
       const offset = (page - 1) * PAGE_SIZE;
-      const pageData = data.slice(offset, offset + PAGE_SIZE);
+      const pageData = rows.slice(offset, offset + PAGE_SIZE);
       setEntries(pageData);
       setCurrentPage(page);
-      const rank = currentUserId ? data.findIndex(e => e.user_id === currentUserId) : -1;
+      const rank = currentUserId ? rows.findIndex(e => e.user_id === currentUserId) : -1;
       setUserRank(rank >= 0 ? rank + 1 : null);
       setUserEntry(currentUserId ? data.find(e => e.user_id === currentUserId) || null : null);
     } else {

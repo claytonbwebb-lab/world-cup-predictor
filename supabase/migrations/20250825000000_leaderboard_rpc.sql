@@ -20,7 +20,25 @@ RETURNS TABLE(
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+  v_total_count INT;
 BEGIN
+  -- First pass: count total eligible users (for accurate count beyond PostgREST 1000-row cap)
+  SELECT COUNT(DISTINCT p.id) INTO v_total_count
+  FROM profiles p
+  LEFT JOIN (
+    SELECT pred.user_id
+    FROM predictions pred
+    JOIN matches m ON m.id = pred.match_id
+    WHERE pred.scored_at IS NOT NULL
+      AND (p_week_number IS NULL OR m.week_number = p_week_number)
+      AND (p_month_start IS NULL OR m.kickoff_at >= p_month_start)
+      AND (p_month_end IS NULL OR m.kickoff_at <= p_month_end)
+    GROUP BY pred.user_id
+  ) s ON s.user_id = p.id
+  WHERE p.id != '00000000-0000-0000-0000-000000000000';
+
+  -- Return actual rows
   RETURN QUERY
   SELECT
     p.id,
@@ -58,5 +76,14 @@ BEGIN
     COALESCE(s.correct_results, 0) DESC,
     p.id
   LIMIT 10000;
+
+  -- Append a "count row" with user_id = NULL so the client can read the real total
+  RETURN QUERY
+  SELECT
+    NULL::UUID,
+    '__total_count__'::TEXT,
+    NULL::TEXT,
+    v_total_count::INT,
+    0, 0, 0, 0, 0;
 END;
 $$;
