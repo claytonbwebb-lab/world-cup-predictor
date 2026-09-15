@@ -138,10 +138,21 @@ export default function LeaderboardPage() {
   }
 
   async function loadSeasonLeaderboard(currentUserId: string | null) {
-    const { data: allUsers } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
+    // Paginate to avoid Supabase default 1000-row API limit
+    const PAGE = 1000;
+    let offset = 0;
+    let allUsers: any[] = [];
+    while (true) {
+      const { data: batch } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .not('id', 'eq', '00000000-0000-0000-0000-000000000000')
+        .range(offset, offset + PAGE - 1);
+      if (!batch || batch.length === 0) break;
+      allUsers = allUsers.concat(batch);
+      if (batch.length < PAGE) break;
+      offset += PAGE;
+    }
 
     if (!allUsers) return;
 
@@ -190,10 +201,21 @@ export default function LeaderboardPage() {
   }
 
   async function loadWeeklyLeaderboard(currentUserId: string | null, weekNum: number) {
-    const { data: allUsers } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
+    // Paginate to avoid Supabase default 1000-row API limit
+    const PAGE = 1000;
+    let offset = 0;
+    let allUsers: any[] = [];
+    while (true) {
+      const { data: batch } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .not('id', 'eq', '00000000-0000-0000-0000-000000000000')
+        .range(offset, offset + PAGE - 1);
+      if (!batch || batch.length === 0) break;
+      allUsers = allUsers.concat(batch);
+      if (batch.length < PAGE) break;
+      offset += PAGE;
+    }
 
     if (!allUsers) return;
 
@@ -265,12 +287,21 @@ export default function LeaderboardPage() {
     const monthStart = getMonthStart(sm.year, sm.month).toISOString();
     const monthEnd   = getMonthEnd(sm.year, sm.month).toISOString();
 
-    const { data: allUsers } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .not('id', 'eq', '00000000-0000-0000-0000-000000000000');
-
-    if (!allUsers) return;
+    // Paginate to avoid Supabase default 1000-row API limit
+    const PAGE = 1000;
+    let offset = 0;
+    let allUsers: any[] = [];
+    while (true) {
+      const { data: batch } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .not('id', 'eq', '00000000-0000-0000-0000-000000000000')
+        .range(offset, offset + PAGE - 1);
+      if (!batch || batch.length === 0) break;
+      allUsers = allUsers.concat(batch);
+      if (batch.length < PAGE) break;
+      offset += PAGE;
+    }
 
     const { data: monthMatches } = await supabase
       .from('matches')
