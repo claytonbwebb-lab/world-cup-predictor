@@ -15,6 +15,13 @@ function extractMatchKey(home: string, away: string, kickoff: string): string {
   return `${canonicalTeamName(home).toLowerCase()}|${canonicalTeamName(away).toLowerCase()}|${date}`;
 }
 
+function getMatchDay(kickoffUTC: string): string {
+  const day = new Date(kickoffUTC).getUTCDate();
+  if (day === 22 || day === 23 || day === 24) return 'UEFA Nations League - Matchday 1';
+  if (day === 25 || day === 26 || day === 27) return 'UEFA Nations League - Matchday 2';
+  return 'UEFA Nations League - Matchday 3';
+}
+
 async function fetchNationsLeagueFixtures(from: string, to: string): Promise<any[]> {
   const url = `https://${API_FOOTBALL_HOST}/fixtures?league=${NATIONS_LEAGUE_ID}&season=2026&from=${from}&to=${to}`;
   const res = await fetch(url, {
@@ -52,14 +59,6 @@ export async function POST(request: NextRequest) {
 
     if (fixtures.length === 0) {
       return NextResponse.json({ success: true, imported: 0, skipped: 0, fixtures: [] });
-    }
-
-    // Detect match day from date (UNL runs Thu/Fri/Sat/Sun in Sept)
-    function getMatchDay(kickoffUTC: string): string {
-      const day = new Date(kickoffUTC).getUTCDate();
-      if (day === 22 || day === 23 || day === 24) return 'UEFA Nations League - Matchday 1';
-      if (day === 25 || day === 26 || day === 27) return 'UEFA Nations League - Matchday 2';
-      return 'UEFA Nations League - Matchday 3';
     }
 
     // Check for existing matches
