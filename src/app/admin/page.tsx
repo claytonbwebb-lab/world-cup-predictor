@@ -6,6 +6,7 @@ import AdminMatchTable from './AdminMatchTable';
 import AddMatchForm from './AddMatchForm';
 import FixtureActions from './FixtureActions';
 import NavBar from '@/components/NavBar';
+import { getWeekNumber } from '@/lib/weeks';
 
 export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
   const supabase = await createClient();
@@ -28,7 +29,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
   // Await searchParams to get week filter
   const sp = await searchParams ?? {};
-  const selectedWeek = sp.week ? Number(sp.week) : null;
+  const currentWeek = getWeekNumber(new Date());
+  const nextWeek = currentWeek + 1;
+  // Default to next week if it has matches, otherwise this week
+  const defaultWeek = allWeeks?.includes(nextWeek) ? nextWeek : currentWeek;
+  const selectedWeek = sp.week ? Number(sp.week) : defaultWeek;
 
   // Fetch all matches for admin — visible and staged/hidden together.
   // Public/user pages still filter hidden matches out.
