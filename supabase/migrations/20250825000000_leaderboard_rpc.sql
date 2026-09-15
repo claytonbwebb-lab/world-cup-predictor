@@ -38,7 +38,16 @@ BEGIN
   ) s ON s.user_id = p.id
   WHERE p.id != '00000000-0000-0000-0000-000000000000';
 
-  -- Return actual rows
+  -- Emit count footer FIRST so it's always within PostgREST 1000-row cap
+  RETURN QUERY
+  SELECT
+    NULL::UUID,
+    '__total_count__'::TEXT,
+    NULL::TEXT,
+    v_total_count::INT,
+    0, 0, 0, 0, 0;
+
+  -- Then return actual rows
   RETURN QUERY
   SELECT
     p.id,
@@ -76,14 +85,5 @@ BEGIN
     COALESCE(s.correct_results, 0) DESC,
     p.id
   LIMIT 10000;
-
-  -- Append a "count row" with user_id = NULL so the client can read the real total
-  RETURN QUERY
-  SELECT
-    NULL::UUID,
-    '__total_count__'::TEXT,
-    NULL::TEXT,
-    v_total_count::INT,
-    0, 0, 0, 0, 0;
 END;
 $$;
