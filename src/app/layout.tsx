@@ -7,8 +7,12 @@ import RegisterServiceWorker from '@/components/RegisterServiceWorker';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Play Predict Win | Football Prediction League',
-  description: 'Predict Premier League matches and compete with friends',
+  metadataBase: new URL('https://www.playpredictwin.com'),
+  title: {
+    default: 'Play Predict Win | Football Prediction League',
+    template: '%s | Play Predict Win',
+  },
+  description: 'Predict every Premier League 2026/27 scoreline. Compete with friends in a free prediction league. Climb the leaderboard, earn points for correct scores, and win prizes. Join thousands of football fans now.',
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
     { rel: 'icon', url: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
@@ -25,8 +29,8 @@ export const metadata: Metadata = {
     'theme-color': '#0f172a',
   },
   openGraph: {
-    title: 'Play Predict Win',
-    description: 'Predict every Premier League 2026/27 scoreline. Compete with your mates. Climb the leaderboard.',
+    title: 'Play Predict Win | Free Premier League Score Prediction League 2026/27',
+    description: 'Predict every Premier League scoreline, run private leagues with mates, and win up to £500 in weekly and monthly cash prizes. Free to enter.',
     url: 'https://www.playpredictwin.com',
     siteName: 'Play Predict Win',
     locale: 'en_GB',
