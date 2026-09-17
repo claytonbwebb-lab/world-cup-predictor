@@ -1,12 +1,6 @@
-import type { Metadata } from 'next';
+'use client';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';
-
-export const metadata: Metadata = {
-  title: 'Premier League Fixtures & Predictions | Play Predict Win',
-  description: 'Every Premier League 2026/27 fixture with kick-off times. Lock in your score predictions before kick-off and earn points.',
-  alternates: { canonical: 'https://www.playpredictwin.com/fixtures' },
-};
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';

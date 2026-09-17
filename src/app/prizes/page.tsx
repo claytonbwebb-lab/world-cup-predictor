@@ -1,18 +1,7 @@
-import type { Metadata } from 'next';
+'use client';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-
-export const metadata: Metadata = {
-  title: '£50 Weekly, £500 Season Prizes | Play Predict Win',
-  description: 'Win real cash by predicting Premier League scores. £50 weekly, £100 monthly, £500 season winner. Free to play, paid by bank transfer.',
-  alternates: { canonical: 'https://www.playpredictwin.com/prizes' },
-  openGraph: {
-    title: '£50 Weekly, £500 Season Prizes | Play Predict Win',
-    description: 'Win real cash by predicting Premier League scores. £50 weekly, £100 monthly, £500 season winner. Free to play.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Play Predict Win Prizes' }],
-  },
-};
 
 const prizes = [
   {

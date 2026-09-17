@@ -98,7 +98,6 @@ export default function NavBar() {
 
   const loggedInLinks: NavLink[] = [
     ...baseLinks,
-    { href: '/blog',       label: 'Blog' },
     { href: '/profile',    label: 'Profile' },
     { href: '/auth/logout', label: 'Sign Out' },
   ];
@@ -114,7 +113,6 @@ export default function NavBar() {
   ];
   const linksAfterLB: NavLink[] = loggedIn
     ? [
-        { href: '/blog',       label: 'Blog' },
         { href: '/profile',    label: 'Profile' },
         { href: '/auth/logout', label: 'Sign Out' },
       ]
@@ -273,15 +271,6 @@ export default function NavBar() {
               ))}
             </>
           )}
-
-          {/* Blog — shown for all users on mobile */
-          <Link
-            href="/blog"
-            className={`py-2.5 ${path === '/blog' ? active : inactive}`}
-            onClick={() => setMobileOpen(false)}
-          >
-            Blog
-          </Link>
 
           {/* Links after Leaderboards */}
           {(loggedIn
