@@ -64,6 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             <span className="block text-primary">PLAY</span>
             <span className="block text-text">PREDICT</span>
             <span className="block text-yellow-400">WIN.</span>
+            <span className="sr-only">Play Predict Win — Premier League Prediction League</span>
           </h1>
 
           <p className="text-lg text-textMuted max-w-xl mx-auto mb-10 leading-relaxed">
@@ -82,14 +83,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
           </div>
 
           {/* Stats row */}
-          <div className="flex flex-wrap justify-center gap-8 mt-16 text-center">
+          <div className="flex flex-wrap justify-center gap-8 mt-16 text-center" role="list" aria-label="Key statistics">
             {[
               { val: '38', label: 'Gameweeks' },
               { val: '3pts', label: 'Exact Score' },
               { val: '1pt', label: 'Correct Result' },
               { val: '∞', label: 'Bragging Rights' },
             ].map(s => (
-              <div key={s.label}>
+              <div key={s.label} role="listitem">
                 <div className="text-3xl font-black text-primary">{s.val}</div>
                 <div className="text-xs text-textMuted uppercase tracking-widest mt-1">{s.label}</div>
               </div>

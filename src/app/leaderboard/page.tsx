@@ -1,8 +1,14 @@
-'use client';
+import type { Metadata } from 'next';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import { useState, useEffect } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Prediction League Leaderboard | Play Predict Win',
+  description: 'See who is leading the Play Predict Win Premier League 2026/27 prediction leaderboard, plus weekly and monthly standings.',
+  alternates: { canonical: 'https://www.playpredictwin.com/leaderboard' },
+};
 
 import { SEASON_MONTHS, getWeekRange, getWeekDropdownLabel, getMonthStart, getMonthEnd, getCurrentSeasonMonthIndex } from '@/lib/weeks';
 
