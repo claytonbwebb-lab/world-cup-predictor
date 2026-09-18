@@ -78,6 +78,7 @@ export default function NavBar() {
   const baseLinks: NavLink[] = [
     { href: '/',         label: 'Home' },
     { href: '/fixtures', label: 'Fixtures' },
+    { href: '/blog',    label: 'Blog' },
     { href: '/results',  label: 'Results' },
     { href: '/prizes',   label: 'Prizes' },
   ];

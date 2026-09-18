@@ -1,0 +1,372 @@
+'use client';
+import Footer from '@/components/Footer';
+import NavBar from '@/components/NavBar';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.playpredictwin.com" },
+    { "@type": "ListItem", "position": 2, "name": "Leagues", "item": "https://www.playpredictwin.com/leagues" },
+  ],
+};
+
+interface League {
+  id: string;
+  name: string;
+  code: string;
+  created_by: string;
+  is_public: boolean;
+  created_at: string;
+}
+
+export default function LeaguesPageClient() {
+  const [myLeagues, setMyLeagues] = useState<League[]>([]);
+  const [publicLeagues, setPublicLeagues] = useState<League[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
+  const [editingLeague, setEditingLeague] = useState<League | null>(null);
+  const [leagueName, setLeagueName] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [copied, setCopied] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const jc = params.get('join');
+      if (jc) {
+        const res = await fetch('/api/leagues/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: jc }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 403) {
+            router.push(`/vip-league?join=${encodeURIComponent(jc)}`);
+            return;
+          }
+          setError(data.error);
+        } else {
+          setSuccess('Joined league successfully!');
+        }
+        window.history.replaceState({}, '', '/leagues');
+        loadLeagues();
+      } else {
+        loadLeagues();
+      }
+    })();
+  }, []);
+
+  async function loadLeagues() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/auth/login'); return; }
+    setUserId(user.id);
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+    setIsAdmin(profile?.is_admin === true);
+
+    const { data: members } = await supabase
+      .from('league_members')
+      .select('league:leagues(*)')
+      .eq('user_id', user.id);
+
+    const myLeagueIds = (members?.map((m: any) => m.league).filter(Boolean) || [] as League[]).map((l: League) => l.id);
+
+    const { data: pub } = await supabase
+      .from('leagues')
+      .select('*')
+      .eq('is_public', true)
+      .eq('is_vip', false)
+      .neq('created_by', user.id)
+      .not('id', 'in', `(${myLeagueIds.map(id => `"${id}"`).join(',')})`);
+
+    setMyLeagues((members?.map((m: any) => m.league).filter(Boolean) || []) as League[]);
+    setPublicLeagues((pub || []) as League[]);
+    setLoading(false);
+  }
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    const res = await fetch('/api/leagues', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: leagueName, is_public: isPublic }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to create league'); return; }
+    setSuccess(`League created! Invite code: ${data.code}`);
+    setShowCreate(false);
+    setLeagueName('');
+    loadLeagues();
+  }
+
+  async function handleRename(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingLeague) return;
+    setError('');
+    const res = await fetch(`/api/leagues/${editingLeague.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: leagueName }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to update'); return; }
+    setEditingLeague(null);
+    setLeagueName('');
+    loadLeagues();
+  }
+
+  async function handleDelete(league: League) {
+    if (!confirm(`Delete "${league.name}"? This cannot be undone.`)) return;
+    const res = await fetch(`/api/leagues/${league.id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      setSuccess('League deleted.');
+      loadLeagues();
+    } else {
+      setError(data.error || 'Failed to delete league');
+    }
+  }
+
+  async function handleLeave(league: League) {
+    if (!confirm(`Leave "${league.name}"? You can rejoin later with an invite code.`)) return;
+    const res = await fetch(`/api/leagues/${league.id}/leave`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      setSuccess('Left league successfully.');
+      loadLeagues();
+    } else {
+      setError(data.error || 'Failed to leave league');
+    }
+  }
+
+  function copyInviteLink(league: League) {
+    const url = `${window.location.origin}/leagues?join=${league.code}`;
+    navigator.clipboard.writeText(url);
+    setCopied(league.id);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    const res = await fetch('/api/leagues/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: joinCode }),
+    });
+    const data = await res.json();
+    if (!res.ok) { setError(data.error || 'Failed to join league'); return; }
+    setSuccess('Joined league successfully!');
+    setShowJoin(false);
+    setJoinCode('');
+    loadLeagues();
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <NavBar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold flex items-center gap-3"><span>👥</span> Mini Leagues</h1>
+          <div className="flex gap-3">
+            <button onClick={() => { setShowJoin(true); setError(''); }} className="btn-secondary">Join League</button>
+            <button onClick={() => { setShowCreate(true); setError(''); }} className="btn-primary">Create League</button>
+          </div>
+        </div>
+
+        {success && (
+          <div className="bg-primary/10 border border-primary/30 text-primary px-4 py-3 rounded-lg mb-6 text-sm">
+            {success}
+          </div>
+        )}
+
+        {editingLeague && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Rename League</h3>
+              <form onSubmit={handleRename} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">League Name</label>
+                  <input type="text" value={leagueName} onChange={e => setLeagueName(e.target.value)}
+                    className="input w-full" required />
+                </div>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Save</button>
+                  <button type="button" onClick={() => setEditingLeague(null)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showCreate && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Create New League</h3>
+              <form onSubmit={handleCreate} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">League Name</label>
+                  <input type="text" value={leagueName} onChange={e => setLeagueName(e.target.value)}
+                    className="input w-full" placeholder="The Lads League" required />
+                </div>
+                {isAdmin && (
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="is_public" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+                    <label htmlFor="is_public" className="text-sm text-textMuted">Make public (anyone can join)</label>
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Create</button>
+                  <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showJoin && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+            <div className="card max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Join a League</h3>
+              <form onSubmit={handleJoin} className="space-y-4">
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Invite Code</label>
+                  <input type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                    className="input w-full font-mono" placeholder="ABC123" required />
+                </div>
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">Join</button>
+                  <button type="button" onClick={() => setShowJoin(false)} className="btn-secondary flex-1">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-16 text-textMuted">Loading leagues...</div>
+        ) : (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">My Leagues</h2>
+              {myLeagues.length === 0 ? (
+                <div className="card text-center py-12">
+                  <div className="text-4xl mb-3">👥</div>
+                  <p className="text-textMuted">You have not joined any leagues yet.</p>
+                  <p className="text-textMuted text-sm mt-1">Create one or ask a friend for their invite code.</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {myLeagues.map(league => (
+                    <div key={league.id} className="card hover:border-primary/40 transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-bold text-lg">{league.name}</h3>
+                          <div className="text-xs text-textMuted mt-1">
+                            Code: <span className="font-mono text-primary">{league.code}</span>
+                          </div>
+                        </div>
+                        {league.is_public && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0 ml-2">Public</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        <Link href={`/leagues/${league.id}`}
+                          className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1">
+                          🏆 Leaderboard
+                        </Link>
+                        <button onClick={() => copyInviteLink(league)}
+                          className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1">
+                          {copied === league.id ? '✓ Copied!' : '🔗 Copy Link'}
+                        </button>
+                        {userId === league.created_by ? (
+                          <>
+                            <button onClick={() => { setEditingLeague(league); setLeagueName(league.name); setError(''); }}
+                              className="btn-secondary text-xs px-3 py-1.5">✏️ Rename</button>
+                            <button onClick={() => handleDelete(league)}
+                              className="text-xs px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">🗑 Delete</button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleLeave(league)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 transition-colors">🚪 Leave League</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {publicLeagues.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Public Leagues</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {publicLeagues.map(league => (
+                    <div key={league.id} className="card hover:border-primary/40 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-bold">{league.name}</h3>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Public</span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await fetch('/api/leagues/join', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: league.code }),
+                          });
+                          loadLeagues();
+                        }}
+                        className="btn-secondary text-sm mt-3 w-full"
+                      >
+                        Join
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <section className="mt-12 max-w-4xl mx-auto">
+          <h2 className="text-xl font-bold mb-3 text-text">How Private Prediction Leagues Work</h2>
+          <div className="text-textMuted text-sm leading-relaxed space-y-3">
+            <p>
+              Private prediction leagues on Play Predict Win let you create your own mini-competition for you and your friends, completely separate from the main season leaderboard. When you create a league, you receive a unique 6-character invite code that you can share with up to 50 players. Everyone in your league competes on the same fixtures and the same gameweeks, and you can see a dedicated league leaderboard showing only your group&apos;s predictions.
+            </p>
+            <p>
+              To create a league, click &quot;Create League&quot; and give it a name — something like &quot;Work Colleagues 26/27&quot; or &quot;Family Prediction Cup&quot;. You will receive an invite code or link immediately. Share the link with your group and wait for them to join. There is no limit to how many leagues you can create or join, so you can be in a work league, a family league, and a mates league all at the same time.
+            </p>
+            <p>
+              As the league creator, you can rename or delete the league at any time. You can also leave any league you have joined at any time and rejoin later using the same invite code. Public leagues are visible to all players on Play Predict Win, but private leagues are only accessible via invite code — making them ideal for playing with people you know.
+            </p>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}

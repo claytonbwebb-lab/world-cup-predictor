@@ -1,9 +1,21 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { findTeam } from '@/lib/teams';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import NavBar from "@/components/NavBar";
 import UserClubBanner from './UserClubBanner';
+
+export const metadata: Metadata = {
+  title: 'Supporter League: Predict for Your Club',
+  description: 'Pick your club from all 92 English league sides and your prediction points count toward your club\'s Supporter League total.',
+  alternates: { canonical: '/supporter-league' },
+  openGraph: {
+    title: 'Supporter League: Predict for Your Club | Play Predict Win',
+    description: 'Pick your club from all 92 English league sides and your prediction points count toward your club\'s total.',
+    type: 'website',
+  },
+};
 
 export const runtime = 'edge';
 

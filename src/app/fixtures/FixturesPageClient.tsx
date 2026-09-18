@@ -1,0 +1,502 @@
+'use client';
+import Footer from '@/components/Footer';
+import NavBar from '@/components/NavBar';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import TeamBadge from '@/components/TeamBadge';
+import { SEASON_START, getWeekNumber, getWeekRange, getWeekLabel, getWeekDropdownLabel } from '@/lib/weeks';
+
+interface Match {
+  id: string;
+  home_team: string;
+  away_team: string;
+  home_flag: string;
+  away_flag: string;
+  group_stage: string;
+  kickoff_at: string;
+  home_score: number | null;
+  away_score: number | null;
+  is_locked: boolean;
+  result_entered: boolean;
+  week_number: number | null;
+}
+
+interface Prediction {
+  match_id: string;
+  home_prediction: number;
+  away_prediction: number;
+  points_awarded: number;
+  scored_at: string | null;
+}
+
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+});
+
+function ScoreStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button type="button" onClick={() => onChange(Math.min(20, value + 1))}
+        className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
+        +
+      </button>
+      <span className="text-3xl font-black w-10 text-center leading-none">{value}</span>
+      <button type="button" onClick={() => onChange(Math.max(0, value - 1))}
+        className="w-8 h-8 rounded-lg bg-surfaceLight hover:bg-primary hover:text-white text-text font-bold text-lg flex items-center justify-center transition-colors select-none">
+        −
+      </button>
+    </div>
+  );
+}
+
+interface MatchCardProps {
+  match: Match;
+  prediction?: Prediction;
+  inputs: { home: number; away: number };
+  isLocked: boolean;
+  doubleUpPick: string | null;
+  doubleUpLocked: boolean;
+  togglingDoubleUp: boolean;
+  selectedWeek: number;
+  onToggleDoubleUp: (matchId: string) => void;
+  onInputChange: (matchId: string, field: 'home' | 'away', value: number) => void;
+  onSave?: (id: string) => Promise<void>;
+  justSaved?: boolean;
+}
+
+function MatchCard({
+  match,
+  prediction,
+  inputs,
+  isLocked,
+  doubleUpPick,
+  doubleUpLocked,
+  togglingDoubleUp,
+  selectedWeek,
+  onToggleDoubleUp,
+  onInputChange,
+  onSave,
+  justSaved,
+}: MatchCardProps) {
+  const hasPredicted = !!prediction;
+  const isDoubleUp = doubleUpPick === match.id;
+  const canDoubleUp = hasPredicted && !isLocked && selectedWeek !== -1 && !doubleUpLocked;
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between mb-4 text-xs text-textMuted">
+        <div className="flex items-center gap-2">
+          <span className="font-medium uppercase tracking-wide">{match.group_stage}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>{fmtDate(match.kickoff_at)}</span>
+          {isLocked && (
+            <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Locked</span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+          <TeamBadge value={match.home_flag} size="lg" />
+          <span className="font-bold text-sm text-center leading-tight">{match.home_team}</span>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          {isLocked ? (
+            <div className="flex items-center gap-3">
+              <span className="text-3xl font-black text-textMuted">{prediction ? prediction.home_prediction : '?'}</span>
+              <span className="text-textMuted font-bold text-sm">v</span>
+              <span className="text-3xl font-black text-textMuted">{prediction ? prediction.away_prediction : '?'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <ScoreStepper value={inputs.home} onChange={v => onInputChange(match.id, 'home', v)} />
+              <span className="text-textMuted font-bold text-lg px-1">v</span>
+              <ScoreStepper value={inputs.away} onChange={v => onInputChange(match.id, 'away', v)} />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+          <TeamBadge value={match.away_flag} size="lg" />
+          <span className="font-bold text-sm text-center leading-tight">{match.away_team}</span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3">
+        {canDoubleUp && (
+          <button
+            type="button"
+            disabled={togglingDoubleUp}
+            onClick={() => onToggleDoubleUp(match.id)}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 transition-all ${
+              isDoubleUp
+                ? 'border-yellow-400 bg-yellow-400/10 text-yellow-400'
+                : 'border-surfaceLight bg-surfaceLight/50 text-textMuted hover:border-yellow-400/40'
+            }`}
+          >
+            <span>{isDoubleUp ? '⭐' : '☆'}</span>
+            {isDoubleUp ? 'Double Up!' : 'Double Up'}
+          </button>
+        )}
+        {hasPredicted && (isLocked || doubleUpLocked) && isDoubleUp && (
+          <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border-2 border-yellow-400/30 bg-yellow-400/10 text-yellow-400">
+            ⭐ Double Up locked
+          </span>
+        )}
+        {(!canDoubleUp && !(hasPredicted && isDoubleUp)) && <div />}
+
+        {!isLocked && onSave && (
+          <div className="flex items-center gap-3">
+            {justSaved && (
+              <span className="text-xs text-green-400 font-medium animate-pulse">✓ Saved!</span>
+            )}
+            <button
+              onClick={() => onSave(match.id)}
+              className="text-xs bg-primary/20 hover:bg-primary/30 text-primary font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              💾 Save
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function FixturesPageClient() {
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map());
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savedMatch, setSavedMatch] = useState<string | null>(null);
+  const [inputs, setInputs] = useState<Record<string, { home: number; away: number }>>({});
+  const [loading, setLoading] = useState(true);
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<number>(-1);
+  const [doubleUpPick, setDoubleUpPick] = useState<string | null>(null);
+  const [doubleUpLocked, setDoubleUpLocked] = useState(false);
+  const [togglingDoubleUp, setTogglingDoubleUp] = useState(false);
+  const [showFloatingSave, setShowFloatingSave] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(true);
+  const upcomingSectionRef = useRef<HTMLButtonElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (selectedWeek !== -1) return;
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (selectedWeek === -1) return;
+    load(selectedWeek);
+  }, [selectedWeek]);
+
+  useEffect(() => {
+    if (!upcomingSectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowFloatingSave(!entry.isIntersecting),
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' }
+    );
+    observer.observe(upcomingSectionRef.current);
+    return () => observer.disconnect();
+  }, [matches.length]);
+
+  useEffect(() => {
+    if (!footerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  async function load(weekOverride?: number) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/auth/login'); return; }
+
+    const { data: weekData } = await supabase
+      .from('matches')
+      .select('week_number')
+      .eq('is_visible', true)
+      .not('result_entered', 'eq', true)
+      .not('week_number', 'is', null)
+      .order('week_number', { ascending: false });
+    const weeks = Array.from(new Set((weekData || []).map((m: { week_number: number }) => m.week_number))).sort((a, b) => a - b);
+    setAvailableWeeks(weeks);
+
+    let query = supabase
+      .from('matches')
+      .select('*')
+      .eq('is_visible', true)
+      .not('result_entered', 'eq', true)
+      .order('kickoff_at', { ascending: true });
+
+    const qWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
+
+    if (weekOverride === undefined && selectedWeek === -1 && weeks.length > 0) {
+      const now = new Date();
+      const thisWeek = getWeekNumber(now);
+      const defaultWeek = weeks.includes(thisWeek) ? thisWeek : weeks.find(w => w > thisWeek) ?? weeks[0];
+      setSelectedWeek(defaultWeek);
+      query = query.eq('week_number', defaultWeek);
+    } else if (qWeek !== -1) {
+      query = query.eq('week_number', qWeek as number);
+    }
+
+    const { data: matchData } = await query;
+
+    const { data: predData } = await supabase
+      .from('predictions').select('*').eq('user_id', user.id);
+
+    const predMap = new Map((predData || []).map(p => [p.match_id, p]));
+    const initInputs: Record<string, { home: number; away: number }> = {};
+    for (const m of matchData || []) {
+      const p = predMap.get(m.id);
+      const existing = inputs[m.id];
+      initInputs[m.id] = existing ?? { home: p ? p.home_prediction : 0, away: p ? p.away_prediction : 0 };
+    }
+
+    const activeWeek = weekOverride !== undefined ? weekOverride : selectedWeek;
+    if (activeWeek !== -1) {
+      const weekNum = activeWeek as number;
+      const duRes = await fetch(`/api/double-up?weekNumber=${weekNum}`);
+      if (duRes.ok) {
+        const duData = await duRes.json();
+        setDoubleUpPick(duData.matchId);
+        setDoubleUpLocked(duData.isLocked);
+      }
+    } else {
+      setDoubleUpPick(null);
+      setDoubleUpLocked(false);
+    }
+
+    setMatches(matchData || []);
+    setPredictions(predMap);
+    setInputs(initInputs);
+    setLoading(false);
+  }
+
+  async function saveAllPredictions() {
+    setSaving(true);
+    const toSave = upcoming.map(m => ({
+      match_id: m.id,
+      home_prediction: inputs[m.id]?.home ?? 0,
+      away_prediction: inputs[m.id]?.away ?? 0,
+    }));
+    await Promise.all(toSave.map(p =>
+      fetch('/api/predictions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p),
+      })
+    ));
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    load(selectedWeek);
+  }
+
+  async function saveMatch(matchId: string) {
+    const res = await fetch('/api/predictions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        match_id: matchId,
+        home_prediction: inputs[matchId]?.home ?? 0,
+        away_prediction: inputs[matchId]?.away ?? 0,
+      }),
+    });
+    if (res.ok) {
+      setSavedMatch(matchId);
+      setTimeout(() => setSavedMatch(null), 3000);
+      await load(selectedWeek);
+    } else {
+      const err = await res.json();
+      alert('Failed: ' + (err.error || 'Unknown error'));
+    }
+  }
+
+  async function toggleDoubleUp(matchId: string) {
+    if (doubleUpLocked || togglingDoubleUp) return;
+    setTogglingDoubleUp(true);
+    const previousPick = doubleUpPick;
+    const newPick = doubleUpPick === matchId ? null : matchId;
+    try {
+      const res = await fetch('/api/double-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchId: newPick, weekNumber: selectedWeek }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Double-up toggle failed:', err.error || res.statusText);
+        setDoubleUpPick(previousPick);
+        alert(err.error || 'Failed to set Double Up. Did you save your prediction first?');
+      } else {
+        setDoubleUpPick(newPick);
+      }
+    } catch (e) {
+      console.error('Double-up toggle network error:', e);
+      setDoubleUpPick(previousPick);
+    }
+    setTogglingDoubleUp(false);
+  }
+
+  const handleInputChange = useCallback((matchId: string, field: 'home' | 'away', value: number) => {
+    setInputs(prev => ({ ...prev, [matchId]: { ...prev[matchId], [field]: value } }));
+  }, []);
+
+  const now = new Date();
+  const upcoming = matches.filter(m => !m.is_locked && new Date(m.kickoff_at) > now);
+  const locked = matches.filter(m => m.is_locked || new Date(m.kickoff_at) <= now);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <NavBar />
+      <main className="max-w-2xl mx-auto px-4 py-8 pb-32">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-3">Fixtures & Predictions</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="text-sm text-textMuted font-medium">Week:</label>
+            <select
+              value={String(selectedWeek !== -1 ? selectedWeek : '')}
+              onChange={e => setSelectedWeek(Number(e.target.value))}
+              className="input py-2 text-sm max-w-xs"
+            >
+              {selectedWeek === -1 && <option value="">Loading...</option>}
+              {availableWeeks.sort((a, b) => b - a).map(w => (
+                <option key={w} value={String(w)}>{getWeekDropdownLabel(w)}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {selectedWeek !== -1 && !loading && matches.length > 0 && (
+          <div className="mb-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">⚡</span>
+              <div>
+                <p className="text-sm font-semibold text-yellow-400 mb-1"> Double Up — 2× your points!</p>
+                <p className="text-xs text-textMuted leading-relaxed">
+                  After saving your predictions, mark one match as your Double Up. If your prediction is correct: 1pt → 2pt, 3pt → 6pt. You can change it until the first match kicks off.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="text-center py-16 text-textMuted">Loading fixtures...</div>
+        ) : (
+          <div className="space-y-8">
+            {upcoming.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-primary uppercase tracking-wide">
+                  <span>📅</span> Upcoming — enter your predictions
+                </h2>
+                <div className="space-y-3 pb-4">
+                  {upcoming.map(m => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      prediction={predictions.get(m.id)}
+                      inputs={inputs[m.id] || { home: 0, away: 0 }}
+                      isLocked={m.is_locked || new Date(m.kickoff_at) <= now}
+                      doubleUpPick={doubleUpPick}
+                      doubleUpLocked={doubleUpLocked}
+                      togglingDoubleUp={togglingDoubleUp}
+                      selectedWeek={selectedWeek}
+                      onToggleDoubleUp={toggleDoubleUp}
+                      onInputChange={handleInputChange}
+                      onSave={saveMatch}
+                      justSaved={savedMatch === m.id}
+                    />
+                  ))}
+                </div>
+                <button
+                  ref={upcomingSectionRef}
+                  onClick={saveAllPredictions}
+                  disabled={saving}
+                  className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+                >
+                  {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+                </button>
+              </section>
+            )}
+            {locked.length > 0 && (
+              <section>
+                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-amber-400 uppercase tracking-wide">
+                  <span>🔒</span> Locked
+                </h2>
+                <div className="space-y-3">
+                  {locked.map(m => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      prediction={predictions.get(m.id)}
+                      inputs={inputs[m.id] || { home: 0, away: 0 }}
+                      isLocked={m.is_locked || new Date(m.kickoff_at) <= now}
+                      doubleUpPick={doubleUpPick}
+                      doubleUpLocked={doubleUpLocked}
+                      togglingDoubleUp={togglingDoubleUp}
+                      selectedWeek={selectedWeek}
+                      onToggleDoubleUp={toggleDoubleUp}
+                      onInputChange={handleInputChange}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            {matches.length === 0 && (
+              <div className="card text-center py-12">
+                <div className="text-4xl mb-4">📅</div>
+                <p className="text-textMuted">No fixtures{selectedWeek !== -1 ? ` for ${getWeekRange(selectedWeek)}` : ''} yet</p>
+                {selectedWeek !== -1 && (
+                  <p className="text-textMuted text-sm mt-1">Check back soon!</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        <section className="mt-12 max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-3 text-text">How Premier League Fixtures Work</h2>
+          <div className="text-textMuted text-sm leading-relaxed space-y-3">
+            <p>
+              The Premier League 2026/27 season runs from August to May, with 38 gameweeks of 10 matches each — that's 380 Premier League fixtures across a full season. Each gameweek typically runs from Friday evening through Monday night, with midweek gameweeks added to accommodate cup competitions and the busy festive fixture pile-up.
+            </p>
+            <p>
+              On Play Predict Win, you can submit score predictions for any fixture before it kicks off. Each match locks the moment the first game of that gameweek starts, so you cannot change your predictions after kick-off. You earn 3 points for an exact scoreline (predicting 2-1 correctly), 1 point for the correct result (win/draw/loss), and 0 for wrong predictions.
+            </p>
+            <p>
+              Use the week selector to switch between upcoming and past gameweeks. Your predictions are automatically saved to your account and scored once match results are confirmed. You can use the Double Up feature once per gameweek to double your points on a single fixture — a correct 2-1 prediction would earn 6 points instead of 3.
+            </p>
+          </div>
+        </section>
+      </main>
+      <div ref={footerRef}>
+        <Footer />
+      </div>
+
+      {upcoming.length > 0 && showFloatingSave && !footerVisible && (
+        <div className="fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background to-transparent pointer-events-none">
+          <div className="max-w-2xl mx-auto pointer-events-auto">
+            <button
+              onClick={saveAllPredictions}
+              disabled={saving}
+              className="btn-primary w-full py-4 text-base font-bold shadow-lg shadow-primary/20"
+            >
+              {saving ? 'Saving...' : saved ? '✓ All Predictions Saved!' : '💾 Save All Predictions'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

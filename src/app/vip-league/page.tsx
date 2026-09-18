@@ -1,5 +1,17 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+
+export const metadata: Metadata = {
+  title: 'VIP Prediction League',
+  description: 'The exclusive VIP prediction league for top predictors. Compete for bigger prizes and bragging rights.',
+  alternates: { canonical: '/vip-league' },
+  openGraph: {
+    title: 'VIP Prediction League | Play Predict Win',
+    description: 'The exclusive VIP prediction league for top predictors.',
+    type: 'website',
+  },
+};
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 import NavBar from '@/components/NavBar';

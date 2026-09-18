@@ -9,10 +9,10 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.playpredictwin.com'),
   title: {
-    default: 'Play Predict Win | Football Prediction League',
+    default: 'Play Predict Win | Free Premier League Score Prediction League 2026/27',
     template: '%s | Play Predict Win',
   },
-  description: 'Predict every Premier League 2026/27 scoreline. Compete with friends in a free prediction league. Climb the leaderboard, earn points for correct scores, and win prizes. Join thousands of football fans now.',
+  description: 'Predict every Premier League 2026/27 scoreline, run private leagues with mates, and win up to £500 in weekly and monthly cash prizes. Free to enter. Climb the leaderboard and earn points for exact scores.',
   icons: [
     { rel: 'icon', url: '/favicon.ico', type: 'image/x-icon' },
     { rel: 'icon', url: '/favicon-512.png', sizes: '512x512', type: 'image/png' },
@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'theme-color': '#0f172a',
+  },
+  alternates: {
+    canonical: '/',
   },
   openGraph: {
     title: 'Play Predict Win | Free Premier League Score Prediction League 2026/27',

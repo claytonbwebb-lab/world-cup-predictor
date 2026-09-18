@@ -45,8 +45,40 @@ export default async function BlogPostPage({ params }: Props) {
 
   const otherPosts = blogPosts.filter(p => p.slug !== slug).slice(0, 2);
 
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    image: post.image,
+    author: {
+      '@type': 'Person',
+      name: post.author,
+      jobTitle: post.authorRole,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Play Predict Win',
+      url: 'https://www.playpredictwin.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.playpredictwin.com/favicon-512.png',
+      },
+    },
+    datePublished: post.dateIso,
+    dateModified: post.dateIso,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://www.playpredictwin.com/blog/${post.slug}`,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <NavBar />
       <main className="max-w-3xl mx-auto px-4 py-12">
         {/* Breadcrumb */}
