@@ -66,7 +66,8 @@ function LoginForm() {
       if (consent !== undefined) {
         await syncMarketingConsent(data.user.id, consent);
       }
-      router.push(redirect);
+      // Force full page reload so Supabase SSR cookie is set before middleware check
+      window.location.href = redirect;
     }
   };
 
