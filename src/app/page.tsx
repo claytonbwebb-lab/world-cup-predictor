@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Countdown from '@/components/Countdown';
 import Footer from '@/components/Footer';
 import { blogPosts } from '@/lib/blog-data';
 import Image from 'next/image';
@@ -248,12 +247,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
             Create Free Account
           </Link>
         </div>
-      </section>
-
-      {/* ── Countdown ── */}
-      <section className="border-t border-border py-16 text-center">
-        <p className="text-textMuted text-sm uppercase tracking-widest mb-6">First match kicks off in</p>
-        <Countdown />
       </section>
 
       {/* ── Blog ── */}
