@@ -68,13 +68,9 @@ export default function TermsPage() {
             <p className="mt-2">
               <strong>Leaderboard ranking.</strong> Where two or more participants have the same total points
               in any weekly, monthly, or season leaderboard, they are ranked first by the number of exact
-              scores predicted, and second by the number of correct results predicted. Our decisions on all
-              ranking matters are final.
-            </p>
-            <p className="mt-2">
-              <strong>Weekly prize ties.</strong> In the unlikely event of a tie for a weekly prize, all
-              tied participants will be contacted to take part in a tiebreaker process. The tiebreaker
-              format may vary and will be communicated at the time. Our decisions on tiebreakers are final.
+              scores predicted, and second by the number of correct results predicted. If participants are
+              still tied after applying both criteria, the prize will be split equally between them. Our
+              decisions on all ranking matters are final.
             </p>
             <p className="mt-2">
               <strong>Double Up.</strong> Once per gameweek, participants may nominate one match as their
