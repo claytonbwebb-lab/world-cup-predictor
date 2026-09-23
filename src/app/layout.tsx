@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'theme-color': '#0f172a',
+    // Google Search Console verification — replace with actual verification token
+    'google-site-verification': 'GSC_VERIFICATION_TOKEN_PLACEHOLDER',
   },
   alternates: {
     canonical: '/',

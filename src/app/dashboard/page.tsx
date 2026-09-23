@@ -8,6 +8,13 @@ import dynamic from 'next/dynamic';
 import TeamBadge from '@/components/TeamBadge';
 import SupporterLeagueBanner from '@/components/SupporterLeagueBanner';
 import { getWeekNumber } from '@/lib/weeks';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard — Your Predictions & Leaderboard',
+  description: 'View your Play Predict Win predictions, double-up picks, weekly standings, and overall leaderboard position for the Premier League 2026/27 season.',
+  robots: { index: false, follow: true },
+};
 
 interface DoubleUpPick {
   match?: {
