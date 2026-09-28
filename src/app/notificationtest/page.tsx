@@ -1,6 +1,7 @@
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import NewsTicker from '@/components/NewsTicker';
+import StaticNotificationBanner from '@/components/StaticNotificationBanner';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default function NotificationTestPage() {
     <div className="min-h-screen bg-background">
       <NavBar />
 
-      {/* ===== SKY SPORTS NEWS TICKER ===== */}
+      {/* ===== OPTION A: SCROLLING MARQUEE ===== */}
       <NewsTicker
         messages={[
           '🎉 Well done to Dave Johnson who just won £50 in Week 8!',
@@ -24,6 +25,11 @@ export default function NotificationTestPage() {
         speed={25}
       />
 
+      {/* ===== OPTION B: STATIC BANNER (dismissible) ===== */}
+      <StaticNotificationBanner
+        message="🎉 Well done to Dave Johnson who just won £50 in Week 8!"
+      />
+
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -31,7 +37,7 @@ export default function NotificationTestPage() {
             Notification Banner Test Page 👋
           </h1>
           <p className="text-textMuted">
-            This page demos the new Sky Sports News-style ticker banner. Scroll down, resize the window, test on mobile.
+            Two options below — Option A scrolls, Option B is static with dismiss. Send to Danny and pick a winner!
           </p>
         </div>
 
