@@ -42,9 +42,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   // Await searchParams to get week filter
   const sp = await searchParams ?? {};
   const currentWeek = getWeekNumber(new Date());
-  const nextWeek = currentWeek + 1;
-  // Default to next week if it has matches, otherwise this week
-  const defaultWeek = allWeeks?.includes(nextWeek) ? nextWeek : currentWeek;
+  // Default to the furthest future week with matches, or current week
+  const defaultWeek = allWeeks.find(w => w >= currentWeek) || currentWeek;
   const selectedWeek = sp.week ? Number(sp.week) : defaultWeek;
 
   // Filter by week only; admin always sees both live and staged matches.
