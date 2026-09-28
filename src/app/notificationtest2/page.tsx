@@ -1,37 +1,32 @@
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import NewsTicker from '@/components/NewsTicker';
+import StaticNotificationBanner from '@/components/StaticNotificationBanner';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Notification Test — PlayPredictWin',
-  description: 'Test page for the new notification ticker banner.',
+  title: 'Notification Test 2 — Static Banner — PlayPredictWin',
+  description: 'Test page for the static notification banner.',
   robots: { index: false, follow: false },
 };
 
-export default function NotificationTestPage() {
+export default function NotificationTest2Page() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
 
-      {/* ===== SKY SPORTS NEWS TICKER ===== */}
-      <NewsTicker
-        messages={[
-          '🎉 Well done to Dave Johnson who just won £50 in Week 8!',
-          '🏆 New season starts Saturday — get your predictions in!',
-          '⚽ Arsenal vs Liverpool this weekend — who you got?',
-        ]}
-        speed={25}
+      {/* ===== STATIC BANNER (dismissible) ===== */}
+      <StaticNotificationBanner
+        message="🎉 Well done to Dave Johnson who just won £50 in Week 8!"
       />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            Notification Banner Test Page 👋
+            Static Banner Test Page 👋
           </h1>
           <p className="text-textMuted">
-            This page demos the scrolling ticker banner. Scroll down, resize the window, test on mobile.
+            This page demos the static notification banner — single message, wraps to next line if too long, dismissible ✕.
           </p>
         </div>
 
@@ -105,7 +100,7 @@ export default function NotificationTestPage() {
         <div className="mt-12 card">
           <h2 className="text-xl font-bold mb-4">Scroll Test</h2>
           <p className="text-textMuted mb-4">
-            The ticker should stay fixed at the top as you scroll. Below is filler content to make the page tall.
+            The banner should stay fixed at the top as you scroll. Dismiss it and reload to bring it back.
           </p>
           <div className="space-y-4 text-textMuted text-sm">
             {Array.from({ length: 20 }).map((_, i) => (
