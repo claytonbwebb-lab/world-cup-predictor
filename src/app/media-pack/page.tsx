@@ -6,7 +6,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Media Pack & Partnerships — PlayPredictWin',
   description:
-    'Media pack and commercial partnership opportunities with PlayPredictWin — the Premier League prediction league with 1K+ active players, 30,000+ subscribers, and 120 countries.',
+    'Media pack and commercial partnership opportunities with PlayPredictWin — the Premier League prediction league with 1500 active users, 30,000+ subscribers, and 120 countries.',
   robots: { index: false, follow: false },
 };
 
