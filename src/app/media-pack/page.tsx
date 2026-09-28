@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const stats = [
-  { num: '1K+', label: 'Active Players' },
+  { num: '1500', label: 'Active Users' },
   { num: '30k+', label: 'Email Subscribers' },
   { num: '120', label: 'Countries' },
   { num: '7,500', label: 'Monthly Visits' },
@@ -19,17 +19,17 @@ const stats = [
 
 const tiers = [
   {
-    name: 'Main Partner',
-    title: 'Headline Partner',
-    price: '£10,000',
+    name: 'Entry Tier',
+    title: 'Partner Brand',
+    price: '£2,000',
     priceSub: 'for the season OR',
-    monthly: '£1,500 / month',
-    featured: true,
+    monthly: '£250 / month',
+    featured: false,
     items: [
-      'Ultimate platform integration — premium brand styling and clickable links on every single web page',
-      'Fixed top-billing placement within all automated system and marketing emails',
-      'Category exclusivity guaranteed',
-      'Direct access to 30k+ subscriber database insights',
+      'Permanent feature slot within the dedicated "Partners Section" of the website',
+      'Custom brand imagery and 100-word promotional copy',
+      'SEO-boosting "Do-Follow" hyperlink',
+      'Monthly newsletter partner mention',
     ],
   },
   {
@@ -74,35 +74,28 @@ const tiers = [
     ],
   },
   {
-    name: 'Entry Tier',
-    title: 'Partner Brand',
-    price: '£2,000',
+    name: 'Main Partner',
+    title: 'Headline Partner',
+    price: '£10,000',
     priceSub: 'for the season OR',
-    monthly: '£250 / month',
-    featured: false,
+    monthly: '£1,500 / month',
+    featured: true,
     items: [
-      'Permanent feature slot within the dedicated "Partners Section" of the website',
-      'Custom brand imagery and 100-word promotional copy',
-      'SEO-boosting "Do-Follow" hyperlink',
-      'Monthly newsletter partner mention',
+      'Ultimate platform integration — premium brand styling and clickable links on every single web page',
+      'Fixed top-billing placement within all automated system and marketing emails',
+      'Category exclusivity guaranteed',
+      'Direct access to 30k+ subscriber database insights',
     ],
   },
 ];
 
 const aLaCarte = [
   {
-    icon: '📧',
-    title: 'Solus Email Broadcast',
-    price: '£1,500',
-    per: ' per send',
-    desc: 'A completely dedicated, exclusive HTML broadcast sent directly to our clean database of 30,000+ subscribers. Zero competing advertisements.',
-  },
-  {
-    icon: '🗞️',
-    title: 'Monthly Newsletter Banner',
-    price: '£300',
-    per: ' per issue',
-    desc: 'High-visibility graphic leaderboard display (above or between core editorial text) within the monthly PPW newsletter round-up.',
+    icon: '🔗',
+    title: 'Recommended Sites Listing',
+    price: '£150',
+    per: ' per season',
+    desc: 'A static text and hyperlink placement on our high-authority "Useful Links / Resources" widget or footer roster for the full 12 months.',
   },
   {
     icon: '✍️',
@@ -112,11 +105,18 @@ const aLaCarte = [
     desc: 'A permanent, editorially native article published on the PPW blog. Content must be football-related and can include up to two permanent contextual "Do-Follow" links for SEO authority building.',
   },
   {
-    icon: '🔗',
-    title: 'Recommended Sites Listing',
-    price: '£150',
-    per: ' per season',
-    desc: 'A static text and hyperlink placement on our high-authority "Useful Links / Resources" widget or footer roster for the full 12 months.',
+    icon: '🗞️',
+    title: 'Monthly Newsletter Banner',
+    price: '£300',
+    per: ' per issue',
+    desc: 'High-visibility graphic leaderboard display (above or between core editorial text) within the monthly PPW newsletter round-up.',
+  },
+  {
+    icon: '📧',
+    title: 'Solus Email Broadcast',
+    price: '£1,500',
+    per: ' per send',
+    desc: 'A completely dedicated, exclusive HTML broadcast sent directly to our clean database of 30,000+ subscribers. Zero competing advertisements.',
   },
   {
     icon: '📱',
@@ -394,10 +394,51 @@ export default function MediaPackPage() {
         </div>
       </section>
 
+      {/* ── A LA CARTE ─────────────────────────────── */}
+      <section className="bg-surface">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
+            05 · Flexible Inventory
+          </p>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 font-heading">
+            À La Carte <span className="text-primary">Media</span>
+          </h2>
+          <p className="text-textMuted text-lg mb-12 max-w-xl">
+            Agile, standalone digital media inventory for brands that want targeted exposure
+            without a full-season commitment.
+          </p>
+
+          <div className="space-y-4">
+            {aLaCarte.map((item) => (
+              <div
+                key={item.title}
+                className="bg-background border border-border rounded-2xl p-6 flex items-start gap-5 hover:border-primary/60 transition-all group"
+              >
+                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                  {item.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-base mb-1">{item.title}</h4>
+                  <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
+                </div>
+                <div className="text-2xl font-black text-primary font-heading flex-shrink-0">
+                  {item.price}
+                  {item.per && (
+                    <span className="block text-xs font-normal text-textMuted font-sans">
+                      {item.per}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── PARTNERSHIP TIERS ──────────────────────── */}
       <section className="max-w-6xl mx-auto px-6 py-24">
         <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
-          05 · Partnership Tiers
+          06 · Partnership Tiers
         </p>
         <h2 className="text-4xl md:text-5xl font-black mb-4 font-heading">
           Seasonal <span className="text-primary">Partnerships</span>
@@ -444,47 +485,6 @@ export default function MediaPackPage() {
               </ul>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── A LA CARTE ─────────────────────────────── */}
-      <section className="bg-surface">
-        <div className="max-w-5xl mx-auto px-6 py-24">
-          <p className="text-xs font-bold tracking-widest uppercase text-primary mb-4">
-            06 · Flexible Inventory
-          </p>
-          <h2 className="text-4xl md:text-5xl font-black mb-4 font-heading">
-            À La Carte <span className="text-primary">Media</span>
-          </h2>
-          <p className="text-textMuted text-lg mb-12 max-w-xl">
-            Agile, standalone digital media inventory for brands that want targeted exposure
-            without a full-season commitment.
-          </p>
-
-          <div className="space-y-4">
-            {aLaCarte.map((item) => (
-              <div
-                key={item.title}
-                className="bg-background border border-border rounded-2xl p-6 flex items-start gap-5 hover:border-primary/60 transition-all group"
-              >
-                <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-                  {item.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-base mb-1">{item.title}</h4>
-                  <p className="text-textMuted text-sm leading-relaxed">{item.desc}</p>
-                </div>
-                <div className="text-2xl font-black text-primary font-heading flex-shrink-0">
-                  {item.price}
-                  {item.per && (
-                    <span className="block text-xs font-normal text-textMuted font-sans">
-                      {item.per}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
