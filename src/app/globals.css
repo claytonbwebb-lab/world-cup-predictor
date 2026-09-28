@@ -61,3 +61,12 @@ body {
     @apply bg-surface rounded-xl p-6 border border-border;
   }
 }
+/* ===== NEWS TICKER MARQUEE ===== */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee linear infinite;
+}
