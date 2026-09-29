@@ -1,4 +1,4 @@
-// Standalone script to import UEFA Nations League fixtures for PPW Week 6 (22-28 Sep 2026)
+// Standalone script to import UEFA Nations League fixtures for PPW Week 8 (29 Sep - 5 Oct 2026)
 // Sets is_visible=false so they don't go live until Steve reviews and pushes them.
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
@@ -113,8 +113,8 @@ function extractMatchKey(home, away, kickoff) {
 }
 
 async function fetchFixtures() {
-  console.log(`Fetching UEFA Nations League fixtures (22-28 Sep 2026)...`);
-  const url = `https://${HOST}/fixtures?league=${LEAGUE_ID}&season=2026&from=2026-09-22&to=2026-09-28`;
+  console.log(`Fetching UEFA Nations League fixtures (29 Sep - 5 Oct 2026)...`);
+  const url = `https://${HOST}/fixtures?league=${LEAGUE_ID}&season=2026&from=2026-09-29&to=2026-10-05`;
   const res = await fetch(url, {
     headers: { 'x-apisports-key': API_KEY },
   });
@@ -170,13 +170,14 @@ async function insertFixtures(fixtures, existingKeys) {
     const kickoffAt = new Date(kickoffUTC).toISOString();
     const weekNumber = getWeekNumber(kickoffAt);
 
-    // Detect league stage from fixture date
-    // Match days: Sep 22-23 = MD1, Sep 24-25 = MD2, Sep 26-27 = MD3, Sep 28 = MD4
+    // Match days: Sep 29-30 = MD4, Oct 1-2 = MD5, Oct 3-4 = MD6, Oct 5 = MD7
     const kickoffDay = new Date(kickoffUTC).getUTCDate();
+    const kickoffMonth = new Date(kickoffUTC).getUTCMonth() + 1;
     let groupStage = 'UEFA Nations League';
-    if (kickoffDay === 23 || kickoffDay === 24) groupStage = 'UEFA Nations League - Matchday 1';
-    else if (kickoffDay === 25 || kickoffDay === 26) groupStage = 'UEFA Nations League - Matchday 2';
-    else if (kickoffDay === 27 || kickoffDay === 28) groupStage = 'UEFA Nations League - Matchday 3';
+    if ((kickoffDay === 29 || kickoffDay === 30) && kickoffMonth === 9) groupStage = 'UEFA Nations League - Matchday 4';
+    else if ((kickoffDay === 1 || kickoffDay === 2) && kickoffMonth === 10) groupStage = 'UEFA Nations League - Matchday 5';
+    else if ((kickoffDay === 3 || kickoffDay === 4) && kickoffMonth === 10) groupStage = 'UEFA Nations League - Matchday 6';
+    else if (kickoffDay === 5 && kickoffMonth === 10) groupStage = 'UEFA Nations League - Matchday 7';
 
     const { error } = await supabase.from('matches').insert({
       home_team: home,
@@ -227,8 +228,8 @@ async function main() {
       .from('matches')
       .select('home_team, away_team, kickoff_at, week_number, group_stage, is_visible')
       .eq('group_stage', 'like', 'UEFA Nations League%')
-      .gte('kickoff_at', '2026-09-22T00:00:00Z')
-      .lt('kickoff_at', '2026-09-29T00:00:00Z')
+      .gte('kickoff_at', '2026-09-29T00:00:00Z')
+      .lt('kickoff_at', '2026-10-06T00:00:00Z')
       .order('kickoff_at');
     if (data) {
       data.forEach(m => {

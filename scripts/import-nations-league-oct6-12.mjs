@@ -1,11 +1,9 @@
-// Standalone script to import UEFA Nations League fixtures for PPW Week 6 (22-28 Sep 2026)
-// Sets is_visible=false so they don't go live until Steve reviews and pushes them.
+// Pull UEFA Nations League fixtures for Oct 6-12 and insert with is_visible=false
 import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
 
 const API_KEY = '8d4907138164564a2ef220d06327d9af';
 const HOST = 'v3.football.api-sports.io';
-const LEAGUE_ID = 5; // UEFA Nations League
+const LEAGUE_ID = 5;
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -20,21 +18,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 function normaliseTeamName(name) {
   if (!name) return '';
   return name
-    .replace(/\s+\(?U-?\d+岁?\)?$/, '') // remove age suffixes
-    .replace(/U-?\d+/, '')               // remove U-21 etc
+    .replace(/\s+\(?U-?\d+岁?\)?$/, '')
+    .replace(/U-?\d+/, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// team-name canonicalisation (same as lib/teams.ts)
 const TEAM_ALIASES = {
   'bosnia & herzegovina': 'Bosnia & Herzegovina',
   'bosnia-herzegovina': 'Bosnia & Herzegovina',
   'bosnia': 'Bosnia & Herzegovina',
   'rep. of ireland': 'Republic of Ireland',
-  'republic of ireland': 'Republic of Ireland',
-  'nir': 'Northern Ireland',
-  'republic of ireland': 'Republic of Ireland',
   'czech rep.': 'Czech Republic',
   'czech rep': 'Czech Republic',
   'czech': 'Czech Republic',
@@ -90,6 +84,10 @@ const TEAM_ALIASES = {
   'latvia': 'Latvia',
   'gibraltar': 'Gibraltar',
   'azerbaijan': 'Azerbaijan',
+  'kazakhstan': 'Kazakhstan',
+  'armenia': 'Armenia',
+  'romania': 'Romania',
+  'northern ireland': 'Northern Ireland',
 };
 
 function canonicalTeamName(name) {
@@ -99,42 +97,30 @@ function canonicalTeamName(name) {
 }
 
 function getWeekNumber(kickoffDate) {
-  // PPW season starts 2026-08-11 (Tuesday) — Week 1
-  const SEASON_START = new Date('2026-08-11T00:00:00Z');
+  const SEASON_START = new Date('2026-07-14T00:00:00Z');
   const kickoff = new Date(kickoffDate);
   const diffMs = kickoff.getTime() - SEASON_START.getTime();
   const diffWeeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000));
   return Math.max(1, diffWeeks + 1);
 }
 
-function extractMatchKey(home, away, kickoff) {
-  const date = kickoff.slice(0, 10);
-  return `${home.trim().toLowerCase()}|${away.trim().toLowerCase()}|${date}`;
-}
-
 async function fetchFixtures() {
-  console.log(`Fetching UEFA Nations League fixtures (22-28 Sep 2026)...`);
-  const url = `https://${HOST}/fixtures?league=${LEAGUE_ID}&season=2026&from=2026-09-22&to=2026-09-28`;
-  const res = await fetch(url, {
-    headers: { 'x-apisports-key': API_KEY },
-  });
+  const url = `https://${HOST}/fixtures?league=${LEAGUE_ID}&season=2026&from=2026-10-06&to=2026-10-12`;
+  const res = await fetch(url, { headers: { 'x-apisports-key': API_KEY } });
   if (!res.ok) throw new Error(`API error ${res.status}`);
   const data = await res.json();
-  if (data.errors && Object.keys(data.errors).length > 0) {
+  if (data.errors && Object.keys(data.errors).length) {
     throw new Error(`API-Football errors: ${JSON.stringify(data.errors)}`);
   }
   return data.response || [];
 }
 
-async function getExistingMatchKeys(fixtures) {
-  const keys = fixtures.map(f => extractMatchKey(
-    canonicalTeamName(f.teams.home.name),
-    canonicalTeamName(f.teams.away.name),
-    f.fixture.date
-  ));
-  const existing = new Set();
-  for (const key of keys) {
-    const [home, away, date] = key.split('|');
+async function getExistingKeys(fixtures) {
+  const keys = new Set();
+  for (const f of fixtures) {
+    const home = canonicalTeamName(f.teams.home.name);
+    const away = canonicalTeamName(f.teams.away.name);
+    const date = f.fixture.date.slice(0, 10);
     const { data } = await supabase
       .from('matches')
       .select('id')
@@ -143,23 +129,47 @@ async function getExistingMatchKeys(fixtures) {
       .gte('kickoff_at', `${date}T00:00:00Z`)
       .lt('kickoff_at', `${date}T23:59:59Z`)
       .limit(1);
-    if (data && data.length > 0) existing.add(key);
+    if (data && data.length) keys.add(`${home}|${away}|${date}`);
   }
-  return existing;
+  return keys;
 }
 
-async function insertFixtures(fixtures, existingKeys) {
+async function main() {
+  console.log('Fetching Nations League fixtures for 6-12 Oct 2026...');
+  const fixtures = await fetchFixtures();
+  console.log(`API returned ${fixtures.length} fixtures`);
+
+  if (fixtures.length === 0) {
+    console.log('No fixtures found — nothing to do');
+    return;
+  }
+
+  const existingKeys = await getExistingKeys(fixtures);
+  console.log(`${existingKeys.size} already in database`);
+
   let imported = 0;
   let skipped = 0;
   const errors = [];
 
+  // Determine matchday based on dates
+  // Oct 6-7 = Matchday 7, Oct 8-9 = Matchday 8, Oct 10-11 = Matchday 9, Oct 12 = Matchday 10
+  function getMatchday(dateStr) {
+    const day = new Date(dateStr).getUTCDate();
+    const month = new Date(dateStr).getUTCMonth() + 1;
+    if (month !== 10) return 'UEFA Nations League';
+    if (day === 6 || day === 7) return 'UEFA Nations League - Matchday 7';
+    if (day === 8 || day === 9) return 'UEFA Nations League - Matchday 8';
+    if (day === 10 || day === 11) return 'UEFA Nations League - Matchday 9';
+    if (day === 12) return 'UEFA Nations League - Matchday 10';
+    return 'UEFA Nations League';
+  }
+
   for (const f of fixtures) {
-    const homeRaw = f.teams.home.name;
-    const awayRaw = f.teams.away.name;
-    const home = canonicalTeamName(homeRaw);
-    const away = canonicalTeamName(awayRaw);
+    const home = canonicalTeamName(f.teams.home.name);
+    const away = canonicalTeamName(f.teams.away.name);
     const kickoffUTC = f.fixture.date;
-    const key = extractMatchKey(home, away, kickoffUTC);
+    const date = kickoffUTC.slice(0, 10);
+    const key = `${home}|${away}|${date}`;
 
     if (existingKeys.has(key)) {
       console.log(`  SKIP (exists): ${home} vs ${away}`);
@@ -169,21 +179,14 @@ async function insertFixtures(fixtures, existingKeys) {
 
     const kickoffAt = new Date(kickoffUTC).toISOString();
     const weekNumber = getWeekNumber(kickoffAt);
-
-    // Detect league stage from fixture date
-    // Match days: Sep 22-23 = MD1, Sep 24-25 = MD2, Sep 26-27 = MD3, Sep 28 = MD4
-    const kickoffDay = new Date(kickoffUTC).getUTCDate();
-    let groupStage = 'UEFA Nations League';
-    if (kickoffDay === 23 || kickoffDay === 24) groupStage = 'UEFA Nations League - Matchday 1';
-    else if (kickoffDay === 25 || kickoffDay === 26) groupStage = 'UEFA Nations League - Matchday 2';
-    else if (kickoffDay === 27 || kickoffDay === 28) groupStage = 'UEFA Nations League - Matchday 3';
+    const matchday = getMatchday(kickoffUTC);
 
     const { error } = await supabase.from('matches').insert({
       home_team: home,
       away_team: away,
       home_flag: f.teams.home.logo || null,
       away_flag: f.teams.away.logo || null,
-      group_stage: groupStage,
+      group_stage: matchday,
       kickoff_at: kickoffAt,
       week_number: weekNumber,
       is_visible: false,
@@ -195,45 +198,32 @@ async function insertFixtures(fixtures, existingKeys) {
       console.error(`  ERROR: ${home} vs ${away}: ${error.message}`);
       errors.push(`${home} vs ${away}: ${error.message}`);
     } else {
-      console.log(`  INSERT: ${home} vs ${away} | ${kickoffAt} | Week ${weekNumber}`);
+      console.log(`  INSERT: ${home} vs ${away} | ${kickoffAt} | ${matchday}`);
       imported++;
     }
   }
 
-  return { imported, skipped, errors };
-}
-
-async function main() {
-  const fixtures = await fetchFixtures();
-  console.log(`API returned ${fixtures.length} fixtures`);
-
-  const existingKeys = await getExistingMatchKeys(fixtures);
-  console.log(`${existingKeys.size} already in database`);
-
-  const { imported, skipped, errors } = await insertFixtures(fixtures, existingKeys);
-
   console.log(`\n=== Summary ===`);
   console.log(`Imported: ${imported}`);
   console.log(`Skipped:  ${skipped}`);
-  if (errors.length > 0) {
+  if (errors.length) {
     console.log(`Errors:   ${errors.length}`);
     errors.forEach(e => console.log(`  - ${e}`));
   }
 
-  // List what was imported
   if (imported > 0) {
-    console.log(`\n=== Imported fixtures (hidden - not visible to users) ===`);
+    console.log(`\n=== Imported fixtures (hidden - in /admin only) ===`);
     const { data } = await supabase
       .from('matches')
-      .select('home_team, away_team, kickoff_at, week_number, group_stage, is_visible')
-      .eq('group_stage', 'like', 'UEFA Nations League%')
-      .gte('kickoff_at', '2026-09-22T00:00:00Z')
-      .lt('kickoff_at', '2026-09-29T00:00:00Z')
+      .select('home_team, away_team, kickoff_at, group_stage, is_visible')
+      .ilike('group_stage', '%Nations League%')
+      .gte('kickoff_at', '2026-10-06T00:00:00Z')
+      .lt('kickoff_at', '2026-10-13T00:00:00Z')
       .order('kickoff_at');
     if (data) {
       data.forEach(m => {
-        const kickoff = new Date(m.kickoff_at).toISOString().replace('T', ' ').slice(0, 16) + 'Z';
-        console.log(`  ${m.home_team} vs ${m.away_team} | ${kickoff} | Week ${m.week_number} | visible=${m.is_visible}`);
+        const ko = new Date(m.kickoff_at).toISOString().replace('T', ' ').slice(0, 16) + 'Z';
+        console.log(`  ${m.home_team} vs ${m.away_team} | ${ko} | ${m.group_stage} | visible=${m.is_visible}`);
       });
     }
   }
