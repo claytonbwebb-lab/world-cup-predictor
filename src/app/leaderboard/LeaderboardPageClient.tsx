@@ -91,10 +91,10 @@ export default function LeaderboardPageClient() {
         const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {});
         if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
       } else if (mode === 'week') {
-        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
-          p_week_number: selectedWeek,
-        });
-        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
+        // Weekly needs the current user's row for the summary card even when
+        // they sit outside the API's returned leaderboard slice. Use the
+        // all-users fallback below so userEntry/userRank are always available.
+        data = null;
       } else {
         const sm = SEASON_MONTHS[selectedMonthIdx];
         const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
