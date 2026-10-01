@@ -1,11 +1,11 @@
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import StaticNotificationBanner from '@/components/StaticNotificationBanner';
+import NotificationBannerList from '@/components/NotificationBannerList';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Notification Test 2 — Static Banner — PlayPredictWin',
-  description: 'Test page for the static notification banner.',
+  title: 'Notification Test 2 — PlayPredictWin',
+  description: 'Test page for the notification banner system.',
   robots: { index: false, follow: false },
 };
 
@@ -14,19 +14,24 @@ export default function NotificationTest2Page() {
     <div className="min-h-screen bg-background">
       <NavBar />
 
-      {/* ===== STATIC BANNER (dismissible) ===== */}
-      <StaticNotificationBanner
-        message="🎉 Well done to Dave Johnson who just won £50 in Week 8!"
-      />
+      {/* ===== LIVE NOTIFICATION BANNER ===== */}
+      <NotificationBannerList />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            Static Banner Test Page 👋
+            Notification Banner Test Page 👋
           </h1>
           <p className="text-textMuted">
-            This page demos the static notification banner — single message, wraps to next line if too long, dismissible ✕.
+            This page renders live notifications from the database via{' '}
+            <code className="text-xs bg-surfaceLight px-1 py-0.5 rounded">NotificationBannerList</code>.
+            Notifications are dismissed per-user and reappear based on the dismissal mode and timer.
+            Admin controls are in{' '}
+            <a href="/admin/notifications" className="text-primary underline">/admin/notifications</a>.
+          </p>
+          <p className="text-textMuted mt-2 text-sm">
+            Notifications are only visible here on this test page — not on any other part of the site yet.
           </p>
         </div>
 
@@ -44,6 +49,29 @@ export default function NotificationTest2Page() {
               <p className="text-3xl font-bold text-primary">{s.val}</p>
             </div>
           ))}
+        </div>
+
+        {/* Test Controls */}
+        <div className="card mb-8">
+          <h2 className="text-xl font-bold mb-4">Testing Controls</h2>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="/admin/notifications"
+              className="btn btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open Admin Panel →
+            </a>
+            <a
+              href="/api/notifications"
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Raw API Response
+            </a>
+          </div>
         </div>
 
         {/* Dummy Content Blocks */}
@@ -96,11 +124,12 @@ export default function NotificationTest2Page() {
           </div>
         </div>
 
-        {/* Spacer to test scroll */}
+        {/* Scroll Test */}
         <div className="mt-12 card">
           <h2 className="text-xl font-bold mb-4">Scroll Test</h2>
           <p className="text-textMuted mb-4">
             The banner should stay fixed at the top as you scroll. Dismiss it and reload to bring it back.
+            For temporary dismissals, it will reappear after the configured reappear time.
           </p>
           <div className="space-y-4 text-textMuted text-sm">
             {Array.from({ length: 20 }).map((_, i) => (
