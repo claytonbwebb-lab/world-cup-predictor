@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { trackGaEvent } from '@/lib/analytics';
 
 function SignupForm() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,8 @@ function SignupForm() {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const signupTrackedRef = useRef(false);
+  const signupSubmittingRef = useRef(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -32,24 +35,29 @@ function SignupForm() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (signupSubmittingRef.current) return;
+    signupSubmittingRef.current = true;
     setError('');
     setLoading(true);
 
     if (username.length < 3) {
       setError('Username must be at least 3 characters');
       setLoading(false);
+      signupSubmittingRef.current = false;
       return;
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       setError('Username can only contain letters, numbers, and underscores');
       setLoading(false);
+      signupSubmittingRef.current = false;
       return;
     }
 
     if (!over18) {
       setError('You must be aged 18 or over to participate');
       setLoading(false);
+      signupSubmittingRef.current = false;
       return;
     }
 
@@ -65,7 +73,12 @@ function SignupForm() {
     if (error) {
       setError(error.message);
       setLoading(false);
+      signupSubmittingRef.current = false;
     } else if (authData.user) {
+      if (!signupTrackedRef.current) {
+        signupTrackedRef.current = true;
+        trackGaEvent('sign_up', { method: 'email' });
+      }
       // Profile is auto-created by trigger with marketing_consent from user metadata
       setSuccess(true);
     }
@@ -131,7 +144,7 @@ function SignupForm() {
         </div>
 
         <div className="card">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSignup}>
             {error && (
               <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -204,7 +217,7 @@ function SignupForm() {
               </label>
             </div>
 
-            <button type="submit" onClick={handleSignup} disabled={loading || !over18} className="btn-primary w-full">
+            <button type="submit" disabled={loading || !over18} className="btn-primary w-full">
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
