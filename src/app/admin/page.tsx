@@ -58,9 +58,15 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
       <NavBar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
           <span>⚙️</span> Admin Panel
         </h1>
+
+        {/* Section nav */}
+        <div className="flex gap-4 mb-6 text-sm border-b border-white/10 pb-4 -mt-2">
+          <a href="/admin" className="text-white/40 hover:text-white transition-colors">⚽ Matches</a>
+          <a href="/admin/notifications" className="text-primary font-medium" aria-current="page">🔔 Notifications</a>
+        </div>
 
         {/* Add Match Form */}
         <div className="card mb-8">
