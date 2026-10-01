@@ -48,7 +48,11 @@ export default function NotificationBannerList() {
 
   async function handleDismiss(notificationId: string) {
     // Optimistic UI — remove immediately
-    setDismissed(prev => new Set([...prev, notificationId]));
+    setDismissed(prev => {
+      const next = new Set(prev);
+      next.add(notificationId);
+      return next;
+    });
 
     const res = await fetch('/api/notifications/dismiss', {
       method: 'POST',
