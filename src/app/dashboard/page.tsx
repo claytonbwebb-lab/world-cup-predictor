@@ -1,6 +1,5 @@
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import NotificationBannerList from '@/components/NotificationBannerList';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
@@ -197,7 +196,6 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <NotificationBannerList />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <NotificationBanner />

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import NotificationBannerList from '@/components/NotificationBannerList';
 
 const socialLinks = [
   {
@@ -125,6 +126,7 @@ export default function NavBar() {
       ];
 
   return (
+    <>
     <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-50">
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
@@ -298,5 +300,7 @@ export default function NavBar() {
         </div>
       )}
     </header>
+    {loggedIn && <NotificationBannerList />}
+    </>
   );
 }
