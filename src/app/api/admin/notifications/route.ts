@@ -1,36 +1,52 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 // GET /api/admin/notifications — list all notifications (admin only)
 // POST /api/admin/notifications — create notification
 // PUT /api/admin/notifications — update notification
 // DELETE /api/admin/notifications?id=xxx — delete notification
+//
+// Auth model: cookie session proves identity + profiles.is_admin proves
+// authorisation. All notifications-table operations then run through the
+// service-role client (bypasses RLS) so admin writes are never blocked by
+// row-level policies.
 
-export async function GET(request: Request) {
+function serviceClient() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+async function requireAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
+  if (!user) return { error: NextResponse.json({ error: 'Unauthorised' }, { status: 401 }) };
 
   const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!profile?.is_admin) return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
 
-  const { data, error } = await supabase
+  return { user };
+}
+
+export async function GET() {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const { data, error: dbError } = await serviceClient()
     .from('notifications')
     .select('*')
     .order('priority', { ascending: false })
     .order('created_at', { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
   return NextResponse.json({ notifications: data });
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
-
-  const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const { user, error } = await requireAdmin();
+  if (error) return error;
 
   const body = await request.json();
   const {
@@ -42,7 +58,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Message is required and must be ≤250 chars' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error: dbError } = await serviceClient()
     .from('notifications')
     .insert({
       message,
@@ -55,22 +71,18 @@ export async function POST(request: Request) {
       priority: priority ?? 0,
       dismissal_mode: dismissal_mode ?? 'temporary',
       reappear_after_hours: reappear_after_hours ?? 24,
-      created_by: user.id,
+      created_by: user!.id,
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
   return NextResponse.json({ notification: data }, { status: 201 });
 }
 
 export async function PUT(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
-
-  const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const body = await request.json();
   const { id, reset_dismissals, ...fields } = body;
@@ -91,19 +103,20 @@ export async function PUT(request: Request) {
     catch { return NextResponse.json({ error: 'Invalid link_url' }, { status: 400 }); }
   }
 
-  // Update notification
-  const { data, error } = await supabase
+  const db = serviceClient();
+
+  const { data, error: dbError } = await db
     .from('notifications')
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
 
   // Reset user dismissals if requested
   if (reset_dismissals) {
-    await supabase
+    await db
       .from('user_notification_dismissals')
       .delete()
       .eq('notification_id', id);
@@ -113,22 +126,20 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
-
-  const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
-  // Delete dismissals first (CASCADE would handle this, but be explicit)
-  await supabase.from('user_notification_dismissals').delete().eq('notification_id', id);
+  const db = serviceClient();
 
-  const { error } = await supabase.from('notifications').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Delete dismissals first (CASCADE would handle this, but be explicit)
+  await db.from('user_notification_dismissals').delete().eq('notification_id', id);
+
+  const { error: dbError } = await db.from('notifications').delete().eq('id', id);
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }
