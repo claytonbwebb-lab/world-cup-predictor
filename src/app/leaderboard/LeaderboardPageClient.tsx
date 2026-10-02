@@ -44,6 +44,7 @@ export default function LeaderboardPageClient() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [initialWeekReady, setInitialWeekReady] = useState(false);
+  const [leaderboardCache, setLeaderboardCache] = useState<Record<string, LeaderboardEntry[]>>({});
   const supabase = createClient();
 
   useEffect(() => {
@@ -85,26 +86,38 @@ export default function LeaderboardPageClient() {
     }
 
     let data: LeaderboardEntry[] | null = null;
+    const cacheKey = mode === 'week'
+      ? `week:${selectedWeek}`
+      : mode === 'month'
+        ? `month:${selectedMonthIdx}`
+        : 'season';
 
-    try {
-      if (mode === 'season') {
-        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {});
-        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
-      } else if (mode === 'week') {
-        // Weekly needs the current user's row for the summary card even when
-        // they sit outside the API's returned leaderboard slice. Use the
-        // all-users fallback below so userEntry/userRank are always available.
+    if (leaderboardCache[cacheKey]) {
+      data = leaderboardCache[cacheKey];
+    } else {
+      try {
+        if (mode === 'season') {
+          const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {});
+          if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
+        } else if (mode === 'week') {
+          const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
+            p_week_number: selectedWeek,
+          });
+          if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
+        } else {
+          const sm = SEASON_MONTHS[selectedMonthIdx];
+          const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
+            p_month_start: getMonthStart(sm.year, sm.month).toISOString(),
+            p_month_end: getMonthEnd(sm.year, sm.month).toISOString(),
+          });
+          if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
+        }
+        if (data) {
+          setLeaderboardCache(prev => ({ ...prev, [cacheKey]: data as LeaderboardEntry[] }));
+        }
+      } catch {
         data = null;
-      } else {
-        const sm = SEASON_MONTHS[selectedMonthIdx];
-        const { data: rpcData, error } = await supabase.rpc('get_leaderboard', {
-          p_month_start: getMonthStart(sm.year, sm.month).toISOString(),
-          p_month_end: getMonthEnd(sm.year, sm.month).toISOString(),
-        });
-        if (!error && rpcData && rpcData.length > 0) data = rpcData as LeaderboardEntry[];
       }
-    } catch {
-      data = null;
     }
 
     if (data) {
