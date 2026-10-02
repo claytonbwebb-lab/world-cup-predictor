@@ -29,10 +29,14 @@ export async function POST(request: Request) {
 
   const dismissedAt = new Date();
   let showAgainAt: Date | null = null;
+  // Temporary mode with blank reappear_after_hours = never reappears
+  // (treated as permanent for filtering purposes).
+  const neverReappears =
+    notification.dismissal_mode === 'permanent' ||
+    notification.reappear_after_hours === null;
 
-  if (notification.dismissal_mode === 'temporary') {
-    const hours = notification.reappear_after_hours ?? 24;
-    showAgainAt = new Date(dismissedAt.getTime() + hours * 60 * 60 * 1000);
+  if (notification.dismissal_mode === 'temporary' && notification.reappear_after_hours !== null) {
+    showAgainAt = new Date(dismissedAt.getTime() + notification.reappear_after_hours * 60 * 60 * 1000);
   }
 
   // UPSERT: supports repeated temporary dismissals
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
         notification_id,
         dismissed_at: dismissedAt.toISOString(),
         show_again_at: showAgainAt?.toISOString() ?? null,
-        permanently_dismissed: notification.dismissal_mode === 'permanent',
+        permanently_dismissed: neverReappears,
       },
       { onConflict: 'user_id,notification_id' }
     );

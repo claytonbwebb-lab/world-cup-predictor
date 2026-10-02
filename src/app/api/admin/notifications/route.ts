@@ -70,7 +70,8 @@ export async function POST(request: Request) {
       ends_at: ends_at || null,
       priority: priority ?? 0,
       dismissal_mode: dismissal_mode ?? 'temporary',
-      reappear_after_hours: reappear_after_hours ?? 24,
+      // undefined (field absent) -> default 24; explicit null (blank in form) -> null = never reappears
+      reappear_after_hours: reappear_after_hours === undefined ? 24 : reappear_after_hours,
       created_by: user!.id,
     })
     .select()

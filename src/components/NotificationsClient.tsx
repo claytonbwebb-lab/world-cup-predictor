@@ -13,12 +13,42 @@ interface Notification {
   ends_at?: string;
   priority: number;
   dismissal_mode: string;
-  reappear_after_hours: number;
+  reappear_after_hours: number | null;
   created_at: string;
   updated_at: string;
 }
 
-type EditState = Partial<Notification> | null;
+// Form state keeps numeric fields as raw strings so typing/backspacing
+// isn't rewritten mid-keystroke, and datetimes as local input strings
+// (converted to UTC ISO only on submit).
+type FormNotif = Omit<Partial<Notification>, 'priority' | 'reappear_after_hours'> & {
+  priority?: number | string;
+  reappear_after_hours?: number | string | null;
+};
+
+type EditState = FormNotif | null;
+
+// UTC ISO -> "YYYY-MM-DDTHH:mm" in local time for datetime-local inputs
+function isoToLocalInput(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// local input string -> UTC ISO (null if blank)
+function localInputToIso(local?: string | null): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function parseIntOr(v: number | string | null | undefined): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : parseInt(v, 10);
+  return isNaN(n) ? null : n;
+}
 
 function formatDate(ds: string | undefined) {
   if (!ds) return "—";
@@ -60,7 +90,7 @@ export default function NotificationsClient() {
   const [editId, setEditId] = useState<string | null>(null);
   const [edit, setEdit] = useState<EditState>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [newNotif, setNewNotif] = useState<Partial<Notification>>({
+  const [newNotif, setNewNotif] = useState<FormNotif>({
     message: "",
     status: "draft",
     type: "information",
@@ -68,9 +98,9 @@ export default function NotificationsClient() {
     link_url: "",
     starts_at: "",
     ends_at: "",
-    priority: 0,
+    priority: "0",
     dismissal_mode: "temporary",
-    reappear_after_hours: 24,
+    reappear_after_hours: "24",
   });
 
   useEffect(() => { fetchNotifications(); }, []);
@@ -96,13 +126,19 @@ export default function NotificationsClient() {
     const res = await fetch("/api/admin/notifications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newNotif),
+      body: JSON.stringify({
+        ...newNotif,
+        priority: parseIntOr(newNotif.priority) ?? 0,
+        reappear_after_hours: parseIntOr(newNotif.reappear_after_hours),
+        starts_at: localInputToIso(newNotif.starts_at),
+        ends_at: localInputToIso(newNotif.ends_at),
+      }),
     });
     const json = await res.json();
     setSaving(false);
     if (!res.ok) { flash(json.error ?? "Create failed", true); return; }
     setShowCreate(false);
-    setNewNotif({ message:"", status:"draft", type:"information", priority:0, dismissal_mode:"temporary", reappear_after_hours:24 });
+    setNewNotif({ message:"", status:"draft", type:"information", priority:"0", dismissal_mode:"temporary", reappear_after_hours:"24" });
     fetchNotifications();
     flash("Notification created");
   }
@@ -115,7 +151,14 @@ export default function NotificationsClient() {
     const res = await fetch("/api/admin/notifications", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(edit),
+      body: JSON.stringify({
+        ...edit,
+        id: editId,
+        priority: parseIntOr(edit.priority) ?? 0,
+        reappear_after_hours: parseIntOr(edit.reappear_after_hours),
+        starts_at: localInputToIso(edit.starts_at),
+        ends_at: localInputToIso(edit.ends_at),
+      }),
     });
     const json = await res.json();
     setSaving(false);
@@ -146,7 +189,13 @@ export default function NotificationsClient() {
 
   function startEdit(n: Notification) {
     setEditId(n.id);
-    setEdit({ ...n });
+    setEdit({
+      ...n,
+      priority: String(n.priority ?? 0),
+      reappear_after_hours: n.reappear_after_hours === null ? "" : String(n.reappear_after_hours),
+      starts_at: isoToLocalInput(n.starts_at),
+      ends_at: isoToLocalInput(n.ends_at),
+    });
   }
 
   function cancelEdit() { setEditId(null); setEdit(null); }
@@ -227,22 +276,23 @@ export default function NotificationsClient() {
                 <input
                   type="number"
                   className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                  value={newNotif.priority}
+                  value={newNotif.priority ?? ""}
                   min={0}
-                  onChange={e => setNewNotif({ ...newNotif, priority: parseInt(e.target.value) || 0 })}
+                  onChange={e => setNewNotif({ ...newNotif, priority: e.target.value })}
                 />
               </div>
             </div>
 
             {newNotif.dismissal_mode === "temporary" && (
               <div>
-                <label className="block text-sm text-textMuted mb-1">Reappear After (hours)</label>
+                <label className="block text-sm text-textMuted mb-1">Reappear After (hours — blank = never)</label>
                 <input
                   type="number"
                   className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                  value={newNotif.reappear_after_hours}
+                  value={newNotif.reappear_after_hours ?? ""}
                   min={1}
-                  onChange={e => setNewNotif({ ...newNotif, reappear_after_hours: parseInt(e.target.value) || 24 })}
+                  placeholder="24"
+                  onChange={e => setNewNotif({ ...newNotif, reappear_after_hours: e.target.value })}
                 />
               </div>
             )}
@@ -253,8 +303,8 @@ export default function NotificationsClient() {
                 <input
                   type="datetime-local"
                   className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                  value={newNotif.starts_at?.slice(0, 16) ?? ""}
-                  onChange={e => setNewNotif({ ...newNotif, starts_at: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                  value={newNotif.starts_at ?? ""}
+                  onChange={e => setNewNotif({ ...newNotif, starts_at: e.target.value })}
                 />
               </div>
               <div>
@@ -262,8 +312,8 @@ export default function NotificationsClient() {
                 <input
                   type="datetime-local"
                   className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                  value={newNotif.ends_at?.slice(0, 16) ?? ""}
-                  onChange={e => setNewNotif({ ...newNotif, ends_at: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                  value={newNotif.ends_at ?? ""}
+                  onChange={e => setNewNotif({ ...newNotif, ends_at: e.target.value })}
                 />
               </div>
             </div>
@@ -371,21 +421,22 @@ export default function NotificationsClient() {
                       <input
                         type="number"
                         className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                        value={edit.priority ?? 0}
+                        value={edit.priority ?? ""}
                         min={0}
-                        onChange={e => setEdit({ ...edit, priority: parseInt(e.target.value) || 0 })}
+                        onChange={e => setEdit({ ...edit, priority: e.target.value })}
                       />
                     </div>
                   </div>
                   {edit.dismissal_mode === "temporary" && (
                     <div>
-                      <label className="block text-sm text-textMuted mb-1">Reappear After (hours)</label>
+                      <label className="block text-sm text-textMuted mb-1">Reappear After (hours — blank = never)</label>
                       <input
                         type="number"
                         className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                        value={edit.reappear_after_hours ?? 24}
+                        value={edit.reappear_after_hours ?? ""}
                         min={1}
-                        onChange={e => setEdit({ ...edit, reappear_after_hours: parseInt(e.target.value) || 24 })}
+                        placeholder="24"
+                        onChange={e => setEdit({ ...edit, reappear_after_hours: e.target.value })}
                       />
                     </div>
                   )}
@@ -395,8 +446,8 @@ export default function NotificationsClient() {
                       <input
                         type="datetime-local"
                         className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                        value={edit.starts_at?.slice(0, 16) ?? ""}
-                        onChange={e => setEdit({ ...edit, starts_at: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                        value={edit.starts_at ?? ""}
+                        onChange={e => setEdit({ ...edit, starts_at: e.target.value })}
                       />
                     </div>
                     <div>
@@ -404,8 +455,8 @@ export default function NotificationsClient() {
                       <input
                         type="datetime-local"
                         className="w-full bg-surfaceLight border border-white/10 rounded-lg px-3 py-2 text-white"
-                        value={edit.ends_at?.slice(0, 16) ?? ""}
-                        onChange={e => setEdit({ ...edit, ends_at: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+                        value={edit.ends_at ?? ""}
+                        onChange={e => setEdit({ ...edit, ends_at: e.target.value })}
                       />
                     </div>
                   </div>
@@ -458,7 +509,7 @@ export default function NotificationsClient() {
                       <span className="text-xs text-textMuted">pri:{n.priority}</span>
                       <span className="text-xs text-textMuted">{n.dismissal_mode}</span>
                       {n.dismissal_mode === "temporary" && (
-                        <span className="text-xs text-textMuted">↻{n.reappear_after_hours}h</span>
+                        <span className="text-xs text-textMuted">{n.reappear_after_hours != null ? `↻${n.reappear_after_hours}h` : "↻ never"}</span>
                       )}
                       {n.starts_at && <span className="text-xs text-textMuted">from {formatDate(n.starts_at)}</span>}
                       {n.ends_at && <span className="text-xs text-textMuted">→ {formatDate(n.ends_at)}</span>}
