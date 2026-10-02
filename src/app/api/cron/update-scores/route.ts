@@ -6,7 +6,7 @@ const API_FOOTBALL_HOST = 'v3.football.api-sports.io';
 const API_FOOTBALL_LEAGUES = [39, 2, 3, 5, 48, 294, 528]; // Premier League, Champions League, Europa League, Nations League, Carabao Cup, FA Cup, Community Shield
 const FROM_EMAIL = 'Play Predict Win <noreply@playpredictwin.com>';
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
-const ADMIN_EMAIL = 'steve.males@gmail.com';
+const ADMIN_EMAIL = 'steven.males@gmail.com';
 
 // How long after kickoff to wait before fetching scores
 const KO_GRACE_MINS = 105; // 1h 45m
