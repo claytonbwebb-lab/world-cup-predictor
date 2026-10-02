@@ -80,7 +80,6 @@ export default function NotificationBannerList() {
     <div
       aria-live="polite"
       aria-atomic="false"
-      className="pt-[64px]"
       onAnimationStart={() => {
         if (!announcedRef.current) {
           announcedRef.current = true;
