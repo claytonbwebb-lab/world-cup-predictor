@@ -48,10 +48,10 @@ export async function POST(request: Request) {
       message,
       status: status ?? 'draft',
       type: type ?? 'information',
-      link_text: link_text ?? null,
-      link_url: link_url ?? null,
-      starts_at: starts_at ?? null,
-      ends_at: ends_at ?? null,
+      link_text: link_text || null,
+      link_url: link_url || null,
+      starts_at: starts_at || null,
+      ends_at: ends_at || null,
       priority: priority ?? 0,
       dismissal_mode: dismissal_mode ?? 'temporary',
       reappear_after_hours: reappear_after_hours ?? 24,
@@ -78,6 +78,11 @@ export async function PUT(request: Request) {
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
   if (fields.message && fields.message.length > 250) {
     return NextResponse.json({ error: 'Message must be ≤250 chars' }, { status: 400 });
+  }
+
+  // Sanitise empty strings from the form (datetime-local sends "" when cleared)
+  for (const key of ['starts_at', 'ends_at', 'link_text', 'link_url'] as const) {
+    if ((fields as any)[key] === '') (fields as any)[key] = null;
   }
 
   // Validate URL if provided
