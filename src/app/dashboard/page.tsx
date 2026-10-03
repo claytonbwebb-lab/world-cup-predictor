@@ -7,6 +7,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import TeamBadge from '@/components/TeamBadge';
 import SupporterLeagueBanner from '@/components/SupporterLeagueBanner';
+import TrustpilotReviewCard from '@/components/TrustpilotReviewCard';
 import { getWeekNumber } from '@/lib/weeks';
 import type { Metadata } from 'next';
 
@@ -478,6 +479,8 @@ export default async function Dashboard() {
             )}
           </div>
         </div>
+
+        <TrustpilotReviewCard />
       </main>
       <Footer />
     </div>
