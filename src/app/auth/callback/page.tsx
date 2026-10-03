@@ -52,6 +52,10 @@ function CallbackContent() {
 
       setStatus('success');
 
+      // Best-effort: add opted-in users to the Resend audience after email confirmation.
+      // The API re-checks the authenticated user's marketing_consent server-side.
+      fetch('/api/email/subscribe', { method: 'POST' }).catch(() => {});
+
       // Check for pending VIP join code first (higher priority than regular league join)
       const vipCode =
         typeof localStorage !== 'undefined' ? localStorage.getItem('pending_vip_join') : null;
